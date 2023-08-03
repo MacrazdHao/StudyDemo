@@ -105,7 +105,7 @@ const DrawerTools = {
 	points: [],
 	overPoint: null,
 	overRadius: 4,
-	alignPoint: null,
+	alignPoints: [],
 	alignMousePoint: null,
 	alignDistance: 8,
 
@@ -125,10 +125,9 @@ const DrawerTools = {
 	setExtraKey(key) {
 		DrawerTools.extraKey = key
 	},
-	autoAlignPoint(e) {
-		const _e = { ...windowToCanvas(e.x, e.y) }
-		DrawerTools.alignPoint = null
-		DrawerTools.alignMousePoint = null
+	autoAlignPoint(_e) {
+		DrawerTools.alignPoints = []
+		DrawerTools.alignMousePoint = { ..._e }
 		for (let i = 0; i < DrawerTools.points.length; i++) {
 			const p = DrawerTools.points[i]
 			const xClose = Math.abs(p.x - _e.x) < DrawerTools.alignDistance
@@ -139,7 +138,7 @@ const DrawerTools = {
 				Context.arc(p.x, p.y, DrawerTools.overRadius, 0, 2 * Math.PI)
 				Context.closePath()
 				Context.fill()
-				DrawerTools.alignPoint = p
+				DrawerTools.alignPoints.push(p)
 				if (xClose) {
 					Context.strokeStyle = 'green'
 					Context.beginPath()
@@ -148,7 +147,7 @@ const DrawerTools = {
 					Context.lineWidth = 0.1
 					Context.closePath()
 					Context.stroke()
-					DrawerTools.alignMousePoint = { x: p.x, y: _e.y }
+					DrawerTools.alignMousePoint = { x: p.x, y: DrawerTools.alignMousePoint.y }
 				}
 				if (yClose) {
 					Context.strokeStyle = 'green'
@@ -158,9 +157,41 @@ const DrawerTools = {
 					Context.lineWidth = 0.1
 					Context.closePath()
 					Context.stroke()
-					DrawerTools.alignMousePoint = { x: _e.x, y: p.y }
+					DrawerTools.alignMousePoint = { x: DrawerTools.alignMousePoint.x, y: p.y }
 				}
-				break
+				// const b1 = Math.abs(p.y - PerspectiveLine.start.y)
+				// const b2 = Math.abs(p.x - PerspectiveLine.start.x)
+				// const t1 = Math.abs(_e.y - PerspectiveLine.start.y)
+				// const t2 = Math.abs(_e.x - PerspectiveLine.start.x)
+				// const alpha = b1 / b2
+				// const beta = t1 / t2
+				// const PerspectiveAngle = Math.abs((alpha - beta) / (1 + alpha * beta))
+				// const k = (p.y - PerspectiveLine.start.y) / (p.x - PerspectiveLine.start.x)
+				// const b = p.y - k * p.x
+				// const perspectiveDistance = Math.abs(k * _e.x - _e.y + b) / Math.sqrt(k * k + 1)
+				// // const perspectiveClose = PerspectiveAngle < 0.12
+				// const perspectiveClose = perspectiveDistance < DrawerTools.alignDistance * 3
+				// if (perspectiveClose) {
+				// 	if (xClose) {
+				// 		const staticY = DrawerTools.alignMousePoint.y
+				// 		const x = (staticY - b) / k
+				// 		DrawerTools.alignMousePoint = { x: x, y: staticY }
+				// 	}
+				// 	if (yClose) {
+				// 		const staticX = DrawerTools.alignMousePoint.x
+				// 		const y = k * staticX + b
+				// 		DrawerTools.alignMousePoint = { x: staticX, y: y }
+				// 	}
+				// 	Context.strokeStyle = 'red'
+				// 	Context.beginPath()
+				// 	Context.moveTo(PerspectiveLine.start.x - 10000, PerspectiveLine.start.y - 10000 * ((DrawerTools.alignMousePoint.y - PerspectiveLine.start.y) / (DrawerTools.alignMousePoint.x - PerspectiveLine.start.x)))
+				// 	Context.lineTo(DrawerTools.alignMousePoint.x, DrawerTools.alignMousePoint.y)
+				// 	Context.lineTo(DrawerTools.alignMousePoint.x + 10000, DrawerTools.alignMousePoint.y + 10000 * ((DrawerTools.alignMousePoint.y - PerspectiveLine.start.y) / (DrawerTools.alignMousePoint.x - PerspectiveLine.start.x)))
+				// 	Context.lineWidth = 0.1
+				// 	Context.closePath()
+				// 	Context.stroke()
+				// }
+				// break
 			}
 		}
 	},
@@ -232,38 +263,45 @@ const DrawerTools = {
 			},
 			mousemove(e) {
 				PerspectiveLine.extraEndToggle(false)
-				DrawerTools.autoAlignPoint(e)
+				DrawerTools.autoAlignPoint(windowToCanvas(e.x, e.y))
+				Context.fillStyle = "black"
+				Context.beginPath()
+				Context.arc(DrawerTools.alignMousePoint.x, DrawerTools.alignMousePoint.y, 2, 0, 2 * Math.PI)
+				Context.closePath()
+				Context.fill()
 				if (DrawerTools.tools.line.pointsBuffer.length === 1) {
 					const sPoint = DrawerTools.tools.line.pointsBuffer[0]
-					const ePoint = { ...(DrawerTools.alignMousePoint || windowToCanvas(e.x, e.y)) }
+					const ePoint = { ...(DrawerTools.alignMousePoint) }
 					DrawerTools.tools.line.draw({ sPoint, ePoint })
 				}
 			},
 			getPerspectiveEndPoint(e) {
 				if (DrawerTools.tools.line.pointsBuffer.length === 1) {
-					const _e = { ...windowToCanvas(e.x, e.y) }
+					const _e = { ...(windowToCanvas(e.x, e.y)) }
 					const sPoint = DrawerTools.tools.line.pointsBuffer[0]
-					const b1 = Math.abs(_e.y - sPoint.y)
-					const b2 = Math.abs(_e.x - sPoint.x)
-					const t1 = Math.abs(_e.y - PerspectiveLine.start.y)
-					const t2 = Math.abs(_e.x - PerspectiveLine.start.x)
-					const alpha = b1 / b2
-					const beta = t1 / t2
-					const PerspectiveAngle = Math.abs((alpha - beta) / (1 + alpha * beta))
+					// const b1 = Math.abs(_e.y - sPoint.y)
+					// const b2 = Math.abs(_e.x - sPoint.x)
+					// const t1 = Math.abs(_e.y - PerspectiveLine.start.y)
+					// const t2 = Math.abs(_e.x - PerspectiveLine.start.x)
+					// const alpha = b1 / b2
+					// const beta = t1 / t2
+					// const PerspectiveAngle = Math.abs((alpha - beta) / (1 + alpha * beta))
 					// 对齐透视线
 					// if (PerspectiveAngle <= 0.36) {
 					const ePoint = { x: _e.x, y: null }
 					const k = (sPoint.y - PerspectiveLine.start.y) / (sPoint.x - PerspectiveLine.start.x)
 					const b = sPoint.y - k * sPoint.x
 					ePoint.y = ePoint.x * k + b
-					return { sPoint, ePoint }
+					DrawerTools.autoAlignPoint(ePoint)
+					return { sPoint, ePoint: ePoint }
 					// }
 				}
 				return false
 			},
 			getStandardEndPoint(e) {
 				if (DrawerTools.tools.line.pointsBuffer.length === 1) {
-					const _e = { ...windowToCanvas(e.x, e.y) }
+					DrawerTools.autoAlignPoint(windowToCanvas(e.x, e.y))
+					const _e = { ...DrawerTools.alignMousePoint }
 					const sPoint = DrawerTools.tools.line.pointsBuffer[0]
 					const b1 = Math.abs(_e.y - sPoint.y)
 					const b2 = Math.abs(_e.x - sPoint.x)
@@ -272,14 +310,14 @@ const DrawerTools = {
 					if (alpha <= 1) {
 						return {
 							sPoint,
-							ePoint: windowToCanvas(_e.x, sPoint.y)
+							ePoint: { x: _e.x, y: sPoint.y }
 						}
 					}
 					// 对齐水平线
 					if (1 / alpha < 1) {
 						return {
 							sPoint,
-							ePoint: windowToCanvas(sPoint.x, _e.y)
+							ePoint: { x: sPoint.x, y: _e.y }
 						}
 					}
 				}
