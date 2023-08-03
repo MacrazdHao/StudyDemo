@@ -25,8 +25,18 @@ const PerspectiveLine = {
 	start: { x: 0, y: 0, has: false },
 	end: { x: 0, y: 0 },
 	extraEnd: { x: 0, y: 0, enabled: false },
-	extraEndToggle() {
-		PerspectiveLine.extraEnd.enabled = !PerspectiveLine.extraEnd.enabled
+	extraEndToggle(tog) {
+		PerspectiveLine.extraEnd.enabled = typeof tog === 'boolean' ? tog : !PerspectiveLine.extraEnd.enabled
+		if (!PerspectiveLine.extraEnd.enabled) {
+			PerspectiveLine.extraEnd.x = 0
+			PerspectiveLine.extraEnd.y = 0
+		}
+	},
+	setExtraEnd(pos) {
+		PerspectiveLine.extraEnd = {
+			...pos,
+			enabled: PerspectiveLine.extraEnd.enabled
+		}
 	},
 	toggle() {
 		PerspectiveLine.enabled = !PerspectiveLine.enabled
@@ -48,7 +58,7 @@ const PerspectiveLine = {
 	},
 	mousemove(e) {
 		if (PerspectiveLine.start.has && PerspectiveLine.enabled) {
-			const pos = PerspectiveLine.extraEnd.enabled ? PerspectiveLine.extraEnd : { ...windowToCanvas(e.x, e.y) }
+			const pos = { ...(PerspectiveLine.extraEnd.enabled ? { x: PerspectiveLine.extraEnd.x, y: PerspectiveLine.extraEnd.y } : windowToCanvas(e.x, e.y)) }
 			// 延长到边缘
 			PerspectiveLine.end = pos
 			// Context.clearRect(0, 0, WhiteBoardDom.offsetWidth, WhiteBoardDom.offsetHeight)
@@ -92,6 +102,10 @@ const DrawerTools = {
 	color: 'black',
 	history: [],
 	extraKey: '',
+	points: [],
+	overPoint: null,
+	overRadius: 4,
+
 	resetExtraKey() {
 		DrawerTools.extraKey = ''
 	},
@@ -100,6 +114,22 @@ const DrawerTools = {
 	},
 	drawHistory() {
 		DrawerTools.history.forEach(item => DrawerTools.tools[item.type].draw(item))
+	},
+	selectPoint(e) {
+		const _e = { ...windowToCanvas(e.x, e.y) }
+		DrawerTools.overPoint = null
+		for (let i = 0; i < DrawerTools.points.length; i++) {
+			const p = DrawerTools.points[i]
+			if (Math.abs(p.x - _e.x) < DrawerTools.overRadius && Math.abs(p.y - _e.y) < DrawerTools.overRadius) {
+				Context.fillStyle = "black"
+				Context.beginPath()
+				Context.arc(p.x, p.y, DrawerTools.overRadius, 0, 2 * Math.PI)
+				Context.closePath()
+				Context.fill()
+				DrawerTools.overPoint = p
+				break
+			}
+		}
 	},
 	tools: {
 		line: {
@@ -127,26 +157,30 @@ const DrawerTools = {
 				Context.fill()
 			},
 			click(e) {
-				DrawerTools.tools.line.pointsBuffer.push({ ...windowToCanvas(e.x, e.y) })
+				DrawerTools.tools.line.pointsBuffer.push({ ...(DrawerTools.overPoint || windowToCanvas(e.x, e.y)) })
 				if (DrawerTools.tools.line.pointsBuffer.length === 2) {
+					DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[0])
+					DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[1])
 					DrawerTools.history.push({
 						type: 'line',
 						sPoint: DrawerTools.tools.line.pointsBuffer[0],
 						ePoint: DrawerTools.tools.line.pointsBuffer[1],
-						color: DrawerTools.tools.color
+						color: DrawerTools.color
 					})
 					DrawerTools.tools.line.pointsBuffer = []
 					refreshBoard()
 				}
 			},
 			mousemove(e) {
+				PerspectiveLine.extraEndToggle(false)
 				if (DrawerTools.tools.line.pointsBuffer.length === 1) {
 					const sPoint = DrawerTools.tools.line.pointsBuffer[0]
 					const ePoint = { ...windowToCanvas(e.x, e.y) }
+
 					DrawerTools.tools.line.draw({ sPoint, ePoint })
 				}
 			},
-			getStandardEndPoint(e) {
+			getPerspectiveEndPoint(e) {
 				if (DrawerTools.tools.line.pointsBuffer.length === 1) {
 					const _e = { ...windowToCanvas(e.x, e.y) }
 					const sPoint = DrawerTools.tools.line.pointsBuffer[0]
@@ -158,13 +192,23 @@ const DrawerTools = {
 					const beta = t1 / t2
 					const PerspectiveAngle = Math.abs((alpha - beta) / (1 + alpha * beta))
 					// 对齐透视线
-					if (PerspectiveAngle <= 0.17) {
-						const ePoint = { x: _e.x, y: null }
-						const k = (sPoint.y - PerspectiveLine.start.y) / (sPoint.x - PerspectiveLine.start.x)
-						const b = sPoint.y - k * sPoint.x
-						ePoint.y = ePoint.x * k + b
-						return { sPoint, ePoint }
-					}
+					// if (PerspectiveAngle <= 0.36) {
+					const ePoint = { x: _e.x, y: null }
+					const k = (sPoint.y - PerspectiveLine.start.y) / (sPoint.x - PerspectiveLine.start.x)
+					const b = sPoint.y - k * sPoint.x
+					ePoint.y = ePoint.x * k + b
+					return { sPoint, ePoint }
+					// }
+				}
+				return false
+			},
+			getStandardEndPoint(e) {
+				if (DrawerTools.tools.line.pointsBuffer.length === 1) {
+					const _e = { ...windowToCanvas(e.x, e.y) }
+					const sPoint = DrawerTools.tools.line.pointsBuffer[0]
+					const b1 = Math.abs(_e.y - sPoint.y)
+					const b2 = Math.abs(_e.x - sPoint.x)
+					const alpha = b1 / b2
 					// 对齐垂直线
 					if (alpha <= 1) {
 						return {
@@ -186,13 +230,19 @@ const DrawerTools = {
 				ShiftLeft_keydown: {
 					mousemove(e) {
 						const lineEndPoints = DrawerTools.tools.line.getStandardEndPoint(e)
-						if (lineEndPoints) DrawerTools.tools.line.draw(lineEndPoints)
+						if (lineEndPoints) {
+							PerspectiveLine.extraEndToggle(true)
+							DrawerTools.tools.line.draw(lineEndPoints)
+							PerspectiveLine.setExtraEnd(lineEndPoints.ePoint)
+						}
 					},
 					click(e) {
 						const { ePoint = null } = DrawerTools.tools.line.getStandardEndPoint(e)
 						if (ePoint) {
 							DrawerTools.tools.line.pointsBuffer.push(ePoint)
 							if (DrawerTools.tools.line.pointsBuffer.length === 2) {
+								DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[0])
+								DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[1])
 								DrawerTools.history.push({
 									type: 'line',
 									sPoint: DrawerTools.tools.line.pointsBuffer[0],
@@ -209,10 +259,32 @@ const DrawerTools = {
 				},
 				ShiftLeft_keydown_ControlLeft_keydown: {
 					mousemove(e) {
-						// 与透视线角度小于10°，则将终点自动对齐到[透视线起点-线段起点]的延长线上
-						// 与垂直方向[大于0°且小于45°]或[小于180°且大于135°]，自动变为垂线
-						// 与平行方向[大于0°且小于45°]或[小于180°且大于135°]，自动变为水平线
-						console.log('extra event ShiftLeft_keydown_ControlLeft_keydown', e)
+						const lineEndPoints = DrawerTools.tools.line.getPerspectiveEndPoint(e)
+						if (lineEndPoints) {
+							PerspectiveLine.extraEndToggle(true)
+							DrawerTools.tools.line.draw(lineEndPoints)
+							PerspectiveLine.setExtraEnd(lineEndPoints.ePoint)
+						}
+					},
+					click(e) {
+						const { ePoint = null } = DrawerTools.tools.line.getPerspectiveEndPoint(e)
+						if (ePoint) {
+							DrawerTools.tools.line.pointsBuffer.push(ePoint)
+							if (DrawerTools.tools.line.pointsBuffer.length === 2) {
+								DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[0])
+								DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[1])
+								DrawerTools.history.push({
+									type: 'line',
+									sPoint: DrawerTools.tools.line.pointsBuffer[0],
+									ePoint: DrawerTools.tools.line.pointsBuffer[1],
+									color: DrawerTools.tools.color
+								})
+								DrawerTools.tools.line.pointsBuffer = []
+								refreshBoard()
+							}
+						} else {
+							DrawerTools.tools.line.pointsBuffer.push({ ...windowToCanvas(e.x, e.y) })
+						}
 					}
 				}
 			}
@@ -235,6 +307,7 @@ function BoardClick(e) {
 
 function BoardMove(e) {
 	PerspectiveLine.mousemove(e)
+	DrawerTools.selectPoint(e)
 	if (DrawerTools.active) {
 		if (DrawerTools.extraKey &&
 			DrawerTools.tools[DrawerTools.active].extra[DrawerTools.extraKey] &&
@@ -250,7 +323,6 @@ function refreshBoard() {
 	Context.clearRect(0, 0, WhiteBoardDom.offsetWidth, WhiteBoardDom.offsetHeight)
 	DrawerTools.drawHistory()
 }
-
 
 WhiteBoardDom.addEventListener('mousemove', BoardMove)
 
