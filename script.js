@@ -106,7 +106,7 @@ const DrawerTools = {
 	overPoint: null,
 	overRadius: 4,
 	alignPoint: null,
-	alignEndPoint: null,
+	alignMousePoint: null,
 	alignDistance: 8,
 
 	undo() {
@@ -128,7 +128,7 @@ const DrawerTools = {
 	autoAlignPoint(e) {
 		const _e = { ...windowToCanvas(e.x, e.y) }
 		DrawerTools.alignPoint = null
-		DrawerTools.alignEndPoint = null
+		DrawerTools.alignMousePoint = null
 		for (let i = 0; i < DrawerTools.points.length; i++) {
 			const p = DrawerTools.points[i]
 			const xClose = Math.abs(p.x - _e.x) < DrawerTools.alignDistance
@@ -148,7 +148,7 @@ const DrawerTools = {
 					Context.lineWidth = 0.1
 					Context.closePath()
 					Context.stroke()
-					DrawerTools.alignEndPoint = { x: p.x, y: _e.y }
+					DrawerTools.alignMousePoint = { x: p.x, y: _e.y }
 				}
 				if (yClose) {
 					Context.strokeStyle = 'green'
@@ -158,7 +158,7 @@ const DrawerTools = {
 					Context.lineWidth = 0.1
 					Context.closePath()
 					Context.stroke()
-					DrawerTools.alignEndPoint = { x: _e.x, y: p.y }
+					DrawerTools.alignMousePoint = { x: _e.x, y: p.y }
 				}
 				break
 			}
@@ -216,7 +216,7 @@ const DrawerTools = {
 				Context.fill()
 			},
 			click(e) {
-				DrawerTools.tools.line.pointsBuffer.push({ ...(DrawerTools.overPoint || DrawerTools.alignEndPoint || windowToCanvas(e.x, e.y)) })
+				DrawerTools.tools.line.pointsBuffer.push({ ...(DrawerTools.overPoint || DrawerTools.alignMousePoint || windowToCanvas(e.x, e.y)) })
 				if (DrawerTools.tools.line.pointsBuffer.length === 2) {
 					DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[0])
 					DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[1])
@@ -235,7 +235,7 @@ const DrawerTools = {
 				DrawerTools.autoAlignPoint(e)
 				if (DrawerTools.tools.line.pointsBuffer.length === 1) {
 					const sPoint = DrawerTools.tools.line.pointsBuffer[0]
-					const ePoint = { ...(DrawerTools.alignEndPoint || windowToCanvas(e.x, e.y)) }
+					const ePoint = { ...(DrawerTools.alignMousePoint || windowToCanvas(e.x, e.y)) }
 					DrawerTools.tools.line.draw({ sPoint, ePoint })
 				}
 			},
