@@ -57,12 +57,12 @@ const PerspectiveLine = {
 		}
 	},
 	mousemove(e) {
+		refreshBoard()
 		if (PerspectiveLine.start.has && PerspectiveLine.enabled) {
 			const pos = { ...(PerspectiveLine.extraEnd.enabled ? { x: PerspectiveLine.extraEnd.x, y: PerspectiveLine.extraEnd.y } : windowToCanvas(e.x, e.y)) }
 			// 延长到边缘
 			PerspectiveLine.end = pos
 			// Context.clearRect(0, 0, WhiteBoardDom.offsetWidth, WhiteBoardDom.offsetHeight)
-			refreshBoard()
 			Context.strokeStyle = 'red'
 			Context.beginPath()
 			Context.moveTo(PerspectiveLine.start.x - 10000, PerspectiveLine.start.y - 10000 * ((PerspectiveLine.end.y - PerspectiveLine.start.y) / (PerspectiveLine.end.x - PerspectiveLine.start.x)))
@@ -106,6 +106,16 @@ const DrawerTools = {
 	overPoint: null,
 	overRadius: 4,
 
+	undo() {
+		let popItem = null
+		if (DrawerTools.history.length > 0) {
+			popItem = DrawerTools.history.pop()
+		}
+		DrawerTools.points = DrawerTools.points.filter((item, index) => {
+			return index < DrawerTools.points.length - DrawerTools.tools[popItem.type].pointsNum
+		})
+		refreshBoard()
+	},
 	resetExtraKey() {
 		DrawerTools.extraKey = ''
 	},
@@ -133,7 +143,14 @@ const DrawerTools = {
 	},
 	tools: {
 		line: {
+			pointsNum: 2,
 			pointsBuffer: [],
+			reset() {
+				if (DrawerTools.tools.line.pointsBuffer.length === 1) {
+					DrawerTools.tools.line.pointsBuffer = []
+					refreshBoard()
+				}
+			},
 			draw({ sPoint, ePoint, color = DrawerTools.color }) {
 				if (!sPoint) return
 				// Context.clearRect(0, 0, WhiteBoardDom.offsetWidth, WhiteBoardDom.offsetHeight)
@@ -259,32 +276,40 @@ const DrawerTools = {
 				},
 				ShiftLeft_keydown_ControlLeft_keydown: {
 					mousemove(e) {
-						const lineEndPoints = DrawerTools.tools.line.getPerspectiveEndPoint(e)
-						if (lineEndPoints) {
-							PerspectiveLine.extraEndToggle(true)
-							DrawerTools.tools.line.draw(lineEndPoints)
-							PerspectiveLine.setExtraEnd(lineEndPoints.ePoint)
+						if (PerspectiveLine.enabled) {
+							const lineEndPoints = DrawerTools.tools.line.getPerspectiveEndPoint(e)
+							if (lineEndPoints) {
+								PerspectiveLine.extraEndToggle(true)
+								DrawerTools.tools.line.draw(lineEndPoints)
+								PerspectiveLine.setExtraEnd(lineEndPoints.ePoint)
+							}
+							return
 						}
+						DrawerTools.tools.line.mousemove(e)
 					},
 					click(e) {
-						const { ePoint = null } = DrawerTools.tools.line.getPerspectiveEndPoint(e)
-						if (ePoint) {
-							DrawerTools.tools.line.pointsBuffer.push(ePoint)
-							if (DrawerTools.tools.line.pointsBuffer.length === 2) {
-								DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[0])
-								DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[1])
-								DrawerTools.history.push({
-									type: 'line',
-									sPoint: DrawerTools.tools.line.pointsBuffer[0],
-									ePoint: DrawerTools.tools.line.pointsBuffer[1],
-									color: DrawerTools.tools.color
-								})
-								DrawerTools.tools.line.pointsBuffer = []
-								refreshBoard()
+						if (PerspectiveLine.enabled) {
+							const { ePoint = null } = DrawerTools.tools.line.getPerspectiveEndPoint(e)
+							if (ePoint) {
+								DrawerTools.tools.line.pointsBuffer.push(ePoint)
+								if (DrawerTools.tools.line.pointsBuffer.length === 2) {
+									DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[0])
+									DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[1])
+									DrawerTools.history.push({
+										type: 'line',
+										sPoint: DrawerTools.tools.line.pointsBuffer[0],
+										ePoint: DrawerTools.tools.line.pointsBuffer[1],
+										color: DrawerTools.tools.color
+									})
+									DrawerTools.tools.line.pointsBuffer = []
+									refreshBoard()
+								}
+							} else {
+								DrawerTools.tools.line.pointsBuffer.push({ ...windowToCanvas(e.x, e.y) })
 							}
-						} else {
-							DrawerTools.tools.line.pointsBuffer.push({ ...windowToCanvas(e.x, e.y) })
+							return
 						}
+						DrawerTools.tools.line.click(e)
 					}
 				}
 			}
@@ -458,6 +483,62 @@ const KeyboardTools = {
 				}
 			}
 		},
+		KeyZ: {
+			code: 'KeyZ',
+			enabled: false,
+			status: 'keyup',
+			toggleType: { keydown: 1, keyup: 2 },
+			statusController(e) {
+				if (e.code === 'KeyZ') {
+					KeyboardTools.keys[e.code].status = e.type
+					KeyboardTools.mixingKeys[e.code] = e.type
+				}
+			},
+			toggle(e) {
+				const toggleValue = KeyboardTools.keys.KeyZ.toggleType[e.type] || false
+				if (toggleValue && e.code === 'KeyZ') {
+					KeyboardTools.keys.KeyZ.enabled = KeyboardTools.toggleValueMap[toggleValue]
+				}
+			},
+			listener: {
+				keydown(e) {
+					e.preventDefault()
+					KeyboardTools.keys.KeyZ.toggle(e)
+				},
+				press(e) {
+					e.preventDefault()
+				},
+				keyup(e) {
+					e.preventDefault()
+					KeyboardTools.keys.KeyZ.toggle(e)
+				}
+			}
+		},
+		MouseRight: {
+			code: 'MouseRight',
+			enabled: false,
+			status: 'keyup',
+			toggleType: { contextmenu: 1 },
+			statusController(e) {
+				if (e.code === 'MouseRight') {
+					KeyboardTools.keys[e.code].status = e.type
+					KeyboardTools.mixingKeys[e.code] = e.type
+				}
+			},
+			toggle(e) {
+				const toggleValue = KeyboardTools.keys.MouseRight.toggleType[e.type] || false
+				if (toggleValue && e.code === 'MouseRight') {
+					KeyboardTools.keys.MouseRight.enabled = KeyboardTools.toggleValueMap[toggleValue]
+				}
+			},
+			listener: {
+				contextmenu(e) {
+					e.preventDefault()
+					KeyboardTools.keys.MouseRight.toggle(e)
+					DrawerTools.tools[DrawerTools.active].reset()
+				},
+			}
+		},
 	},
 	resetMixKey(e) {
 		KeyboardTools.currentMixKey = ''
@@ -474,16 +555,29 @@ const KeyboardTools = {
 			event(e) {
 			}
 		},
+		ControlLeft_keydown_KeyZ_keydown: {
+			includes: {
+				ControlLeft: 'keydown',
+				KeyZ: 'keydown',
+			},
+			statusController(e) {
+				KeyboardTools.currentMixKey = 'ControlLeft_keydown_KeyZ_keydown'
+			},
+			event(e) {
+				DrawerTools.undo()
+			}
+		},
 	},
 }
 
 function KeyboardListenerCallback(e) {
+	// console.log(e)
 	KeyboardTools.resetMixKey(e)
 	DrawerTools.resetExtraKey()
 	for (let code in KeyboardTools.keys) {
 		if (e.code === code) {
 			KeyboardTools.keys[code].statusController(e)
-			KeyboardTools.keys[code].listener.keydown(e)
+			KeyboardTools.keys[code].listener[e.type](e)
 			break
 		}
 	}
@@ -514,3 +608,9 @@ function KeyboardListenerCallback(e) {
 window.addEventListener('keydown', KeyboardListenerCallback)
 window.addEventListener('keyup', KeyboardListenerCallback)
 window.addEventListener('press', KeyboardListenerCallback)
+window.addEventListener('contextmenu', (e) => {
+	console.log(e)
+	const _e = e
+	_e.code = 'MouseRight'
+	KeyboardListenerCallback(e)
+})
