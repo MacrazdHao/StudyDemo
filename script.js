@@ -535,7 +535,7 @@ const KeyboardTools = {
 				contextmenu(e) {
 					e.preventDefault()
 					KeyboardTools.keys.MouseRight.toggle(e)
-					DrawerTools.tools[DrawerTools.active].reset()
+					if (DrawerTools.active) DrawerTools.tools[DrawerTools.active].reset()
 				},
 			}
 		},
@@ -609,8 +609,6 @@ window.addEventListener('keydown', KeyboardListenerCallback)
 window.addEventListener('keyup', KeyboardListenerCallback)
 window.addEventListener('press', KeyboardListenerCallback)
 window.addEventListener('contextmenu', (e) => {
-	console.log(e)
-	const _e = e
-	_e.code = 'MouseRight'
+	e.code = 'MouseRight'
 	KeyboardListenerCallback(e)
 })
