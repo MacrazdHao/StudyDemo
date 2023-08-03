@@ -105,6 +105,9 @@ const DrawerTools = {
 	points: [],
 	overPoint: null,
 	overRadius: 4,
+	alignPoint: null,
+	alignEndPoint: null,
+	alignDistance: 8,
 
 	undo() {
 		let popItem = null
@@ -121,6 +124,45 @@ const DrawerTools = {
 	},
 	setExtraKey(key) {
 		DrawerTools.extraKey = key
+	},
+	autoAlignPoint(e) {
+		const _e = { ...windowToCanvas(e.x, e.y) }
+		DrawerTools.alignPoint = null
+		DrawerTools.alignEndPoint = null
+		for (let i = 0; i < DrawerTools.points.length; i++) {
+			const p = DrawerTools.points[i]
+			const xClose = Math.abs(p.x - _e.x) < DrawerTools.alignDistance
+			const yClose = Math.abs(p.y - _e.y) < DrawerTools.alignDistance
+			if (xClose || yClose) {
+				Context.fillStyle = "black"
+				Context.beginPath()
+				Context.arc(p.x, p.y, DrawerTools.overRadius, 0, 2 * Math.PI)
+				Context.closePath()
+				Context.fill()
+				DrawerTools.alignPoint = p
+				if (xClose) {
+					Context.strokeStyle = 'green'
+					Context.beginPath()
+					Context.moveTo(p.x, -10000)
+					Context.lineTo(p.x, 10000)
+					Context.lineWidth = 0.1
+					Context.closePath()
+					Context.stroke()
+					DrawerTools.alignEndPoint = { x: p.x, y: _e.y }
+				}
+				if (yClose) {
+					Context.strokeStyle = 'green'
+					Context.beginPath()
+					Context.moveTo(-10000, p.y)
+					Context.lineTo(10000, p.y)
+					Context.lineWidth = 0.1
+					Context.closePath()
+					Context.stroke()
+					DrawerTools.alignEndPoint = { x: _e.x, y: p.y }
+				}
+				break
+			}
+		}
 	},
 	drawHistory() {
 		DrawerTools.history.forEach(item => DrawerTools.tools[item.type].draw(item))
@@ -174,7 +216,7 @@ const DrawerTools = {
 				Context.fill()
 			},
 			click(e) {
-				DrawerTools.tools.line.pointsBuffer.push({ ...(DrawerTools.overPoint || windowToCanvas(e.x, e.y)) })
+				DrawerTools.tools.line.pointsBuffer.push({ ...(DrawerTools.overPoint || DrawerTools.alignEndPoint || windowToCanvas(e.x, e.y)) })
 				if (DrawerTools.tools.line.pointsBuffer.length === 2) {
 					DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[0])
 					DrawerTools.points.push(DrawerTools.tools.line.pointsBuffer[1])
@@ -190,10 +232,10 @@ const DrawerTools = {
 			},
 			mousemove(e) {
 				PerspectiveLine.extraEndToggle(false)
+				DrawerTools.autoAlignPoint(e)
 				if (DrawerTools.tools.line.pointsBuffer.length === 1) {
 					const sPoint = DrawerTools.tools.line.pointsBuffer[0]
-					const ePoint = { ...windowToCanvas(e.x, e.y) }
-
+					const ePoint = { ...(DrawerTools.alignEndPoint || windowToCanvas(e.x, e.y)) }
 					DrawerTools.tools.line.draw({ sPoint, ePoint })
 				}
 			},
