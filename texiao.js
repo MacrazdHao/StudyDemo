@@ -132,26 +132,51 @@ function refreshBoard() {
 	})
 }
 // 获取某坐标范围内的点
-function getNearPoint(x, y, maxDist = 60) {
-	return Points.filter(point => Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2) <= maxDist)
+function getNearPoint({ x, y }, maxDist = 60, maxNum = 0, nearCallback) {
+	const NearPoints = []
+	const _MaxNum = Math.min(maxNum || Points.length, Points.length)
+	for (let i = 0; i < Points.length; i++) {
+		const point = Points[i]
+		if (Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2) <= maxDist && NearPoints.length <= _MaxNum) {
+			NearPoints.push(point)
+			if (nearCallback) nearCallback(point)
+		}
+	}
+	return NearPoints
+}
+// 连线
+function linkNearPointLine(ePoint, maxDist = 60, maxLine = 0) {
+	getNearPoint(ePoint, maxDist, Math.min(maxLine || Points.length, Points.length), (nPoint => {
+		linkPoints(nPoint, ePoint, maxDist)
+	}))
+}
+// 连接所有点
+function linkAllNearPointLine(maxLine = 3, maxDist = 30) {
+	Points.forEach(point => {
+		getNearPoint(point, maxDist, maxLine, (nPoint) => {
+			linkPoints(point, nPoint, maxDist)
+		})
+	})
 }
 // 随机移动
-function movePoints(maxSpeed = 20, minSpeed = 10) {
+function movePoints() {
 	getFrame()
 	refreshBoard()
-	getNearPoint(MousePos.x, MousePos.y).forEach(point => {
-		linkPoints(point, MousePos)
-	})
-	setTimeout(() => {
-		requestAnimationFrame(movePoints)
-	}, 10);
+	linkNearPointLine(MousePos)
+	linkAllNearPointLine()
+	// setTimeout(() => {
+	requestAnimationFrame(movePoints)
+	// }, 30);
 }
-// 鼠标连线
+// 获取鼠标坐标
 function getMousePos(e) {
 	MousePos = windowToCanvas(e.x, e.y)
 }
-
-createPoints()
-movePoints()
-window.addEventListener('mouseenter', getMousePos)
-window.addEventListener('mousemove', getMousePos)
+// 启动
+function startAnimation() {
+	createPoints()
+	movePoints()
+	window.addEventListener('mouseenter', getMousePos)
+	window.addEventListener('mousemove', getMousePos)
+}
+startAnimation()
