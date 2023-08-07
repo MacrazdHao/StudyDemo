@@ -15,6 +15,8 @@ window.onresize = () => {
 	WhiteBoardDom.width = WindowWdith
 	WhiteBoardDom.height = WindowHeight - OperatorDom.offsetHeight
 }
+let Points = []
+let MousePos = { x: 0, y: 0 }
 
 function windowToCanvas(x, y) {
 	// 将坐标转为相对canvas的坐标
@@ -25,6 +27,7 @@ function windowToCanvas(x, y) {
 function getIntRandom(max = 1, min = 0) {
 	return Math.floor(Math.random() * (max - min + 1) + min);
 }
+// 随机小数
 function getFloatRandom(max = 1, min = 0) {
 	return Math.random() * (max - min) + min
 }
@@ -43,9 +46,6 @@ function getRandomColor(minR = 0, maxR = 255, minG = 0, maxG = 255, minB = 0, ma
 	const colorB = getIntRandom(maxB, minB)
 	return `rgb(${colorR}, ${colorG}, ${colorB})`
 }
-
-let Points = []
-
 // 画点
 function drawPoint({ x, y, radius, color }) {
 	Context.fillStyle = color
@@ -72,7 +72,7 @@ function createPoint(radius = 1) {
 		radius,
 		color: getRandomColor(),
 		direction: getExcludeRandom(1, -1, [0]),
-		unitDist: getFloatRandom(0.3, 0.01)
+		unitDist: getFloatRandom(0.3, 0.05)
 	}
 	point.track = getRandomFunc(point)
 	return point
@@ -87,36 +87,17 @@ function createPoints(num = 1000) {
 }
 // 两点连线
 function linkPoints(p1, p2) {
-	drawLine(p1, p2, p2.color)
+	drawLine(p1, p2, p1.color)
 }
-// 
+// 限定坐标于画板范围
 function getBoardRangePos(point) {
 	if (point.x > WhiteBoardWidth || point.x < 0 || point.y > WhiteBoardHeight || point.y < 0) {
 		return createPoint()
 	}
 	return point
 }
-function calculateX2(x, y, k, b, n, d) {
-	// const a = 1 + k * k;
-	// const bCoeff = 2 * (k * b - k * y - x);
-	// const c = (b - y) * (b - y) - n * n;
-
-	// const discriminant = bCoeff * bCoeff - 4 * a * c;
-
-	// if (discriminant < 0) {
-	// 	// 判别式小于 0，无实数解，返回 undefined 或其他适当的结果
-	// 	return undefined;
-	// } else {
-	// 	const x2_1 = (-bCoeff + d * Math.sqrt(discriminant)) / (2 * a);
-	// 	// 返回两个解之一，根据问题的上下文或需求选择合适的解
-	// 	return x2_1;
-	// }
-	return x + d * n
-}
-
 // 获取随机一次函数
-function getRandomFunc(point, minK = -100, maxK = 100) {
-	// const k = getExcludeRandom(maxK, minK, [0])
+function getRandomFunc(point) {
 	const k = getExcludeRandom(1, -1, [0]) * getFloatRandom()
 	return {
 		k,
@@ -124,11 +105,8 @@ function getRandomFunc(point, minK = -100, maxK = 100) {
 		getPositiveClosePos(p, dis, dir) {
 			const k = this.k
 			const b = this.b
-			// console.log(k, b, point, dis, dir)
-			// console.log(calculateX2(p1.x, p1.y, k, b, dis, dir))
-			const x = calculateX2(p.x, p.y, k, b, dis, dir)
+			const x = p.x + dis * dir
 			const y = k * x + b
-			// console.log(x, y)
 			return getBoardRangePos({
 				...p,
 				x, y
@@ -145,7 +123,6 @@ function getFrame() {
 			...track.getPositiveClosePos(point, unitDist, direction),
 		}
 	})
-	// console.log(Points)
 }
 // 重绘
 function refreshBoard() {
@@ -154,14 +131,27 @@ function refreshBoard() {
 		drawPoint(point)
 	})
 }
+// 获取某坐标范围内的点
+function getNearPoint(x, y, maxDist = 60) {
+	return Points.filter(point => Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2) <= maxDist)
+}
 // 随机移动
 function movePoints(maxSpeed = 20, minSpeed = 10) {
 	getFrame()
 	refreshBoard()
+	getNearPoint(MousePos.x, MousePos.y).forEach(point => {
+		linkPoints(point, MousePos)
+	})
 	setTimeout(() => {
 		requestAnimationFrame(movePoints)
 	}, 10);
 }
+// 鼠标连线
+function getMousePos(e) {
+	MousePos = windowToCanvas(e.x, e.y)
+}
 
 createPoints()
 movePoints()
+window.addEventListener('mouseenter', getMousePos)
+window.addEventListener('mousemove', getMousePos)
