@@ -39,6 +39,10 @@ function getExcludeRandom(max = 0, min = 1, excludes = []) {
 	}
 	return num
 }
+// 距离计算
+function getDistance(p1, p2) {
+	return Math.floor(Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2))
+}
 // 随机色
 function getRandomColor(minR = 0, maxR = 255, minG = 0, maxG = 255, minB = 0, maxB = 255) {
 	const colorR = getIntRandom(maxR, minR)
@@ -60,7 +64,7 @@ function drawLine(p1, p2, color) {
 	Context.beginPath()
 	Context.moveTo(p1.x, p1.y)
 	Context.lineTo(p2.x, p2.y)
-	Context.lineWidth = 0.1
+	Context.lineWidth = p1.lineWidth
 	Context.closePath()
 	Context.stroke()
 }
@@ -72,7 +76,10 @@ function createPoint(radius = 1) {
 		radius,
 		color: getRandomColor(),
 		direction: getExcludeRandom(1, -1, [0]),
-		unitDist: getFloatRandom(0.3, 0.05)
+		unitDist: getFloatRandom(0.3, 0.05),
+		nearMouse: false,
+		lineWidth: 0.1,
+		track: null,
 	}
 	point.track = getRandomFunc(point)
 	return point
@@ -101,52 +108,82 @@ function getRandomFunc(point) {
 	const k = getExcludeRandom(1, -1, [0]) * getFloatRandom()
 	return {
 		k,
-		b: point.y - k * point.x,
-		getPositiveClosePos(p, dis, dir) {
-			const k = this.k
-			const b = this.b
-			const x = p.x + dis * dir
-			const y = k * x + b
-			return getBoardRangePos({
-				...p,
-				x, y
-			})
-		}
+		b: point.y - k * point.x
 	}
+}
+// 计算点沿一次函数直线移动后的坐标
+function getLinearPosition(p, { k, b }, dis, dir) {
+	const x = p.x + dis * dir
+	const y = k * x + b
+	return getBoardRangePos({
+		...p,
+		x, y
+	})
+}
+// 计算点沿圆形函数移动后的坐标
+function getCirclePosition(p, { o, r }, dis, dir) {
+	const alpha = Math.atan2(p.y - o.y, p.x - o.x)
+	const beta = alpha + dir * (dis * Math.PI) / 180
+	return {
+		...p,
+		x: o.x + r * Math.cos(beta),
+		y: o.y + r * Math.sin(beta)
+	}
+}
+// 计算两点连成的一次函数
+function getLinearFunc(p1, p2) {
+	const k = (p1.y - p2.y) / (p1.x - p2.x)
+	const b = p1.y - k * p1.x
+	return { k, b }
+}
+// 鼠标牵引
+function mouseTraction(point, unitDist, direction, radius = 40) {
+	const dist = getDistance(point, MousePos)
+	if (dist > radius) {
+		const linear = getLinearFunc(point, MousePos)
+		dir = MousePos.x < point.x ? -1 : 1
+		return getLinearPosition(point, linear, unitDist, dir)
+	}
+	return getCirclePosition(point, { o: MousePos, r: radius }, unitDist, direction)
 }
 // 帧（更新点位置）
 function getFrame() {
 	Points = Points.map(point => {
-		const { direction, track, unitDist } = point
+		let { direction, track, unitDist, nearMouse } = point
+		const newPos = nearMouse ? mouseTraction(point, unitDist, direction) : getLinearPosition(point, track, unitDist, direction)
+		track = nearMouse ? getRandomFunc(newPos) : track
 		return {
 			...point,
-			...track.getPositiveClosePos(point, unitDist, direction),
+			...newPos,
+			track,
 		}
 	})
 }
 // 重绘
 function refreshBoard() {
 	Context.clearRect(0, 0, WhiteBoardDom.offsetWidth, WhiteBoardDom.offsetHeight)
-	Points.forEach(point => {
+	Points.forEach((point, index) => {
+		Points[index].nearMouse = false
 		drawPoint(point)
 	})
 }
 // 获取某坐标范围内的点
-function getNearPoint({ x, y }, maxDist = 60, maxNum = 0, nearCallback) {
+function getNearPoint(ePoint, maxDist = 60, maxNum = 0, nearCallback) {
 	const NearPoints = []
 	const _MaxNum = Math.min(maxNum || Points.length, Points.length)
 	for (let i = 0; i < Points.length; i++) {
 		const point = Points[i]
-		if (Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2) <= maxDist && NearPoints.length <= _MaxNum) {
+		if (getDistance(point, ePoint) <= maxDist && NearPoints.length <= _MaxNum) {
 			NearPoints.push(point)
-			if (nearCallback) nearCallback(point)
+			if (nearCallback) nearCallback(point, i)
 		}
 	}
 	return NearPoints
 }
 // 连线
-function linkNearPointLine(ePoint, maxDist = 60, maxLine = 0) {
-	getNearPoint(ePoint, maxDist, Math.min(maxLine || Points.length, Points.length), (nPoint => {
+function linkNearMousePointLine(ePoint, maxDist = 80, maxLine = 0) {
+	getNearPoint(ePoint, maxDist, Math.min(maxLine || Points.length, Points.length), ((nPoint, i) => {
+		Points[i].nearMouse = true
 		linkPoints(nPoint, ePoint, maxDist)
 	}))
 }
@@ -162,11 +199,9 @@ function linkAllNearPointLine(maxLine = 3, maxDist = 30) {
 function movePoints() {
 	getFrame()
 	refreshBoard()
-	linkNearPointLine(MousePos)
-	linkAllNearPointLine()
-	// setTimeout(() => {
+	linkNearMousePointLine(MousePos)
 	requestAnimationFrame(movePoints)
-	// }, 30);
+	linkAllNearPointLine()
 }
 // 获取鼠标坐标
 function getMousePos(e) {
