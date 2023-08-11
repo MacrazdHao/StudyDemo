@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1,maximum-scale=1.0">
+  <link rel="stylesheet" href="https://sdk.herewhite.com/white-web-sdk/2.9.0.css">
+  <script src="https://sdk.herewhite.com/white-web-sdk/2.9.0.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.8/lib/index.css" />
+</head>
+
+<style>
+  .videoBox,
+  .video-placeholder {
+    width: 100%;
+    height: 300px;
+    position: relative;
+  }
+
+  .roomState {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+
+  .roomState p {
+    margin: 0;
+    margin-right: 10px;
+  }
+
+  .roomIdBox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .toolBox {
+    display: flex;
+  }
+
+  .toolBtn {
+    box-sizing: border-box;
+    width: 20%;
+    display: inline-block;
+    text-align: center;
+    font-size: 15px;
+  }
+
+  .noselected {
+    border: 1px solid rgb(15, 15, 15);
+    /* background: rgb(15, 15, 15); */
+  }
+
+  .selected {
+    border: 1px solid rgb(0, 89, 255);
+    background: rgb(0, 89, 255);
+    color: white;
+  }
+
+  .colorBtn {
+    border: 1px solid rgb(15, 15, 15);
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    font-size: 15px;
+  }
+
+  .colorBox {
+    display: flex;
+    justify-content: center;
+  }
+
+  .colorBtn {
+    height: 20px;
+    box-sizing: border-box;
+    width: 20%;
+    display: inline-block;
+    text-align: center;
+    font-size: 15px;
+  }
+
+  .black {
+    background: #000;
+  }
+
+  .red {
+    background: red;
+  }
+
+  .green {
+    background: green;
+  }
+
+  .blue {
+    background: blue;
+  }
+
+  .yellow {
+    background: yellow;
+  }
+
+  .sliderBtn {
+    width: 26px;
+    color: #fff;
+    font-size: 10px;
+    line-height: 18px;
+    text-align: center;
+    background-color: black;
+    border-radius: 100px;
+  }
+
+  .widthBox {
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .widthBox p {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .widthSliderBox {
+    display: flex;
+    justify-content: center;
+    width: 70%;
+  }
+
+  .widthSliderBox .van-slider {
+    margin: auto;
+  }
+
+  .chatBox {
+    padding: 10px 16px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .chatItem p {
+    margin: 0;
+  }
+
+  .pptBtnBox {
+    padding: 10px 16px;
+    display: flex;
+    /* justify-content: space-between; */
+    justify-content: flex-end;
+  }
+
+  .uploadProgressBox {
+    width: 50%;
+    margin: auto;
+    margin-left: 0;
+  }
+</style>
+
+<body>
+  <div id="app">
+    <div v-if="!showRoomList">
+      <div class="roomState">
+        <p>房间：{{roomName?roomName:'暂未加入房间'}}</p>
+        <div>
+          <van-button v-if="!roomName" size="mini" @click="getRoomList" style="padding: 0 10px;">房间列表
+          </van-button>
+          <van-button v-if="roomName" size="mini" type="danger" @click="exitRoom">退出</van-button>
+          <van-button v-if="roomName&&myRoom" style="padding: 0 10px;" size="mini" type="primary" @click="changeMode">
+            {{desktopMode?'切换视频':'切换桌面'}}</van-button>
+          <van-button v-if="roomName" size="mini" type="primary" @click="changeIdentify">{{myRoom?'房主':'游客'}}
+          </van-button>
+        </div>
+      </div>
+      <van-field v-model="jRoomName" label="房间名称" placeholder="请输入房间名">
+        <template #button>
+          <van-button size="mini" type="primary" @click="createRoom">创建</van-button>
+        </template>
+      </van-field>
+      <van-field v-model="jRoomId" label="房间ID" placeholder="请输入房间ID">
+        <template #button>
+          <van-button size="mini" type="primary" @click="joinRoom">加入</van-button>
+        </template>
+      </van-field>
+      <div style="position: relative;border: 1px solid black">
+        <div id="whiteboard" :style="{opacity: opacityVal/100, width: '100%', height: '300px'}"></div>
+        <div
+          style="z-index: -1;position: absolute;top:0;left:0;background-color: yellowgreen;width: 100%;height: 300px;">
+          <div id="video">
+            <div class="videoBox" v-show="rtc.published">
+              <div id="local_stream" class="video-placeholder"></div>
+              <div id="local_video_info" class="video-profile hide"></div>
+              <div id="video_autoplay_local" class="autoplay-fallback hide"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pptBtnBox" v-if="roomName&&myRoom">
+          <van-popup v-model="showBoardPicker" round position="bottom">
+            <van-picker :default-index="boardSceneIndex" title="选择场景" show-toolbar :columns="boardScene"
+              @confirm="boardScenePicker" @cancel="showBoardPicker=false" />
+          </van-popup>
+          <!-- <div class="uploadProgressBox">
+            <van-progress style="margin: auto;" :percentage="pptUploadProgress" />
+          </div> -->
+          <div>
+            <input ref="imgLoad" type="file" @change="getLocalImg" v-show="false" type="image"
+              accept="image/gif,image/jpeg,image/jpg,image/png,image/svg" />
+            <input ref="pptLoad" type="file" @change="loadBoardPPT" v-show="false" accept=".ppt,.pdf,.pptx" />
+            <van-button style="padding: 0 10px;" size="mini" type="primary" @click="uploadPPT">上传PPT
+            </van-button>
+            <van-button style="padding: 0 10px;" size="mini" type="primary" @click="uploadImg">载入图片
+            </van-button>
+            <van-button style="padding: 0 10px;" size="mini" type="primary" @click="showBoardPicker=true">
+              选择场景
+            </van-button>
+            <van-button style="padding: 0 10px;" size="mini" type="primary"
+              @click="changeBoardScene(boardScene[boardSceneIndex], 1)" :disabled="boardSceneImgIndex==1">
+              第一张
+            </van-button>
+            <van-button style="padding: 0 10px;" size="mini" type="primary"
+              @click="changeBoardScene(boardScene[boardSceneIndex], --boardSceneImgIndex)"
+              :disabled="boardSceneImgIndex==1">上一张
+            </van-button>
+            <van-button style="padding: 0 10px;" size="mini" type="primary"
+              @click="changeBoardScene(boardScene[boardSceneIndex], ++boardSceneImgIndex)"
+              :disabled="boardSceneLength<=boardSceneImgIndex">下一张</van-button>
+            <van-button style="padding: 0 10px;" size="mini" type="primary"
+              @click="changeBoardScene(boardScene[boardSceneIndex], boardSceneLength)"
+              :disabled="boardSceneLength<=boardSceneImgIndex">
+              最后一张</van-button>
+          </div>
+        </div>
+      </div>
+      <div v-if="roomName&&myRoom">
+        <div class="toolBox">
+          <div :class="['toolBtn', toolIndex==0?'selected':'noselected']" @click="toolMenu(0)">选择工具</div>
+          <div :class="['toolBtn', toolIndex==1?'selected':'noselected']" @click="toolMenu(1)">铅笔</div>
+          <div :class="['toolBtn', toolIndex==2?'selected':'noselected']" @click="toolMenu(2)">矩形绘制</div>
+          <div :class="['toolBtn', toolIndex==3?'selected':'noselected']" @click="toolMenu(3)">圆形绘制</div>
+          <div :class="['toolBtn', toolIndex==4?'selected':'noselected']" @click="toolMenu(4)">橡皮</div>
+          <div :class="['toolBtn', toolIndex==5?'selected':'noselected']" @click="toolMenu(5)">文字工具</div>
+          <div :class="['toolBtn', toolIndex==6?'selected':'noselected']" @click="toolMenu(6)">直线绘制</div>
+          <div :class="['toolBtn', toolIndex==7?'selected':'noselected']" @click="toolMenu(7)">箭头工具</div>
+        </div>
+        <div class="colorBox">
+          <div class="colorBtn black" @click="colorMenu(0)"></div>
+          <div class="colorBtn red" @click="colorMenu(1)"></div>
+          <div class="colorBtn green" @click="colorMenu(2)"></div>
+          <div class="colorBtn blue" @click="colorMenu(3)"></div>
+          <div class="colorBtn yellow" @click="colorMenu(4)"></div>
+        </div>
+        <div class="widthBox">
+          <p>线条粗细：</p>
+          <div class="widthSliderBox">
+            <van-slider v-model="widthVal" @input="widthSlider" active-color="gray" max="20" min="0">
+              <template #button>
+                <div class="sliderBtn">
+                  {{ widthVal }}
+                </div>
+              </template>
+            </van-slider>
+          </div>
+        </div>
+        <div class="widthBox">
+          <p>字体大小：</p>
+          <div class="widthSliderBox">
+            <van-slider v-model="fontVal" @input="fontSlider" active-color="gray" max="40" min="0">
+              <template #button>
+                <div class="sliderBtn">
+                  {{ fontVal }}
+                </div>
+              </template>
+            </van-slider>
+          </div>
+        </div>
+        <div class="widthBox">
+          <p>透明度：</p>
+          <div class="widthSliderBox">
+            <van-slider v-model="opacityVal" active-color="gray" max="100" min="0">
+              <template #button>
+                <div class="sliderBtn">
+                  {{ opacityVal/100 }}
+                </div>
+              </template>
+            </van-slider>
+          </div>
+        </div>
+      </div>
+      <van-field v-if="roomName" v-model="message" placeholder="请输入要发送的内容">
+        <template #button>
+          <van-button size="mini" type="primary" @click="sendMessage">发送</van-button>
+        </template>
+      </van-field>
+      <div class="chatBox">
+        <div v-if="joinIM">已加入房间：{{roomName}}</div>
+        <div class="chatItem" v-for="(item, index) in records" :key="index">
+          <p>{{item.account==option.uid?'你':item.account}} 说：{{item.text}}</p>
+        </div>
+      </div>
+    </div>
+    <div v-else>
+      <van-button type="primary" size="small" @click="showRoomList=false" style="width: 100%;">关闭</van-button>
+      <van-list v-model="loading" :finished="finished" finished-text="没有更多了">
+        <van-cell v-for="item in roomList" :key="item.uuid" :title="item.name?item.name:'无房间名'" value="进入" is-link
+          @click="joinRoomFromList(item)" />
+      </van-list>
+    </div>
+    <div id="imgBuffer" v-show="false"></div>
+  </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/vant@2.8/lib/vant.min.js"></script>
+<script src="https://cdn.agora.io/sdk/release/AgoraRTCSDK-3.1.0.js"></script>
+<script src="./agora-rtm-sdk-1.2.2.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    data: () => {
+      return {
+        IMClient: '',
+        IMChannel: null,
+        message: '',
+        records: [],
+        joinIM: false,
+        widthVal: 4,
+        fontVal: 16,
+        loading: false,
+        finished: true,
+        showRoomList: false,
+        roomList: [],
+        whiteWebSdk: null,
+        sdkToken:
+          "NETLESSSDK_YWs9T2VYYWNoeG5DbjNIcUI4MSZub25jZT0xNTkyMzYyMDQ1MzA0MDAmcm9sZT0wJnNpZz0yYTc5OGQyNzFjOGFhMDIxZTM0NWI5MmE2YjY0ZjI2Y2I3YWViYjQ1MTY2MzFiNDJjYzdkYmMwYWY1NWY1N2Fi",
+        appIdentifier: "_4hHALBDEeqXLmEdE6HRLQ/_ODxqJt7hbHw9g",
+        showBoardPicker: false,
+        // pptUploadProgress: 0,
+        boardScene: ['init'],
+        boardSceneImgList: [[]],
+        boardSceneIndex: 0,
+        boardSceneImgIndex: 1,
+        boardSceneLength: 0,
+        boardImgInfo: {
+          width: 1024,
+          height: 728
+        },
+        jRoomId: '',
+        jRoomName: '',
+        roomName: '',
+        roomId: null,
+        roomToken: null,
+        myRoom: false,
+        room: null,
+        toolIndex: 1,
+        // 直播参数
+        rtc: {
+          client: null,
+          joined: false,
+          published: false,
+          localStream: null,
+          remoteStreams: [],
+          params: {}
+        },
+        option: {
+          appID: "03b4b3ef3393444bbec2b67faf3b2f63",
+          channel: "",
+          uid: null,
+          token: null
+        },
+        opacityVal: 100,
+        desktopMode: false,
+      }
+    },
+    mounted() {
+      // 初始化画板
+      this.whiteWebSdk = new WhiteWebSdk({
+        appIdentifier: this.appIdentifier,
+      });
+      this.initRTM();
+    },
+    methods: {
+      // 新建节点
+      createElement(tag, id, className) {
+        let el = document.createElement(tag);
+        el.id = id;
+        el.className = className;
+        return el;
+      },
+      // 添加远程RTC窗口
+      addView(id, show) {
+        if (!document.getElementById(id)) {
+          let videoDiv = document.getElementById("video");
+          let remote_video_panel = this.createElement("div", "remote_video_panel_" + id, "videoBox");
+          videoDiv.append(remote_video_panel);
+
+          let remote_video = this.createElement("div", "remote_video_" + id, "video-placeholder");
+          remote_video_panel.append(remote_video);
+
+          let remote_video_info = this.createElement("div", "remote_video_info_" + id, "video-profile " + (show ? "" : "hide"));
+          remote_video_panel.append(remote_video_info);
+
+          let video_autoplay = this.createElement("div", "video_autoplay_" + id, "autoplay-fallback hide");
+          remote_video_panel.append(video_autoplay);
+        }
+      },
+      // 移除远程RTC窗口
+      removeView(id) {
+        let remote_video_panel = document.getElementById("remote_video_panel_" + id);
+        if (remote_video_panel) {
+          remote_video_panel.remove();
+        }
+      },
+      // 从房间列表进入房间
+      joinRoomFromList(item) {
+        console.log(item);
+        this.jRoomName = item.name;
+        this.jRoomId = item.uuid;
+        this.joinRoom();
+        this.showRoomList = false;
+      },
+      // 获取房间列表
+      getRoomList() {
+        this.showRoomList = true;
+        // 构造创建房间的 Request
+        let url = "https://shunt-api.netless.link/v5/rooms";
+        let requestInit = {
+          method: "GET",
+          headers: {
+            "content-type": "application/json",
+            "token": this.sdkToken
+          }
+        };
+        // 发起请求
+        window.fetch(url, requestInit).then((response) => {
+          return response.json();
+        }).then((json) => {
+          this.roomList = json;
+          console.log(json)
+        }).catch((err) => {
+          console.error(err);
+          vant.Dialog.alert({
+            title: '获取房间列表失败',
+            message: err
+          });
+        });
+      },
+      // 创建房间
+      createRoom() {
+        if (this.rtc.joined) this.exitRoom();
+        if (!this.jRoomName) {
+          vant.Dialog.alert({ title: '创建失败', message: '请输入房间名' })
+          return;
+        }
+        // 构造创建房间的 Request
+        let url = "https://shunt-api.netless.link/v5/rooms";
+        let requestInit = {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "token": this.sdkToken
+          },
+          body: JSON.stringify({
+            "name": this.jRoomName,
+            "isRecord": false,
+            "limit": 1000
+          }),
+        };
+        // 发起请求
+        window.fetch(url, requestInit).then((response) => {
+          return response.json();
+        }).then((json) => {
+          console.log(json)
+          this.myRoom = true;
+          // 创建房间成功，获取房间的 uuid
+          this.jRoomId = json.uuid;
+          this.roomName = this.jRoomName;
+          this.joinRoom();
+        }).catch((err) => {
+          console.error(err);
+          vant.Dialog.alert({
+            title: '创建房间失败',
+            message: err
+          });
+        });
+      },
+      // 加入房间
+      joinRoom() {
+        if (this.rtc.joined) this.exitRoom();
+        // 构造申请 Room Token 的 Request
+        let url = "https://shunt-api.netless.link/v5/tokens/rooms/" + this.jRoomId;
+        let requestInit = {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "token": this.sdkToken,
+          },
+          body: JSON.stringify({
+            "lifespan": 0, // 表明 Room Token 永不失效
+            "role": "writer", // 表明 Room Token 有 Admin 的权限
+          }),
+        };
+        fetch(url, requestInit).then((response) => {
+          return response.json();
+        }).then((roomToken) => {
+          console.log('roomToken', roomToken)
+          // 成功获取房间的 Room Token
+          this.roomToken = roomToken;
+          // 获取房间信息
+          fetch("https://shunt-api.netless.link/v5/rooms/" + this.jRoomId,
+            { method: "GET", headers: { "token": roomToken } })
+            .then((response) => {
+              return response.json();
+            }).then((json) => {
+              console.log('房间信息', json);
+              this.roomName = json.name;
+            });
+          let joinRoomParams = {
+            uuid: this.jRoomId,
+            roomToken: this.roomToken,
+            isWritable: this.myRoom
+          };
+          this.whiteWebSdk.joinRoom(joinRoomParams).then((room) => {
+            // 加入房间成功，获取 room 对象
+            // 并将之前的 <div id="whiteboard"/> 占位符变成白板
+            // this.room = room;
+            // console.log(room)
+            window.room = room;
+            this.roomId = this.jRoomId;
+            room.bindHtmlElement(document.getElementById("whiteboard"));
+
+            // this.loadBoardPPT();
+
+            // 加入直播
+            this.joinRTC();
+            // 加入IM
+            this.joinRTM();
+          }).catch((err) => {
+            // 加入房间失败
+            console.error(err);
+            this.roomId = '';
+            this.roomName = '';
+            vant.Dialog.alert({
+              title: '加入房间失败',
+              message: err
+            });
+          });
+        }).catch((err) => {
+          console.error(err);
+          this.roomId = '';
+          this.roomName = '';
+          vant.Dialog.alert({
+            title: '加入房间失败',
+            message: err
+          });
+        });
+      },
+      // 初始化RTC对象
+      initRTC(callback) {
+        // 初始化直播
+        this.rtc.client = AgoraRTC.createClient({ mode: "live", codec: "h264" });
+        this.rtc.params = this.option;
+        // 获取房间的他人窗口（多人直播窗口，或获取主播窗口）
+        // 订阅远程流事件回调（加入房间）
+        this.rtc.client.on("stream-added", (evt) => {
+          let remoteStream = evt.stream
+          let id = remoteStream.getId()
+          if (id !== this.rtc.params.uid) {
+            this.rtc.client.subscribe(remoteStream, (err) => {
+              console.log("stream subscribe failed", err)
+            })
+          }
+          console.log("stream-added remote-uid: ", id)
+        })
+        // 获取远程流事件回调（获取他人视口）
+        this.rtc.client.on("stream-subscribed", (evt) => {
+          let remoteStream = evt.stream
+          let id = remoteStream.getId()
+          this.rtc.remoteStreams.push(remoteStream)
+          if (this.rtc.remoteStreams.length > 0 && this.rtc.published) {
+            // Stop playing the local stream
+            this.rtc.localStream.stop();
+            // Close the local stream
+            this.rtc.localStream.close();
+            this.rtc.client.unpublish(this.rtc.localStream, (err) => {
+              console.log("unpublish failed")
+              console.error(err)
+            });
+            this.rtc.published = false
+          }
+          this.addView(id)
+          remoteStream.play("remote_video_" + id)
+          console.log("stream-subscribed remote-uid: ", id)
+        })
+        // 移除远程流事件回调（退出房间）
+        this.rtc.client.on("stream-removed", (evt) => {
+          let remoteStream = evt.stream
+          let id = remoteStream.getId()
+          if (remoteStream.isPlaying()) {
+            remoteStream.stop()
+          }
+          this.rtc.remoteStreams = this.rtc.remoteStreams.filter((stream) => {
+            return stream.getId() !== id
+          })
+          this.removeView(id)
+          console.log("stream-removed remote-uid: ", id)
+        });
+        // 房间有人退出
+        this.rtc.client.on("peer-leave", (evt) => {
+          const id = evt.uid;
+          if (id != this.rtc.params.uid) {
+            this.removeView(id);
+          }
+          vant.Toast("user Id:" + id + " leave");
+          console.log('peer-leave', id);
+        })
+        this.rtc.client.init(this.option.appID, () => {
+          console.log("init success");
+          callback();
+        }, (err) => {
+          console.error(err);
+        });
+      },
+      // 更换身份（主播/观众）测试用
+      changeIdentify() {
+        window.room.disconnect();
+        this.initSceneOptions();
+        this.rtc.client.leave(() => {
+          if (this.myRoom) {
+            // Stop playing the local stream
+            this.rtc.localStream.stop();
+            // Close the local stream
+            this.rtc.localStream.close();
+          }
+          // Stop playing the remote streams and remove the views
+          while (this.rtc.remoteStreams.length > 0) {
+            let stream = this.rtc.remoteStreams.shift();
+            let id = stream.getId();
+            stream.stop();
+            this.removeView(id);
+          }
+          console.log("client leaves channel success");
+          this.rtc.localStream = null
+          this.rtc.remoteStreams = []
+          this.rtc.client = null
+          this.rtc.joined = false;
+          this.rtc.published = false;
+          this.RTMLogout();
+          this.myRoom = !this.myRoom;
+          let joinRoomParams = {
+            uuid: this.jRoomId,
+            roomToken: this.roomToken,
+            isWritable: this.myRoom
+          };
+          this.whiteWebSdk.joinRoom(joinRoomParams).then((room) => {
+            // 加入房间成功，获取 room 对象
+            // 并将之前的 <div id="whiteboard"/> 占位符变成白板
+            window.room = room;
+            this.roomId = this.jRoomId;
+            room.bindHtmlElement(document.getElementById("whiteboard"));
+            this.joinRTC();
+            this.joinRTM();
+          }).catch((err) => {
+            // 加入房间失败
+            console.error(err);
+            this.roomId = '';
+            this.roomName = '';
+            vant.Dialog.alert({
+              title: '加入房间失败',
+              message: err
+            });
+          });
+        }, (err) => {
+          console.log("channel leave failed");
+          console.error(err);
+        });
+      },
+      // 退出房间
+      exitRoom() {
+        this.roomId = '';
+        this.roomName = '';
+        window.room.disconnect();
+        this.exitRTC();
+        this.RTMLogout();
+        this.initSceneOptions();
+      },
+      // 更换教具
+      toolMenu(index) {
+        console.log(index);
+        this.toolIndex = index;
+        switch (index) {
+          case 0: window.room.setMemberState({ currentApplianceName: "selector" }); break;
+          case 1: window.room.setMemberState({ currentApplianceName: "pencil" }); break;
+          case 2: window.room.setMemberState({ currentApplianceName: "rectangle" }); break;
+          case 3: window.room.setMemberState({ currentApplianceName: "ellipse" }); break;
+          case 4: window.room.setMemberState({ currentApplianceName: "eraser" }); break;
+          case 5: window.room.setMemberState({ currentApplianceName: "text" }); break;
+          case 6: window.room.setMemberState({ currentApplianceName: "straight" }); break;
+          case 7: window.room.setMemberState({ currentApplianceName: "arrow" }); break;
+        }
+      },
+      // 更换教具颜色
+      colorMenu(index) {
+        console.log(index);
+        switch (index) {
+          case 0: window.room.setMemberState({ strokeColor: [0, 0, 0] }); break;
+          case 1: window.room.setMemberState({ strokeColor: [255, 0, 0] }); break;
+          case 2: window.room.setMemberState({ strokeColor: [0, 128, 0] }); break;
+          case 3: window.room.setMemberState({ strokeColor: [0, 0, 255] }); break;
+          case 4: window.room.setMemberState({ strokeColor: [255, 255, 0] }); break;
+        }
+      },
+      // 更换画笔宽度
+      widthSlider() {
+        window.room.setMemberState({ strokeWidth: this.widthVal });
+      },
+      // 更换文字大小
+      fontSlider() {
+        window.room.setMemberState({ textSize: this.fontVal });
+      },
+      // 接入RTC流（房间）
+      joinRTC() {
+        this.option.channel = this.roomId;
+        this.initRTC(() => {
+          // 加载直播
+          this.rtc.client.setClientRole(this.myRoom ? "host" : "audience");
+          this.rtc.client.join(this.option.token ? this.option.token : null, this.option.channel, this.option.uid ? +this.option.uid : null, (uid) => {
+            console.log("join channel: " + this.option.channel + " success, uid: " + uid);
+            this.rtc.joined = true;
+            this.rtc.params.uid = uid;
+            console.log('远程数量:', this.rtc.remoteStreams.length);
+            if (this.myRoom) {
+              this.changeMode();
+            }
+          }, (err) => {
+            console.error("client join failed", err)
+            vant.Dialog.alert({
+              title: '获取直播失败',
+              message: err
+            });
+          });
+        });
+      },
+      // 断开RTC流（房间）
+      exitRTC() {
+        this.rtc.client.leave(() => {
+          if (this.myRoom) {
+            // Stop playing the local stream
+            this.rtc.localStream.stop();
+            // Close the local stream
+            this.rtc.localStream.close();
+          }
+          // Stop playing the remote streams and remove the views
+          while (this.rtc.remoteStreams.length > 0) {
+            let stream = this.rtc.remoteStreams.shift();
+            let id = stream.getId();
+            stream.stop();
+            this.removeView(id);
+          }
+          console.log("client leaves channel success");
+          this.myRoom = false;
+          this.rtc.localStream = null
+          this.rtc.remoteStreams = []
+          this.rtc.client = null
+          this.rtc.joined = false;
+          this.rtc.published = false;
+        }, (err) => {
+          console.log("channel leave failed");
+          console.error(err);
+        });
+      },
+      // 更换RTC模式（视频直播 / 共享桌面）
+      changeMode() {
+        if (this.rtc.published) {
+          this.desktopMode = !this.desktopMode;
+          // Stop playing the local stream
+          this.rtc.localStream.stop();
+          // Close the local stream
+          this.rtc.localStream.close();
+          this.rtc.client.unpublish(this.rtc.localStream, (err) => {
+            console.log("unpublish failed")
+            console.error(err)
+          });
+        }
+        if (this.desktopMode) {
+          this.rtc.localStream.setScreenProfile("720p_1");
+        }
+        // 主播创建本地流
+        this.rtc.localStream = AgoraRTC.createStream({
+          streamID: this.rtc.params.uid,
+          audio: true,
+          video: !this.desktopMode,
+          screen: this.desktopMode,
+          screenAudio: this.desktopMode
+        });
+        // 初始化本地流
+        this.rtc.localStream.init(() => {
+          console.log("init local stream success");
+          this.rtc.localStream.play("local_stream");
+          this.rtc.client.publish(this.rtc.localStream, (err) => {
+            console.log("publish failed");
+            console.error(err);
+          });
+          this.rtc.published = true;
+          console.log('视频数量：', this.rtc.remoteStreams.length)
+          if (this.rtc.remoteStreams.length > 0) {
+            // Stop playing the local stream
+            this.rtc.localStream.stop();
+            // Close the local stream
+            this.rtc.localStream.close();
+            this.rtc.client.unpublish(this.rtc.localStream, (err) => {
+              console.log("unpublish failed")
+              console.error(err)
+            });
+            this.rtc.published = false
+            vant.Dialog.alert({
+              title: '共享桌面失败',
+              message: '当前房间已存在一位主播'
+            });
+          }
+        }, (err) => {
+          console.error("init local stream failed ", err);
+          vant.Dialog.alert({
+            title: '打开直播失败',
+            message: err
+          });
+        });
+      },
+      // 初始化RTM对象
+      initRTM() {
+        this.IMClient = AgoraRTM.createInstance(this.option.appID);
+        this.IMClient.on('ConnectionStateChanged', (newState, reason) => {
+          console.log('on connection state changed to ' + newState + ' reason: ' + reason);
+        });
+      },
+      // RTM用户登入
+      RTMLogin(callback) {
+        this.IMClient.login({ token: this.option.token, uid: this.option.uid }).then(() => {
+          console.log('AgoraRTM client login success');
+          callback();
+        }).catch(error => {
+          console.log('AgoraRTM client login failure', error);
+        });
+      },
+      // RTM用户登出（断开RTM流）
+      RTMLogout() {
+        this.IMClient.logout();
+        this.joinIM = false;
+      },
+      // RTM发送消息
+      sendMessage() {
+        this.IMChannel.sendMessage({ text: this.message }).then(() => {
+          /* 频道消息发送成功的处理逻辑 */
+          console.log('send message success');
+          console.log('you sent a message: ' + this.message);
+          let tmp = [...this.records, {
+            account: this.option.uid,
+            text: this.message
+          }];
+          this.records = tmp;
+        }).catch(error => {
+          /* 频道消息发送失败的处理逻辑 */
+          console.log('send message failed', error);
+        });
+      },
+      // 接入RTM流（房间）
+      joinRTM() {
+        this.option.uid = 'user' + parseInt(Math.random() * 1000);
+        this.RTMLogin(() => {
+          this.IMChannel = this.IMClient.createChannel(this.roomId);
+          this.IMChannel.join().then(() => {
+            this.joinIM = true;
+            /* 加入频道成功的处理逻辑 */
+            console.log('join channel success');
+            this.IMChannel.on('ChannelMessage', ({ text }, senderId) => { // text 为收到的频道消息文本，senderId 为发送方的 User ID
+              /* 收到频道消息的处理逻辑 */
+              console.log('Got a channel message from' + senderId + ': ' + text);
+              let tmp = [...this.records, {
+                account: senderId,
+                text
+              }];
+              this.records = tmp;
+            });
+          }).catch(error => {
+            /* 加入频道失败的处理逻辑 */
+            console.log('join channel failed', error);
+          });
+        });
+      },
+      // 添加白板场景
+      addImgSceneInBoard(sceneName, imgsList) {
+        let scenes = imgsList.map((item, index) => {
+          return {
+            name: '' + (index + 1),
+            ppt: {
+              src: item.url,
+              width: item.width,
+              height: item.height,
+            },
+          };
+        });
+        // 添加白板场景
+        window.room.putScenes("/" + sceneName, scenes);
+      },
+      // 更换白板场景
+      changeBoardScene(sceneName, pageIndex = 1) {
+        console.log('看这里！！', sceneName, pageIndex)
+        this.boardSceneImgIndex = pageIndex;
+        // 切换白板场景
+        if (!this.boardScene.includes(sceneName)) this.boardScene.push(sceneName);
+        let boardScene = sceneName == 'init' ? '/init' : ("/" + sceneName + "/" + pageIndex);
+        window.room.setScenePath(boardScene);
+      },
+      // 上传PPT并新建场景
+      loadBoardPPT(e) {
+        vant.Toast.loading({
+          message: '上传中...',
+          forbidClick: true,
+          duration: 0
+        });
+        let file = e.target;
+        let fileName = e.target.files[0].name;
+        console.log('在这儿1', e.target.files[0]);
+        if (!file.files || !file.files[0]) {
+          return;
+        }
+        let url = "http://192.168.0.115:8080/tools/convert/pptToImage";
+        let fd = new FormData();
+        fd.append('file', file.files[0]);
+        let requestInit = {
+          method: "POST",
+          body: fd
+        };
+        fetch(url, requestInit).then((response) => {
+          return response.json();
+        }).then((res) => {
+          this.$refs.imgLoad.value = '';
+          console.log('ppt上传结果', res);
+          this.boardSceneImgList.push(res);
+          this.boardSceneIndex = this.boardSceneImgList.length - 1;
+          this.addImgSceneInBoard(fileName, res);
+          this.boardSceneLength = res.length;
+          this.changeBoardScene(fileName, 1);
+          vant.Toast.clear();
+          vant.Toast.success("上传成功");
+        }).catch((err) => {
+          console.log('上传ppt出错', err);
+          vant.Toast.fail("上传失败，请重试！");
+        });
+      },
+      // 历史场景选择器控制器
+      boardScenePicker(val, index) {
+        console.log('看这里！！！！！！', val, index);
+        this.changeBoardScene(val);
+        this.boardSceneIndex = index;
+        this.boardSceneLength = this.boardSceneImgList[index].length;
+        this.showBoardPicker = false;
+      },
+      // 上传单张图片并新建场景
+      getLocalImg(e) {
+        let file = e.target;
+        let fileName = e.target.files[0].name;
+        console.log('在这儿1', e.target.files[0]);
+        if (!file.files || !file.files[0]) {
+          return;
+        }
+        let reader = new FileReader();
+        reader.onload = (evt) => {
+          let image = evt.target.result;
+          let oImg = new Image();
+          oImg.src = image;
+          document.getElementById("imgBuffer").appendChild(oImg);
+          oImg.onload = () => {
+            this.boardImgInfo = { width: oImg.offsetWidth / 10, height: oImg.offsetHeight / 10 };
+            document.body.removeChild(oImg);
+          };
+          image = [{
+            url: image,
+            ...this.boardImgInfo
+          }]
+          this.boardSceneImgList.push(image);
+          this.boardSceneIndex = this.boardSceneImgList.length - 1;
+          this.addImgSceneInBoard(fileName, image);
+          this.boardSceneLength = image.length;
+          this.changeBoardScene(fileName, 1);
+          console.log('在这儿2', evt);
+        }
+        reader.readAsDataURL(file.files[0]);
+        this.$refs.imgLoad.value = '';
+      },
+      // 图片文件选择控制器
+      uploadImg() {
+        this.$refs.imgLoad.click();
+      },
+      // PPT文件选择控制器
+      uploadPPT() {
+        this.$refs.pptLoad.click();
+      },
+      // 重新初始化场景配置信息
+      initSceneOptions() {
+        this.boardScene = ['init'];
+        this.boardSceneImgList = [[]];
+        this.boardSceneIndex = 0;
+        this.boardSceneImgIndex = 1;
+        this.boardSceneLength = 0;
+        this.boardImgInfo = {
+          width: 1024,
+          height: 728
+        };
+      }
+    }
+  });
+</script>
+
+</html>
