@@ -38,7 +38,6 @@ function setFightStatus(status) {
 	FightStatus = status
 }
 function setRoundStatus(status) {
-	console.log(status)
 	RoundStatus = status
 }
 
@@ -61,8 +60,6 @@ function fightStatusListener() {
 			setRoundStatus(RoundStatusTypes.STARTWAITING)
 			// 战斗开始状态结算，完成后变为PLAYING状态
 			setFightStatus(fightStartSettle())
-			// 战斗开始状态结算结束，战斗回合开始
-			setRoundStatus(RoundStatusTypes.START)
 			break;
 		case FightStatusTypes.FIGHTING: break;
 		case FightStatusTypes.END: break;

@@ -31,6 +31,7 @@ function getMousePos(e) {
 }
 // 鼠标点击事件汇集
 function mouseClick(e) {
+  // console.log(CardEventPlayerId, PlayerId)
   if (MouseHandCard && CardEventPlayerId === PlayerId) {
     if (CardEventStatus === CardEventStatusTypes.PLAY) playCard()
     if (CardEventStatus === CardEventStatusTypes.DROP) dropCard()
@@ -42,8 +43,13 @@ function gameStartFunc(e) {
   StartButton.style.display = 'none'
   FightButton.style.display = 'inline'
 }
-// 开始按钮点击事件
+// 战斗按钮点击事件
 function fightStartFunc(e) {
   startFight()
   FightButton.style.display = 'none'
+}
+// 回合结束按钮点击事件
+function roundEndFunc(e) {
+  endRound()
+  EndRoundButton.style.display = 'none'
 }

@@ -109,10 +109,10 @@ function initFightCards(isMine = true, extraCards = {}) {
 }
 // 玩家从战斗卡池抽取手牌
 function getHandCards(isMine = true, num) {
-  // 战斗卡池为空或不足抽牌数，则重置卡池
-  if (fightCards.length === 0) initFightCards(isMine)
   const _player = isMine ? Player : EnemyPlayer
   const { fightCards, roundGetCardNum } = _player
+  // 战斗卡池为空或不足抽牌数，则重置卡池
+  if (fightCards.length === 0) initFightCards(isMine)
   // 卡池少于应抽卡数，以卡池剩余卡牌数量为准
   let cardNum = Math.min(fightCards.length, num || roundGetCardNum)
   for (let i = 0; i < cardNum; i++) {
@@ -218,7 +218,7 @@ function attackPlayer({ owner, atk = 0, penAtk = 0, selfAtk = 0, selfPenAtk = 0 
     attacker.shd = canDef ? lastShd : 0
     attacker.hp = hp - lastAtk - selfPenAtk
   }
-  console.log(Player, EnemyPlayer)
+  // console.log(Player, EnemyPlayer)
 }
 // 增加护盾
 function addShield({ owner, shd = 0 }) {
@@ -233,6 +233,10 @@ function broadcast(text) {
 }
 // buff结算
 function settleBuffs({ owner, effects }) {
+}
+// 获取是否为己方回合的判断结果
+function isMyRound() {
+  return Round % 2 === 1 && UpperHandPlayerId === PlayerId
 }
 // 战斗开始结算
 function fightStartSettle() {
@@ -250,7 +254,35 @@ function fightStartSettle() {
   // 获取战斗初始手牌
   getHandCards(true, Player.maxHandCardsNum)
   getHandCards(false, EnemyPlayer.maxHandCardsNum)
+  // 回合重置为1
+  Round = 1
   return FightStatusTypes.FIGHTING
+}
+// 玩家回合起始等待结算
+function roundStartWaitingSettle() {
+  const isMine = isMyRound()
+  CurrentRoundPlayerId = isMine ? PlayerId : EnemyPlayerId
+  const _player = isMine ? Player : EnemyPlayer
+  CardEventPlayerId = _player.id
+  return RoundStatusTypes.START
+}
+// 玩家回合起始结算
+function roundStartSettle() {
+  // buff结算
+  // 单数为先，双数为后
+  const isMine = isMyRound()
+  console.log(isMine)
+  const _player = isMine ? Player : EnemyPlayer
+  CardEventStatus = CardEventStatusTypes.PLAY
+  // 重置体力
+  _player.vit = _player.maxVit
+  // 抽牌
+  getHandCards(isMine, _player.roundGetCardNum)
+  return RoundStatusTypes.PLAYWAITING
+}
+// 玩家回合中前置结算
+function roundPlayWaitingSettle() {
+  return RoundStatusTypes.PLAYING
 }
 // 玩家回合结束前置结算
 function roundEndWaitingSettle() {
@@ -276,35 +308,12 @@ function roundEndSettle() {
   // 清空回合卡牌记录
   _player.roundUsedCards = []
   // buff结算
-
-  return RoundStatusTypes.STARTWAITING
-}
-// 玩家回合起始等待结算
-function roundStartWaitingSettle() {
   if (UpperHandPlayerId === CurrentRoundPlayerId) Round++
-  return RoundStatusTypes.START
-}
-// 玩家回合起始结算
-function roundStartSettle() {
-  // buff结算
-  // 单数为先，双数为后
-  const isMine = Round % 2 === 1 && UpperHandPlayerId === PlayerId
-  CurrentRoundPlayerId = isMine ? PlayerId : EnemyPlayerId
-  const _player = isMine ? Player : EnemyPlayer
-  CardEventPlayerId = _player.id
-  CardEventStatus = CardEventStatusTypes.PLAY
-  // 重置体力
-  _player.vit = _player.maxVit
-  // 抽牌
-  getHandCards(true, _player.roundGetCardNum)
-  return RoundStatusTypes.PLAYWAITING
-}
-// 玩家回合中前置结算
-function roundPlayWaitingSettle() {
-  return RoundStatusTypes.START
+  return RoundStatusTypes.STARTWAITING
 }
 
 // 敌对APC自动回合
 function enemyAutoPlay() {
-
+  // 出牌
+  // 弃牌
 }
