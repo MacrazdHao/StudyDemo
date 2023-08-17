@@ -1,7 +1,3 @@
-const CareerType = {
-	HUMAN: 0
-}
-
 const CareerInitInfo = {
 	[CareerType.HUMAN]: {
 		careerNam: '人类',

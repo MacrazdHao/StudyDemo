@@ -1,11 +1,3 @@
-// 卡牌类型
-const CardTypes = {
-	COMMON: 0, // 通用(所有卡牌默认包含)
-	ATTACK: 1, // 攻击
-	DEFENSE: 2, // 防御
-	MAGIC: 3, // 魔法
-	PROPS: 4, // 道具
-}
 // 卡牌颜色
 const CardColors = {
 	[CardTypes.COMMON]: '#fff', // 通用(所有卡牌默认包含)
@@ -23,10 +15,11 @@ const CardBaseProto = {
 		color: { index: 2, defaultValue: CardColors[CardTypes.COMMON] },
 		status: { index: 3, defaultValue: 0 },
 		statusTypes: { index: 4, defaultValue: [] },
-		expend: { index: 5, defaultValue: false }, // 是否消耗卡
+		fightUseTimes: { index: 5, defaultValue: 9999999 }, // 当次战斗可使用次数
+		gameUseTimes: { index: 6, defaultValue: 9999999 }, // 当局游戏可使用次数
 		effects: {
 			// 卡牌特殊效果
-			index: 6,
+			index: 7,
 			defaultValue: function () { }
 		},
 	},
@@ -90,7 +83,7 @@ function blendCardTypeProto(type = '', values = []) {
 	return proto
 }
 // 创建卡牌对象
-function createCardObject(cardKey = '') {
+function createCardObject(cardKey = '', extraAttr = {}) {
 	const { types, values } = Cards[cardKey]
 	let card = { types }
 	for (let vType in values) {
@@ -98,7 +91,8 @@ function createCardObject(cardKey = '') {
 		card = {
 			...card,
 			...blendCardTypeProto(vType, valuesArr),
-			effects: CardsEffects[cardKey]
+			effects: CardsEffects[cardKey],
+			...extraAttr
 		}
 	}
 	return { id: getRandomKey(), key: cardKey, ...card }

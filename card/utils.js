@@ -4,7 +4,7 @@ function getRandomKey() {
 }
 // 将坐标转为相对canvas的坐标
 function windowToCanvas(x, y, originPoint) {
-	let cvsbox = WhiteBoardDom.getBoundingClientRect();
+	let cvsbox = GameWindow.getBoundingClientRect();
 	return { ...originPoint, x: Math.round(x - cvsbox.left), y: Math.round(y - cvsbox.top) };
 }
 // 随机数

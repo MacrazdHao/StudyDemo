@@ -1,65 +1,105 @@
-const GameStatusTypes = {
-	WAITING: 0,
-	START: 1,
-	OVER: 2,
-}
-const RoundStatusTypes = {
-	NULL: -1,
-	START: 0,
-	PLAYING: 1,
-	END: 2,
-	STARTWAITING: 3,
-	PLAYINGWAITING: 4,
-	ENDWAITING: 5,
-}
-
 let GameStatus = GameStatusTypes.WAITING
-let Round = 0
+let FightStatus = GameStatusTypes.NULL
 let RoundStatus = RoundStatusTypes.NULL
+
+let Round = 0
+
+// 游戏状态
+const GameStatusTexts = {
+	[GameStatusTypes.NULL]: '无',
+	[GameStatusTypes.WAITING]: '等待开始',
+	[GameStatusTypes.START]: '已开始',
+	[GameStatusTypes.OVER]: '结束',
+}
+// 战斗状态
+const FightStatusTexts = {
+	[FightStatusTypes.NULL]: '无',
+	[FightStatusTypes.WAITING]: '等待开始',
+	[FightStatusTypes.START]: '战斗开始',
+	[FightStatusTypes.FIGHTING]: '战斗中',
+	[FightStatusTypes.END]: '战斗结束',
+}
+// 回合状态
+const RoundStatusTexts = {
+	[RoundStatusTypes.NULL]: '无',
+	[RoundStatusTypes.WAITING]: '等待开始',
+	[RoundStatusTypes.STARTWAITING]: '开始前置',
+	[RoundStatusTypes.START]: '回合开始',
+	[RoundStatusTypes.PLAYWAITING]: '回合前置',
+	[RoundStatusTypes.PLAYING]: '回合中',
+	[RoundStatusTypes.ENDWAITING]: '结束前置',
+	[RoundStatusTypes.END]: '结束',
+}
 
 function setGameStatus(status) {
 	GameStatus = status
 }
+function setFightStatus(status) {
+	FightStatus = status
+}
 function setRoundStatus(status) {
+	console.log(status)
 	RoundStatus = status
 }
 
-function roundStart() {
-	Round++
-	setRoundStatus(roundStartSettle())
-}
-function roundEndWaiting() {
-	setRoundStatus(roundEndWaitingSettle())
-}
-function roundEnd() {
-	setRoundStatus(roundEndSettle())
+function gameStatusListener() {
+	switch (GameStatus) {
+		case GameStatusTypes.NULL: break;
+		case GameStatusTypes.WAITING: break;
+		case GameStatusTypes.START: break;
+		case GameStatusTypes.OVER: break;
+	}
+	GameStatusDom.innerHTML = GameStatusTexts[GameStatus]
 }
 
-function roundListener() {
+function fightStatusListener() {
+	switch (FightStatus) {
+		case FightStatusTypes.NULL: break;
+		case FightStatusTypes.WAITING: break;
+		case FightStatusTypes.START:
+			// 战斗开始前置阶段，回合状态为准备开始状态
+			setRoundStatus(RoundStatusTypes.STARTWAITING)
+			// 战斗开始状态结算，完成后变为PLAYING状态
+			setFightStatus(fightStartSettle())
+			// 战斗开始状态结算结束，战斗回合开始
+			setRoundStatus(RoundStatusTypes.START)
+			break;
+		case FightStatusTypes.FIGHTING: break;
+		case FightStatusTypes.END: break;
+	}
+	FightStatusDom.innerHTML = FightStatusTexts[FightStatus]
+}
+
+function roundStatusListener() {
 	switch (RoundStatus) {
 		case RoundStatusTypes.NULL: break;
-		case RoundStatusTypes.START: roundStart(); break;
+		case RoundStatusTypes.STARTWAITING:
+			setRoundStatus(roundStartWaitingSettle())
+			break
+		case RoundStatusTypes.START:
+			setRoundStatus(roundStartSettle());
+			break
+		case RoundStatusTypes.PLAYWAITING:
+			setRoundStatus(roundPlayWaitingSettle())
+			break
 		case RoundStatusTypes.PLAYING: break;
-		case RoundStatusTypes.END: roundEnd(); break;
-		case RoundStatusTypes.STARTWAITING: break;
-		case RoundStatusTypes.PLAYINGWAITING: break;
-		case RoundStatusTypes.ENDWAITING: roundEndWaiting(); break;
+		case RoundStatusTypes.ENDWAITING:
+			setRoundStatus(roundEndWaitingSettle())
+			break
+		case RoundStatusTypes.END:
+			setRoundStatus(roundEndSettle())
+			break
 	}
+	RoundStatusDom.innerHTML = RoundStatusTexts[RoundStatus]
 }
 
-function startFight() {
-	initPlayer()
-	initPlayer(false)
-	initPlayerCards()
-	initPlayerCards(false)
-	initFightCards()
-	initFightCards(false)
-	getHandCards(true, Player.maxHandCardsNum)
-	getHandCards(false, EnemyPlayer.maxHandCardsNum)
+function startGame() {
 	setGameStatus(GameStatusTypes.START)
-	getUpperHandPlayer()
-	setRoundStatus(RoundStatusTypes.START)
-	setTimeout(() => {
-		setRoundStatus(RoundStatusTypes.ENDWAITING)
-	}, 100)
+	setFightStatus(FightStatusTypes.WAITING)
+}
+function startFight() {
+	setFightStatus(FightStatusTypes.START)
+}
+function endRound() {
+	setRoundStatus(RoundStatusTypes.ENDWAITING)
 }

@@ -45,15 +45,59 @@
 		padding: 0 12px;
 	}
 
-	.whiteBoard {
-		/* width: 100%;
-		flex: 1; */
+	.fixedButton {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 24px;
+		color: white;
 	}
+
+	.fight {
+		display: none;
+	}
+
+	.options {
+		position: fixed;
+		right: 0;
+		bottom: 0;
+		padding: 8px;
+	}
+
+	.options-statusBox {
+		border-top: 1px dashed #fff;
+	}
+
+	.options-status {
+		font-size: 14px;
+		color: yellow;
+	}
+	
+	.options-button {
+		font-size: 14px;
+		color: green;
+	}
+
+	.whiteBoard {}
 </style>
 
 <body>
+	<p id="StartButton" class="fixedButton start">开始</p>
+	<p id="FightButton" class="fixedButton fight">Fight</p>
 	<canvas id="WhiteBoard" class="whiteBoard"></canvas>
+	<div class="options">
+		<div class="options-buttonGroup">
+			<p id="EndRoundButton" class="options-button" class="">结束回合</p>
+		</div>
+		<div class="options-statusBox">
+			<p class="options-status">游戏阶段: <span id="GameStatus">-</span></p>
+			<p class="options-status">战斗阶段: <span id="FightStatus">-</span></p>
+			<p class="options-status">回合阶段: <span id="RoundStatus">-</span></p>
+		</div>
+	</div>
 </body>
+<script src="./emuns.js"></script>
 <script src="./utils.js"></script>
 <script src="./global.js"></script>
 <script src="./animation.js"></script>

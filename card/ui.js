@@ -147,8 +147,8 @@ function drawDesktopCard() {
 }
 // 帧
 function getFrame() {
-	Context.clearRect(0, 0, WhiteBoardDom.offsetWidth, WhiteBoardDom.offsetHeight)
-	if (GameStatus === GameStatusTypes.START) drawHandCards()
+	Context.clearRect(0, 0, GameWindow.offsetWidth, GameWindow.offsetHeight)
+	if (FightStatus === FightStatusTypes.FIGHTING) drawHandCards()
 	drawMouse()
 	DynamicFrames++
 }
