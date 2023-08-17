@@ -27,7 +27,7 @@ const RoundStatusTexts = {
 	[RoundStatusTypes.START]: '回合开始',
 	[RoundStatusTypes.PLAYWAITING]: '回合前置',
 	[RoundStatusTypes.PLAYING]: '回合中',
-	[RoundStatusTypes.ENDWAITING]: '结束前置',
+	[RoundStatusTypes.ENDWAITING]: '结束前置(弃牌)',
 	[RoundStatusTypes.END]: '结束',
 }
 
@@ -62,7 +62,12 @@ function fightStatusListener() {
 			setFightStatus(fightStartSettle())
 			break;
 		case FightStatusTypes.FIGHTING: break;
-		case FightStatusTypes.END: break;
+		case FightStatusTypes.END:
+			// 战斗结束，清空回合状态
+			setRoundStatus(RoundStatusTypes.NULL)
+			// 战斗结束结算，完成后变为WAITING状态
+			setFightStatus(fightEndSettle())
+			break;
 	}
 	FightStatusDom.innerHTML = FightStatusTexts[FightStatus]
 }
@@ -79,7 +84,9 @@ function roundStatusListener() {
 		case RoundStatusTypes.PLAYWAITING:
 			setRoundStatus(roundPlayWaitingSettle())
 			break
-		case RoundStatusTypes.PLAYING: break;
+		case RoundStatusTypes.PLAYING:
+			setRoundStatus(roundPlayingSettle())
+			break;
 		case RoundStatusTypes.ENDWAITING:
 			setRoundStatus(roundEndWaitingSettle())
 			break

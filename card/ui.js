@@ -145,9 +145,31 @@ function drawHandCards() {
 function drawDesktopCard() {
 	drawCard(DesktopCard, DesktopCardPosition)
 }
+// 更新玩家数据
+function updatePlayerInfoUI() {
+	if (JSON.stringify(Player) !== '{}') {
+		MyNameDom.innerHTML = Player.name
+		MySHDDom.innerHTML = Player.shd
+		MyHPDom.innerHTML = Player.hp
+		MyMPDom.innerHTML = Player.mp
+		MyVITDom.innerHTML = Player.vit
+		MyFightCardsDom.innerHTML = Player.fightCards.length
+		MyFightUsedCardsDom.innerHTML = Player.fightUsedCards.length
+	}
+	if (JSON.stringify(EnemyPlayer) !== '{}') {
+		EnemyNameDom.innerHTML = EnemyPlayer.name
+		EnemySHDDom.innerHTML = EnemyPlayer.shd
+		EnemyHPDom.innerHTML = EnemyPlayer.hp
+		EnemyMPDom.innerHTML = EnemyPlayer.mp
+		EnemyVITDom.innerHTML = EnemyPlayer.vit
+		EnemyFightCardsDom.innerHTML = EnemyPlayer.fightCards.length
+		EnemyFightUsedCardsDom.innerHTML = EnemyPlayer.fightUsedCards.length
+	}
+}
 // 帧
 function getFrame() {
 	Context.clearRect(0, 0, GameWindow.offsetWidth, GameWindow.offsetHeight)
+	updatePlayerInfoUI()
 	if (FightStatus === FightStatusTypes.FIGHTING) drawHandCards()
 	drawMouse()
 	DynamicFrames++

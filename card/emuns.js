@@ -17,12 +17,12 @@ const FightStatusTypes = {
 const RoundStatusTypes = {
 	NULL: -1,
 	WAITING: 0,
-	START: 1,
-	PLAYING: 2,
-	END: 3,
-	STARTWAITING: 4,
-	PLAYWAITING: 5,
-	ENDWAITING: 6,
+	STARTWAITING: 1,
+	START: 2,
+	PLAYWAITING: 3,
+	PLAYING: 4,
+	ENDWAITING: 5,
+	END: 6,
 }
 // 职业类型
 const CareerType = {

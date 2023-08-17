@@ -73,11 +73,69 @@
 		font-size: 14px;
 		color: yellow;
 	}
-	
+
 	.options-button {
 		font-size: 14px;
 		color: green;
 	}
+
+	.options-button--endRound {
+		display: none;
+	}
+
+	.playerBox {
+		position: fixed;
+		top: 50%;
+		transform: translate(0%, -50%);
+		left: 0;
+		font-size: 12px;
+		display: none;
+	}
+
+	.playerBox p {
+		white-space: nowrap;
+	}
+
+	.playerBox-enemyStatus {
+		color: red;
+	}
+
+	.playerBox-myStatus {
+		color: purple;
+		border-top: 1px dashed #fff;
+	}
+
+	.playerBox-status {
+		min-width: 120px;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
+	.playerBox-status--name {}
+
+	.playerBox-status--shd {
+		color: gray;
+
+	}
+
+	.playerBox-status--hp {
+		color: green;
+
+	}
+
+	.playerBox-status--mp {
+		color: blue;
+
+	}
+
+	.playerBox-status--vit {
+		color: yellow;
+	}
+
+	.playerBox-status--fc {}
+
+	.playerBox-status--fuc {}
 
 	.whiteBoard {}
 </style>
@@ -86,11 +144,74 @@
 	<p id="StartButton" class="fixedButton start">开始</p>
 	<p id="FightButton" class="fixedButton fight">Fight</p>
 	<canvas id="WhiteBoard" class="whiteBoard"></canvas>
+	<div id="PlayerBox" class="playerBox">
+		<div class="playerBox-enemyStatus">
+			<div class="playerBox-status">
+				<p>名称:</p>
+				<p id="EnemyName" class="playerBox-status--name">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>SHD:</p>
+				<p id="EnemySHD" class="playerBox-status--shd">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>HP:</p>
+				<p id="EnemyHP" class="playerBox-status--hp">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>MP:</p>
+				<p id="EnemyMP" class="playerBox-status--mp">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>体力:</p>
+				<p id="EnemyVIT" class="playerBox-status--vit">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>卡池:</p>
+				<p id="EnemyFightCards" class="playerBox-status--fc">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>废卡池:</p>
+				<p id="EnemyFightUsedCards" class="playerBox-status--fuc">-</p>
+			</div>
+		</div>
+		<div class="playerBox-myStatus">
+			<div class="playerBox-status">
+				<p>名称:</p>
+				<p id="MyName" class="playerBox-status--name">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>SHD:</p>
+				<p id="MySHD" class="playerBox-status--shd">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>HP:</p>
+				<p id="MyHP" class="playerBox-status--hp">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>MP:</p>
+				<p id="MyMP" class="playerBox-status--mp">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>体力:</p>
+				<p id="MyVIT" class="playerBox-status--vit">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>卡池:</p>
+				<p id="MyFightCards" class="playerBox-status--fc">-</p>
+			</div>
+			<div class="playerBox-status">
+				<p>废卡池:</p>
+				<p id="MyFightUsedCards" class="playerBox-status--fuc">-</p>
+			</div>
+		</div>
+	</div>
 	<div class="options">
 		<div class="options-buttonGroup">
-			<p id="EndRoundButton" class="options-button" class="">结束回合</p>
+			<p id="EndRoundButton" class="options-button options-button--endRound">结束回合</p>
 		</div>
 		<div class="options-statusBox">
+			<p class="options-status">当前回合: <span id="WhoseRound">-</span></p>
 			<p class="options-status">游戏阶段: <span id="GameStatus">-</span></p>
 			<p class="options-status">战斗阶段: <span id="FightStatus">-</span></p>
 			<p class="options-status">回合阶段: <span id="RoundStatus">-</span></p>

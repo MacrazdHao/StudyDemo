@@ -17,9 +17,14 @@ const CardBaseProto = {
 		statusTypes: { index: 4, defaultValue: [] },
 		fightUseTimes: { index: 5, defaultValue: 9999999 }, // 当次战斗可使用次数
 		gameUseTimes: { index: 6, defaultValue: 9999999 }, // 当局游戏可使用次数
+		conditions: {
+			// 卡牌使用条件
+			index: 7,
+			defaultValue: function () { return true }
+		},
 		effects: {
 			// 卡牌特殊效果
-			index: 7,
+			index: 8,
 			defaultValue: function () { }
 		},
 	},
@@ -64,6 +69,19 @@ const Cards = {
 		}
 	},
 }
+// 卡牌条件函数
+const CardsConditions = {
+	NormalAttack1: function () {
+		const isMine = this.owner === PlayerId
+		const _player = isMine ? Player : EnemyPlayer
+		return true
+	},
+	NormalDefense1: function () {
+		const isMine = this.owner === PlayerId
+		const _player = isMine ? Player : EnemyPlayer
+		return true
+	}
+}
 // 卡牌影响函数
 const CardsEffects = {
 	NormalAttack1: function () {
@@ -91,6 +109,7 @@ function createCardObject(cardKey = '', extraAttr = {}) {
 		card = {
 			...card,
 			...blendCardTypeProto(vType, valuesArr),
+			conditions: CardsConditions[cardKey],
 			effects: CardsEffects[cardKey],
 			...extraAttr
 		}

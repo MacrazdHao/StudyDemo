@@ -12,9 +12,26 @@ const WhiteBoardHeight = GameWindow.height
 const StartButton = document.getElementById('StartButton')
 const FightButton = document.getElementById('FightButton')
 const EndRoundButton = document.getElementById('EndRoundButton')
+const WhoseRoundDom = document.getElementById('WhoseRound')
 const GameStatusDom = document.getElementById('GameStatus')
 const FightStatusDom = document.getElementById('FightStatus')
 const RoundStatusDom = document.getElementById('RoundStatus')
+
+const PlayerBoxDom = document.getElementById('PlayerBox')
+const EnemyNameDom = document.getElementById('EnemyName')
+const EnemySHDDom = document.getElementById('EnemySHD')
+const EnemyHPDom = document.getElementById('EnemyHP')
+const EnemyMPDom = document.getElementById('EnemyMP')
+const EnemyVITDom = document.getElementById('EnemyVIT')
+const EnemyFightCardsDom = document.getElementById('EnemyFightCards')
+const EnemyFightUsedCardsDom = document.getElementById('EnemyFightUsedCards')
+const MyNameDom = document.getElementById('MyName')
+const MySHDDom = document.getElementById('MySHD')
+const MyHPDom = document.getElementById('MyHP')
+const MyMPDom = document.getElementById('MyMP')
+const MyVITDom = document.getElementById('MyVIT')
+const MyFightCardsDom = document.getElementById('MyFightCards')
+const MyFightUsedCardsDom = document.getElementById('MyFightUsedCards')
 
 window.onresize = () => {
   WindowWdith = document.body.offsetWidth
@@ -51,5 +68,4 @@ function fightStartFunc(e) {
 // 回合结束按钮点击事件
 function roundEndFunc(e) {
   endRound()
-  EndRoundButton.style.display = 'none'
 }

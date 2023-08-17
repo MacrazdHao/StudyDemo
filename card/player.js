@@ -1,11 +1,5 @@
 const PlayerId = getRandomKey()
 const EnemyPlayerId = getRandomKey()
-
-let CardEventStatus = CardEventStatusTypes.PLAY
-let CardEventPlayerId = null
-let CardDropNum = 0
-
-let MouseHandCard = null
 const PlayerProto = {
   id: '',
   name: '', // 玩家名字
@@ -13,6 +7,8 @@ const PlayerProto = {
   shd: 0, // 护盾
   mp: 0, // 灵力
   vit: 0, // 体力(每回合出牌张数，每回合重置为maxVit)
+  reborns: {},
+  rebornStack: [],
   maxVit: 0, // 体力上限
   maxHandCardsNum: 0, // 手牌上限
   roundGetCardNum: 0, // 每回合抽取卡牌数
@@ -28,10 +24,16 @@ const PlayerProto = {
   fightUsedCards: [], // 本次对战已用卡牌
   gameUsedCards: [], // 本局游戏已用卡牌
 }
+
+let CardEventStatus = CardEventStatusTypes.PLAY
+let CardEventPlayerId = null
+let CardDropNum = 0
+let MouseHandCard = null
 let UpperHandPlayerId = null // 先手玩家，某些卡牌效果会变更该回合顺序
 let CurrentRoundPlayerId = null // 当前回合玩家
 let Player = {}
 let EnemyPlayer = {}
+
 // 玩家角色初始化
 function initPlayer(isMine = true, name = '', career = CareerType.HUMAN) {
   const careerInitInfo = getCareerInitInfo(career)
@@ -119,6 +121,17 @@ function getHandCards(isMine = true, num) {
     _player.handCards.push(_player.fightCards.shift())
   }
 }
+// 判断手牌是否具有满足出牌条件
+function getEnableHandCards(isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  const cardIds = []
+  for (let i = 0; i < _player.handCards.length; i++) {
+    const cId = _player.handCards[i]
+    const card = getCardInfo(cId, isMine)
+    if (card.conditions()) cardIds.push(cId)
+  }
+  return cardIds
+}
 // 出牌
 function playCard(e, isMine = true, cardId) {
   const _player = isMine ? Player : EnemyPlayer
@@ -127,6 +140,11 @@ function playCard(e, isMine = true, cardId) {
     return
   }
   const _cardId = isMine ? MouseHandCard : cardId
+  const enableHandCards = getEnableHandCards(isMine)
+  if (!enableHandCards.includes(_cardId)) {
+    alert('当前不符合出牌条件')
+    return
+  }
   const card = getCardInfo(_cardId, isMine)
   // 出牌行为使体力扣减
   _player.vit--
@@ -147,7 +165,6 @@ function playCard(e, isMine = true, cardId) {
   }
   // 手牌影响
   card.effects()
-  console.log(_player)
 }
 // 丢弃手牌
 function dropCard(e, isMine = true, cardId) {
@@ -218,14 +235,53 @@ function attackPlayer({ owner, atk = 0, penAtk = 0, selfAtk = 0, selfPenAtk = 0 
     attacker.shd = canDef ? lastShd : 0
     attacker.hp = hp - lastAtk - selfPenAtk
   }
-  // console.log(Player, EnemyPlayer)
 }
 // 增加护盾
 function addShield({ owner, shd = 0 }) {
   const isMine = PlayerId === owner
   const _player = isMine ? Player : EnemyPlayer
   _player.shd += shd
-  console.log(Player, EnemyPlayer)
+}
+// 根据重生ID获取玩家重生信息
+function getRebornInfo(rebornId, isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  return _player.reborns[rebornId] || null
+}
+// 添加重生次数
+function addReborn(isMine = true, playerInfo, conditions = function () { return true }) {
+  // 重生对象基础属性等同于角色属性，重生后将根据playerInfo直接取代原角色属性，其余自行根据conditions所需添加
+  const _player = isMine ? Player : EnemyPlayer
+  const id = getRandomKey()
+  _player.reborns[id] = {
+    player: {
+      ...playerInfo,
+      hp: playerInfo.hp || 1 // 复活hp默认为1
+    },
+    id,
+    owner: isMine ? PlayerId : EnemyPlayerId,
+    conditions
+  }
+  _player.rebornStack.push(id)
+}
+function enableAPlayerReborn(rebornId, isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  const { playerInfo } = getRebornInfo(rebornId, isMine)
+  for (let key in playerInfo) {
+    _player[key] = playerInfo[key]
+  }
+  return true
+}
+// 角色败北判断
+function isAnyPlayerDead(isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  if (!_player.rebornStack.length) return true
+  // const rId = _player.rebornStack.shift()
+  // enableAPlayerReborn(rId, isMine)
+  // 判断是否符合条件
+  for(let i = 0;i<_player.rebornStack.length;i++) {
+    if (_player.rebornStack)
+  }
+  return false
 }
 // 播报
 function broadcast(text) {
@@ -236,7 +292,12 @@ function settleBuffs({ owner, effects }) {
 }
 // 获取是否为己方回合的判断结果
 function isMyRound() {
-  return Round % 2 === 1 && UpperHandPlayerId === PlayerId
+  return CurrentRoundPlayerId === PlayerId
+}
+// 交换回合角色
+function switchRoundPlayer() {
+  if (!CurrentRoundPlayerId) CurrentRoundPlayerId = UpperHandPlayerId
+  else CurrentRoundPlayerId = isMyRound() ? EnemyPlayerId : PlayerId
 }
 // 战斗开始结算
 function fightStartSettle() {
@@ -256,14 +317,38 @@ function fightStartSettle() {
   getHandCards(false, EnemyPlayer.maxHandCardsNum)
   // 回合重置为1
   Round = 1
+  console.log(Player, EnemyPlayer)
+  PlayerBoxDom.style.display = 'block'
   return FightStatusTypes.FIGHTING
 }
+// 战斗结束结算
+function fightEndSettle() {
+  // 与战斗相关的参数初始化
+  Round = 0
+  EndRoundButton.style.display = 'none'
+  PlayerBoxDom.style.display = 'none'
+  UpperHandPlayerId = null
+  CurrentRoundPlayerId = null
+  Player = {}
+  EnemyPlayer = {}
+  CardEventStatus = CardEventStatusTypes.PLAY
+  CardEventPlayerId = null
+  CardDropNum = 0
+
+  return FightStatusTypes.WAITING
+}
+
 // 玩家回合起始等待结算
 function roundStartWaitingSettle() {
+  // 交换当前回合角色
+  switchRoundPlayer()
   const isMine = isMyRound()
-  CurrentRoundPlayerId = isMine ? PlayerId : EnemyPlayerId
   const _player = isMine ? Player : EnemyPlayer
   CardEventPlayerId = _player.id
+  EndRoundButton.style.display = isMine ? 'inline' : 'none'
+  WhoseRoundDom.style.color = isMine ? 'green' : 'red'
+  WhoseRoundDom.innerHTML = isMine ? '己方回合' : '敌方回合'
+  console.log(Player, EnemyPlayer)
   return RoundStatusTypes.START
 }
 // 玩家回合起始结算
@@ -271,7 +356,6 @@ function roundStartSettle() {
   // buff结算
   // 单数为先，双数为后
   const isMine = isMyRound()
-  console.log(isMine)
   const _player = isMine ? Player : EnemyPlayer
   CardEventStatus = CardEventStatusTypes.PLAY
   // 重置体力
@@ -284,20 +368,31 @@ function roundStartSettle() {
 function roundPlayWaitingSettle() {
   return RoundStatusTypes.PLAYING
 }
+// 玩家回合结算
+function roundPlayingSettle() {
+  const isMine = isMyRound()
+  if (!isMine) {
+    enemyAutoPlayCard()
+    return RoundStatusTypes.ENDWAITING
+  }
+  return RoundStatusTypes.PLAYING
+}
 // 玩家回合结束前置结算
 function roundEndWaitingSettle() {
-  const isMine = CurrentRoundPlayerId === PlayerId
+  const isMine = isMyRound()
   const _player = isMine ? Player : EnemyPlayer
   // 判断是否丢弃手牌
-  CardDropNum = _player.handCards.length - _player.maxHandCardsNum
-  if (CardDropNum <= 0) {
+  const cardDropNum = _player.handCards.length - _player.maxHandCardsNum
+  if (cardDropNum <= 0) {
     CardEventPlayerId = _player.id
     CardEventStatus = CardEventStatusTypes.PLAY
     return RoundStatusTypes.END
   }
   CardEventPlayerId = _player.id
   CardEventStatus = CardEventStatusTypes.DROP
-  return RoundStatusTypes.END
+  if (!isMine) enemyAutoDropCard()
+  // buff结算
+  return RoundStatusTypes.ENDWAITING
 }
 // 玩家回合结束结算
 function roundEndSettle() {
@@ -307,13 +402,33 @@ function roundEndSettle() {
   _player.fightRoundUsedCards[Round] = [..._player.roundUsedCards]
   // 清空回合卡牌记录
   _player.roundUsedCards = []
-  // buff结算
   if (UpperHandPlayerId === CurrentRoundPlayerId) Round++
   return RoundStatusTypes.STARTWAITING
 }
 
-// 敌对APC自动回合
-function enemyAutoPlay() {
-  // 出牌
-  // 弃牌
+// 敌对APC自动出牌
+function enemyAutoPlayCard() {
+  const enableHandCards = getEnableHandCards(false)
+  // 没有可使用的手牌
+  if (!enableHandCards.length) return
+  const { vit: cNum } = EnemyPlayer
+  for (let i = 0; i < cNum; i++) {
+    if (EnemyPlayer.handCards.length === 0) return
+    const cIndex = getIntRandom(EnemyPlayer.handCards.length - 1)
+    const cId = EnemyPlayer.handCards[cIndex]
+    console.log('敌方出牌', cId)
+    playCard(null, false, cId)
+  }
+}
+// 敌对APC自动弃牌
+function enemyAutoDropCard() {
+  const cardDropNum = EnemyPlayer.handCards.length - EnemyPlayer.maxHandCardsNum
+  if (cardDropNum <= 0) return
+  for (let i = 0; i < cardDropNum; i++) {
+    if (EnemyPlayer.handCards.length === 0) return
+    const cIndex = getIntRandom(EnemyPlayer.handCards.length - 1)
+    const cId = EnemyPlayer.handCards[cIndex]
+    console.log('敌方弃牌', cId)
+    dropCard(null, false, cId)
+  }
 }
