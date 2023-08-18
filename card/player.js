@@ -225,6 +225,13 @@ function addTempCards(cards = {}, cardLocations = {}) {
     addCardToFightCards(cId, cardLocations[cId])
   }
 }
+// 重置战斗行为缓冲区
+function resetFightActionsBuffer(isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  for (let faKey in FightActionTypes) {
+    _player.fightActions[faKey] = FightActionWayTypes.WAITING
+  }
+}
 // 设置战斗行为(注意这里是设置Buffer——缓冲区，正式的值由在战斗行为结算函数settleFightActions中正式赋值)
 function setFightActionStatus(fightActionTypes, fightActionWayTypes = FightActionWayTypes.WAITING, isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
@@ -434,12 +441,16 @@ function addBuff(isMine = true, buffId) {
   const _player = isMine ? Player : EnemyPlayer
   const buff = createBuffObject(_player.id, buffId, { round: 3 })
   switch (buff.type) {
-    case BuffTypes.OVERLAY: break;
+    case BuffTypes.OVERLAY:
+      // TODO...
+      break;
     case BuffTypes.REPEAT:
       _player.usedBuffs[buff.id] = buff
       _player.buffs.push(buff.id);
       break;
-    case BuffTypes.UNIQUE: break;
+    case BuffTypes.UNIQUE:
+      // TODO...
+      break;
   }
   if (buff.immdiately) enableABuff(buff.id)
 }
@@ -512,6 +523,8 @@ function settleFightActions() {
   // 而读取时，则直接采用fightActions，保证本轮战斗行为不被其他先处理了的战斗行为相关buff结算或其他结算影响
   Player.fightActions = JSON.parse(JSON.stringify(Player.fightActionsBuffer))
   EnemyPlayer.fightActions = JSON.parse(JSON.stringify(EnemyPlayer.fightActionsBuffer))
+  resetFightActionsBuffer()
+  resetFightActionsBuffer(false)
   return
 }
 // 获取是否为己方回合的判断结果
