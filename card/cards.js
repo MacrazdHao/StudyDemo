@@ -1,3 +1,19 @@
+// 卡牌类型-属性自带默认值
+const CardTypesProto = {
+	[CardTypes.COMMON]: {},
+	[CardTypes.ATTACK]: {
+		color: CardColors[CardTypes.ATTACK]
+	},
+	[CardTypes.DEFENSE]: {
+		color: CardColors[CardTypes.DEFENSE]
+	},
+	[CardTypes.MAGIC]: {
+		color: CardColors[CardTypes.MAGIC]
+	},
+	[CardTypes.PROPS]: {
+		color: CardColors[CardTypes.PROPS]
+	},
+}
 // 卡牌类型属性key-index
 // [属性Key]: index
 const CardBaseProto = {
@@ -9,7 +25,7 @@ const CardBaseProto = {
 		statusTypes: { index: 4, defaultValue: [] },
 		fightUseTimes: { index: 5, defaultValue: 9999999 }, // 当次战斗可使用次数
 		gameUseTimes: { index: 6, defaultValue: 9999999 }, // 当局游戏可使用次数
-		vit: { index: 7, defaultValue: 1 }, // 当局游戏可使用次数
+		vit: { index: 7, defaultValue: 1 }, // 体力消耗值
 		conditions: {
 			// 卡牌使用条件
 			index: 8,
@@ -17,7 +33,7 @@ const CardBaseProto = {
 		},
 		effects: {
 			// 卡牌特殊效果
-			index: 8,
+			index: 9,
 			defaultValue: function () { }
 		},
 	},
@@ -51,14 +67,14 @@ const Cards = {
 	NormalAttack1: {
 		types: [CardTypes.ATTACK],
 		values: {
-			[CardTypes.COMMON]: ['普通攻击', '造成1点伤害', CardColors[CardTypes.ATTACK], null, null],
+			[CardTypes.COMMON]: ['普通攻击', '造成1点伤害'],
 			[CardTypes.ATTACK]: [1]
 		}
 	},
 	NormalDefense1: {
 		types: [CardTypes.DEFENSE],
 		values: {
-			[CardTypes.COMMON]: ['普通盾牌', '护盾+2', CardColors[CardTypes.DEFENSE], null, null],
+			[CardTypes.COMMON]: ['普通盾牌', '护盾+2'],
 			[CardTypes.DEFENSE]: [2]
 		}
 	},
@@ -86,11 +102,11 @@ const CardsEffects = {
 	}
 }
 // 组合类型属性
-function blendCardTypeProto(type = '', values = []) {
+function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values = []) {
 	const proto = {}
 	for (let pKey in CardBaseProto[type]) {
 		const { index, defaultValue } = CardBaseProto[type][pKey]
-		proto[pKey] = values[index] || defaultValue
+		proto[pKey] = values[index] || CardTypesProto[mainCardType][pKey] || defaultValue
 	}
 	return proto
 }
@@ -98,11 +114,12 @@ function blendCardTypeProto(type = '', values = []) {
 function createCardObject(cardKey = '', extraAttr = {}) {
 	const { types, values } = Cards[cardKey]
 	let card = { types: [...types, CardTypes.COMMON] }
+	const mType = card.types[0]
 	for (let vType in values) {
 		const valuesArr = values[vType]
 		card = {
 			...card,
-			...blendCardTypeProto(vType, valuesArr),
+			...blendCardTypeProto(mType, vType, valuesArr),
 			conditions: CardsConditions[cardKey],
 			effects: CardsEffects[cardKey],
 			...extraAttr
