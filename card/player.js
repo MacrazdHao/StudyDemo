@@ -309,12 +309,12 @@ function getFightResult() {
   if (meDead) return setFightResult(FightResultTypes.FAIL)
   return setFightResult(FightResultTypes.WAITING)
 }
-// 播报
-function broadcast(text) {
+// 增加播报
+function addBroadcast(text) {
 
 }
 // buff结算
-function settleBuffs({ owner, effects }) {
+function settleBuffs(buffId) {
 }
 // 获取是否为己方回合的判断结果
 function isMyRound() {
@@ -392,7 +392,8 @@ function roundStartWaitingSettle() {
 }
 // 玩家回合起始结算
 function roundStartSettle() {
-  // buff结算
+  // 前置buff结算
+  settleBuffs()
   // 单数为先，双数为后
   const isMine = isMyRound()
   const _player = isMine ? Player : EnemyPlayer
@@ -430,7 +431,8 @@ function roundEndWaitingSettle() {
   CardEventPlayerId = _player.id
   CardEventStatus = CardEventStatusTypes.DROP
   if (!isMine) enemyAutoDropCard()
-  // buff结算
+  // 后置buff结算
+  settleBuffs()
   return RoundStatusTypes.ENDWAITING
 }
 // 玩家回合结束结算

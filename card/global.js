@@ -19,6 +19,8 @@ const GameStatusDom = document.getElementById('GameStatus')
 const FightStatusDom = document.getElementById('FightStatus')
 const RoundStatusDom = document.getElementById('RoundStatus')
 
+const BroadcaseListDom = document.getElementById('BroadcaseList')
+
 const PlayerBoxDom = document.getElementById('PlayerBox')
 const EnemyNameDom = document.getElementById('EnemyName')
 const EnemySHDDom = document.getElementById('EnemySHD')

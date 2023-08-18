@@ -1,11 +1,3 @@
-// 卡牌颜色
-const CardColors = {
-	[CardTypes.COMMON]: '#fff', // 通用(所有卡牌默认包含)
-	[CardTypes.ATTACK]: 'red', // 攻击
-	[CardTypes.DEFENSE]: 'blue', // 防御
-	[CardTypes.MAGIC]: 'pupple', // 魔法
-	[CardTypes.PROPS]: 'green', // 道具
-}
 // 卡牌类型属性key-index
 // [属性Key]: index
 const CardBaseProto = {
@@ -50,6 +42,7 @@ const CardBaseProto = {
  * 	types: Array(卡牌类型),
  * 	value: {
  * 		[卡牌类型ID]: Array(对应属性值)
+ * 		// ...
  * 	}
  * }
  */
@@ -103,7 +96,7 @@ function blendCardTypeProto(type = '', values = []) {
 // 创建卡牌对象
 function createCardObject(cardKey = '', extraAttr = {}) {
 	const { types, values } = Cards[cardKey]
-	let card = { types }
+	let card = { types: [...types, CardTypes.COMMON] }
 	for (let vType in values) {
 		const valuesArr = values[vType]
 		card = {

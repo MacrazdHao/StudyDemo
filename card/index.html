@@ -150,6 +150,25 @@
 
 	.playerBox-status--fuc {}
 
+	.broadcastBox {
+		position: fixed;
+		top: 0;
+		right: 0;
+	}
+
+	.broadcaseList {
+		display: flex;
+		flex-direction: column;
+		overflow: auto;
+		height: 120px;
+	}
+
+	.broadcaseList p {
+		font-size: 12px;
+		color: white;
+		width: 240px;
+	}
+
 	.whiteBoard {}
 </style>
 
@@ -159,6 +178,10 @@
 	<p id="RetryButton" class="fixedButton fight">再次尝试</p>
 	<p id="FightResult" class="fixedText fightResult">???</p>
 	<canvas id="WhiteBoard" class="whiteBoard"></canvas>
+	<div class="broadcastBox">
+		<div id="BroadcaseList" class="broadcaseList">
+		</div>
+	</div>
 	<div id="PlayerBox" class="playerBox">
 		<div class="playerBox-enemyStatus">
 			<div class="playerBox-status">
