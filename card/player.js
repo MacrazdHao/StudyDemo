@@ -437,57 +437,87 @@ function removeBuff(isMine = true, buffId) {
   _player.buffs = _player.buffs.filter(bId => bId !== buffId)
 }
 // 添加buff
-function addBuff(isMine = true, buffId) {
+function addBuff(isMine = true, buffKey) {
   const _player = isMine ? Player : EnemyPlayer
-  const buff = createBuffObject(_player.id, buffId, { round: 3 })
+  const buff = createBuffObject(_player.id, buffKey, { round: 3 })
   switch (buff.type) {
     case BuffTypes.OVERLAY:
-      // TODO...
+      let existBuffId = null
+      for (let i = 0; i < _player.buffs; i++) {
+        const bId = _player.buffs[i]
+        // 叠加Buff
+        if (_player.usedBuffs[bId].key === buffKey) {
+          if (_player.usedBuffs[bId].round >= _player.usedBuffs[bId].maxOverlayRound) {
+            alert('该buff生效回合已达叠加上限')
+            return false
+          }
+          existBuffId = bId
+          break
+        }
+      }
+      // 已存在该buff，叠加回合
+      if (existBuffId) {
+        // 叠加回合不超过上限
+        _player.usedBuffs[bId].round = Math.min(buff.round + _player.usedBuffs[existBuffId].round, _player.usedBuffs[existBuffId].maxOverlayRound)
+        return true
+      }
+      // 不存在该buff，push进角色buffs中
+      break
+    case BuffTypes.UNIQUE:
+      for (let i = 0; i < _player.buffs; i++) {
+        const bId = _player.buffs[i]
+        // 唯一buff不可重复存在
+        if (_player.usedBuffs[bId].key === buffKey) {
+          alert('已存在相同的唯一buff')
+          return false
+        }
+      }
+      // 不存在该buff，push进角色buffs中
       break;
     case BuffTypes.REPEAT:
-      _player.usedBuffs[buff.id] = buff
-      _player.buffs.push(buff.id);
-      break;
-    case BuffTypes.UNIQUE:
-      // TODO...
+      // REPEAT类型buff直接push进角色buffs中
       break;
   }
+  // 不存在的可OVERLAY类型buff，或符合条件的REPEAT和UNIQUE类型buff都是需要push到角色buffs最后面，并将其放入usedBuffs
+  _player.usedBuffs[buff.id] = buff
+  _player.buffs.push(buff.id)
   if (buff.immdiately) enableABuff(buff.id)
+  return true
 }
 // 重置所有buff回合触发次数
 function updateBuffRoundStatus() {
   const isMine = isMyTurn()
   const _player = isMine ? Player : EnemyPlayer
-  for (let bId in _player.buffs) {
+  _player.buffs.forEach(bId => {
     // 剩余回合数-1
     _player.usedBuffs[bId].round--
     // 重置当前回合已触发次数
     _player.usedBuffs[bId].roundEffectTimes = 0
-  }
+  })
 }
 // 回合前buff结算
 function settleBeforeRoundBuffs() {
   const isMine = isMyTurn()
   const _player = isMine ? Player : EnemyPlayer
-  for (let bId in _player.buffs) {
+  _player.buffs.forEach(bId => {
     const { enableTypes } = getBuffInfo(bId)
     if (enableTypes.includes(BuffEnableTypes.BEFOREROUND)) enableABuff(bId)
-  }
+  })
 }
 // 回合后buff结算
 function settleAfterRoundBuffs() {
   const isMine = isMyTurn()
   const _player = isMine ? Player : EnemyPlayer
-  for (let bId in _player.buffs) {
+  _player.buffs.forEach(bId => {
     const { enableTypes } = getBuffInfo(bId)
     if (enableTypes.includes(BuffEnableTypes.AFTERROUND)) enableABuff(bId)
-  }
+  })
 }
 // 获取符合触发条件的战斗行为触发类型的buff
 function getEnableFightActionBuffs(isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
   const buffIds = []
-  for (let bId in _player.buffs) {
+  _player.buffs.forEach(bId => {
     const { enableTypes, enableFightActions } = getBuffInfo(bId)
     // 过滤出buff效果触发类型包含战斗行为的buff
     if (enableTypes.includes(BuffEnableTypes.FIGHTACTION)) {
@@ -499,7 +529,7 @@ function getEnableFightActionBuffs(isMine = true) {
         }
       }
     }
-  }
+  })
   return buffIds
 }
 // 战斗行为触发类型的buff结算

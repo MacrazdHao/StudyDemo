@@ -1,5 +1,6 @@
 const BaseBuffPoto = {
 	id: '',
+	key: '',
 	name: '',
 	desc: '',
 	owner: '',
@@ -8,6 +9,7 @@ const BaseBuffPoto = {
 	enableFightActions: {}, // 当enableTypes包含FIGHTACTION时该属性生效，当前角色的战斗行为包含此处所设定的行为时触发当前buff，对应[战斗行为]:[战斗行为触发类型]即[FightActionType]:[FightActionWayTypes]
 	immediately: false, // 是否在获得当前buff时立即触发
 	round: 1, // 生效回合数
+	maxOverlayRound: MAXNUM, // 可叠加生效回合数上限，用于type为REPEAT的buff
 	maxRoundEffectTimes: 1, // 回合触发次数上限
 	effectRecord: {}, // 属性影响记录，仅支持数值类属性，其余的请在lose函数中处理
 	effects: 'None'
@@ -15,6 +17,7 @@ const BaseBuffPoto = {
 
 const Buffs = {
 	AddAtk1: {
+		key: 'AddAtk1',
 		name: '攻击力提升',
 		desc: '攻击力+1',
 		type: BuffTypes.REPEAT,
