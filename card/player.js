@@ -114,9 +114,9 @@ function getHandCards(isMine = true, num) {
   const _player = isMine ? Player : EnemyPlayer
   const { fightCards, roundGetCardNum } = _player
   // 战斗卡池为空或不足抽牌数，则重置卡池
-  if (fightCards.length === 0) initFightCards(isMine)
+  if (!fightCards.length) initFightCards(isMine)
   // 卡池少于应抽卡数，以卡池剩余卡牌数量为准
-  let cardNum = Math.min(fightCards.length, num || roundGetCardNum)
+  let cardNum = Math.min(_player.fightCards.length, num || roundGetCardNum)
   for (let i = 0; i < cardNum; i++) {
     _player.handCards.push(_player.fightCards.shift())
   }
