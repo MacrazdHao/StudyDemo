@@ -1,35 +1,10 @@
 let GameStatus = GameStatusTypes.WAITING
 let FightStatus = GameStatusTypes.NULL
 let RoundStatus = RoundStatusTypes.NULL
+let FightResult = FightResultTypes.NULL
+let RoundPlayer = RoundPlayerTypes.NULL
 
 let Round = 0
-
-// 游戏状态
-const GameStatusTexts = {
-	[GameStatusTypes.NULL]: '无',
-	[GameStatusTypes.WAITING]: '等待开始',
-	[GameStatusTypes.START]: '已开始',
-	[GameStatusTypes.OVER]: '结束',
-}
-// 战斗状态
-const FightStatusTexts = {
-	[FightStatusTypes.NULL]: '无',
-	[FightStatusTypes.WAITING]: '等待开始',
-	[FightStatusTypes.START]: '战斗开始',
-	[FightStatusTypes.FIGHTING]: '战斗中',
-	[FightStatusTypes.END]: '战斗结束',
-}
-// 回合状态
-const RoundStatusTexts = {
-	[RoundStatusTypes.NULL]: '无',
-	[RoundStatusTypes.WAITING]: '等待开始',
-	[RoundStatusTypes.STARTWAITING]: '开始前置',
-	[RoundStatusTypes.START]: '回合开始',
-	[RoundStatusTypes.PLAYWAITING]: '回合前置',
-	[RoundStatusTypes.PLAYING]: '回合中',
-	[RoundStatusTypes.ENDWAITING]: '结束前置(弃牌)',
-	[RoundStatusTypes.END]: '结束',
-}
 
 function setGameStatus(status) {
 	GameStatus = status
@@ -39,6 +14,12 @@ function setFightStatus(status) {
 }
 function setRoundStatus(status) {
 	RoundStatus = status
+}
+function setFightResult(status) {
+	FightResult = status
+}
+function setRoundPlayer(status) {
+	RoundPlayer = status
 }
 
 function gameStatusListener() {
@@ -56,17 +37,24 @@ function fightStatusListener() {
 		case FightStatusTypes.NULL: break;
 		case FightStatusTypes.WAITING: break;
 		case FightStatusTypes.START:
+			// 战斗结果转为等待状态
+			setFightResult(FightResultTypes.WAITING)
 			// 战斗开始前置阶段，回合状态为准备开始状态
 			setRoundStatus(RoundStatusTypes.STARTWAITING)
 			// 战斗开始状态结算，完成后变为PLAYING状态
 			setFightStatus(fightStartSettle())
 			break;
-		case FightStatusTypes.FIGHTING: break;
+		case FightStatusTypes.FIGHTING:
+			// 战斗结果已出则战斗结束
+			if (getFightResultBoolean()) setFightStatus(FightStatusTypes.END)
+			break;
 		case FightStatusTypes.END:
 			// 战斗结束，清空回合状态
 			setRoundStatus(RoundStatusTypes.NULL)
 			// 战斗结束结算，完成后变为WAITING状态
 			setFightStatus(fightEndSettle())
+			// 战斗结束后，清空战斗结果
+			setFightResult(FightResultTypes.NULL)
 			break;
 	}
 	FightStatusDom.innerHTML = FightStatusTexts[FightStatus]

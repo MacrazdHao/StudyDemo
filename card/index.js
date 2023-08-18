@@ -15,6 +15,7 @@ function main() {
 	})
 	StartButton.addEventListener('click', gameStartFunc)
 	FightButton.addEventListener('click', fightStartFunc)
+	RetryButton.addEventListener('click', retryFunc)
 	EndRoundButton.addEventListener('click', roundEndFunc)
 	dynamicFramesListener()
 	startPolling()

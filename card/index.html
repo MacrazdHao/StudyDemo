@@ -54,6 +54,19 @@
 		color: white;
 	}
 
+	.fixedText {
+		position: fixed;
+		top: calc(50% - 60px);
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 24px;
+		color: white;
+	}
+
+	.fightResult {
+		display: none;
+	}
+
 	.fight {
 		display: none;
 	}
@@ -143,6 +156,8 @@
 <body>
 	<p id="StartButton" class="fixedButton start">开始</p>
 	<p id="FightButton" class="fixedButton fight">Fight</p>
+	<p id="RetryButton" class="fixedButton fight">再次尝试</p>
+	<p id="FightResult" class="fixedText fightResult">???</p>
 	<canvas id="WhiteBoard" class="whiteBoard"></canvas>
 	<div id="PlayerBox" class="playerBox">
 		<div class="playerBox-enemyStatus">
@@ -219,6 +234,8 @@
 	</div>
 </body>
 <script src="./emuns.js"></script>
+<script src="./colors.js"></script>
+<script src="./texts.js"></script>
 <script src="./utils.js"></script>
 <script src="./global.js"></script>
 <script src="./animation.js"></script>

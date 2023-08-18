@@ -8,7 +8,7 @@ const PlayerProto = {
   mp: 0, // 灵力
   vit: 0, // 体力(每回合出牌张数，每回合重置为maxVit)
   reborns: {},
-  rebornStack: [],
+  rebornQueue: [],
   maxVit: 0, // 体力上限
   maxHandCardsNum: 0, // 手牌上限
   roundGetCardNum: 0, // 每回合抽取卡牌数
@@ -235,6 +235,8 @@ function attackPlayer({ owner, atk = 0, penAtk = 0, selfAtk = 0, selfPenAtk = 0 
     attacker.shd = canDef ? lastShd : 0
     attacker.hp = hp - lastAtk - selfPenAtk
   }
+  // 任意败北判断
+  getFightResult()
 }
 // 增加护盾
 function addShield({ owner, shd = 0 }) {
@@ -261,27 +263,51 @@ function addReborn(isMine = true, playerInfo, conditions = function () { return 
     owner: isMine ? PlayerId : EnemyPlayerId,
     conditions
   }
-  _player.rebornStack.push(id)
+  _player.rebornQueue.push(id)
 }
+// 判断重队列中是否具有满足重生条件
+function getEnableReborns(isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  const rebornIds = []
+  for (let i = 0; i < _player.rebornQueue.length; i++) {
+    const rId = _player.handCards[i]
+    const reborn = getRebornInfo(rId, isMine)
+    if (reborn.conditions()) rebornIds.push(rId)
+  }
+  return rebornIds
+}
+// 启用一个重生
 function enableAPlayerReborn(rebornId, isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
   const { playerInfo } = getRebornInfo(rebornId, isMine)
+  // 覆盖角色属性
   for (let key in playerInfo) {
     _player[key] = playerInfo[key]
   }
+  // 其他处理
+  // 从角色的复活队列中移出
+  _player.rebornQueue = _player.rebornQueue.filter((rId) => rId !== rebornId)
   return true
 }
-// 角色败北判断
-function isAnyPlayerDead(isMine = true) {
+// 是否有角色败北
+function isPlayerDead(isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
-  if (!_player.rebornStack.length) return true
-  // const rId = _player.rebornStack.shift()
-  // enableAPlayerReborn(rId, isMine)
-  // 判断是否符合条件
-  for(let i = 0;i<_player.rebornStack.length;i++) {
-    if (_player.rebornStack)
-  }
+  if (_player.hp > 0) return false
+  if (!_player.rebornQueue.length) return true
+  const enableReborns = getEnableReborns(isMine)
+  if (!enableReborns.length) return true
+  const rId = enableReborns[0]
+  enableAPlayerReborn(rId, isMine)
   return false
+}
+// 角色败北判断
+function getFightResult() {
+  const enemyDead = isPlayerDead(false)
+  const meDead = isPlayerDead()
+  if (enemyDead && meDead) return setFightResult(FightResultTypes.DRAW)
+  if (enemyDead) return setFightResult(FightResultTypes.WIN)
+  if (meDead) return setFightResult(FightResultTypes.FAIL)
+  return setFightResult(FightResultTypes.WAITING)
 }
 // 播报
 function broadcast(text) {
@@ -296,8 +322,15 @@ function isMyRound() {
 }
 // 交换回合角色
 function switchRoundPlayer() {
-  if (!CurrentRoundPlayerId) CurrentRoundPlayerId = UpperHandPlayerId
-  else CurrentRoundPlayerId = isMyRound() ? EnemyPlayerId : PlayerId
+  if (!CurrentRoundPlayerId) {
+    CurrentRoundPlayerId = UpperHandPlayerId
+    setRoundPlayer(UpperHandPlayerId === PlayerId ? RoundPlayerTypes.PLAYER : RoundPlayerTypes.ENEMY)
+  }
+  else {
+    let myRound = isMyRound()
+    CurrentRoundPlayerId = myRound ? EnemyPlayerId : PlayerId
+    setRoundPlayer(myRound ? RoundPlayerTypes.PLAYER : RoundPlayerTypes.ENEMY)
+  }
 }
 // 战斗开始结算
 function fightStartSettle() {
@@ -318,6 +351,7 @@ function fightStartSettle() {
   // 回合重置为1
   Round = 1
   console.log(Player, EnemyPlayer)
+  FightResultDom.style.display = 'none'
   PlayerBoxDom.style.display = 'block'
   return FightStatusTypes.FIGHTING
 }
@@ -329,11 +363,16 @@ function fightEndSettle() {
   PlayerBoxDom.style.display = 'none'
   UpperHandPlayerId = null
   CurrentRoundPlayerId = null
+  RoundPlayer = RoundPlayerTypes.NULL
   Player = {}
   EnemyPlayer = {}
   CardEventStatus = CardEventStatusTypes.PLAY
   CardEventPlayerId = null
   CardDropNum = 0
+
+  RetryButton.style.display = 'inline'
+  FightResultDom.style.display = 'inline'
+  FightResultDom.innerHTML = FightResultTexts[FightResult]
 
   return FightStatusTypes.WAITING
 }
@@ -346,8 +385,8 @@ function roundStartWaitingSettle() {
   const _player = isMine ? Player : EnemyPlayer
   CardEventPlayerId = _player.id
   EndRoundButton.style.display = isMine ? 'inline' : 'none'
-  WhoseRoundDom.style.color = isMine ? 'green' : 'red'
-  WhoseRoundDom.innerHTML = isMine ? '己方回合' : '敌方回合'
+  WhoseRoundDom.style.color = RoundPlayerColors[RoundPlayer]
+  WhoseRoundDom.innerHTML = RoundPlayerTexts[RoundPlayer]
   console.log(Player, EnemyPlayer)
   return RoundStatusTypes.START
 }

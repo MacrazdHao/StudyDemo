@@ -24,6 +24,20 @@ const RoundStatusTypes = {
 	ENDWAITING: 5,
 	END: 6,
 }
+// 回合角色状态
+const RoundPlayerTypes = {
+	NULL: -1,
+	ENEMY: 0,
+	PLAYER: 1,
+}
+// 战斗结果类型
+const FightResultTypes = {
+	NULL: -1,
+	WAITING: 0,
+	WIN: 1,
+	FAIL: 2,
+	DRAW: 3
+}
 // 职业类型
 const CareerType = {
 	HUMAN: 0

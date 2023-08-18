@@ -11,6 +11,8 @@ const WhiteBoardHeight = GameWindow.height
 
 const StartButton = document.getElementById('StartButton')
 const FightButton = document.getElementById('FightButton')
+const RetryButton = document.getElementById('RetryButton')
+const FightResultDom = document.getElementById('FightResult')
 const EndRoundButton = document.getElementById('EndRoundButton')
 const WhoseRoundDom = document.getElementById('WhoseRound')
 const GameStatusDom = document.getElementById('GameStatus')
@@ -64,6 +66,11 @@ function gameStartFunc(e) {
 function fightStartFunc(e) {
   startFight()
   FightButton.style.display = 'none'
+}
+// 再次尝试按钮点击事件
+function retryFunc(e) {
+  startFight()
+  RetryButton.style.display = 'none'
 }
 // 回合结束按钮点击事件
 function roundEndFunc(e) {
