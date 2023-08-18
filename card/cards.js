@@ -9,9 +9,10 @@ const CardBaseProto = {
 		statusTypes: { index: 4, defaultValue: [] },
 		fightUseTimes: { index: 5, defaultValue: 9999999 }, // 当次战斗可使用次数
 		gameUseTimes: { index: 6, defaultValue: 9999999 }, // 当局游戏可使用次数
+		vit: { index: 7, defaultValue: 1 }, // 当局游戏可使用次数
 		conditions: {
 			// 卡牌使用条件
-			index: 7,
+			index: 8,
 			defaultValue: function () { return true }
 		},
 		effects: {

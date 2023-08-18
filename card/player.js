@@ -147,7 +147,7 @@ function playCard(e, isMine = true, cardId) {
   }
   const card = getCardInfo(_cardId, isMine)
   // 出牌行为使体力扣减
-  _player.vit--
+  _player.vit -= card.vit
   // 卡牌使用次数减少
   _player.gameCardsTimes[_cardId]--
   _player.fightCardsTimes[_cardId]--
@@ -329,7 +329,7 @@ function switchRoundPlayer() {
   else {
     let myRound = isMyRound()
     CurrentRoundPlayerId = myRound ? EnemyPlayerId : PlayerId
-    setRoundPlayer(myRound ? RoundPlayerTypes.PLAYER : RoundPlayerTypes.ENEMY)
+    setRoundPlayer(myRound ? RoundPlayerTypes.ENEMY : RoundPlayerTypes.PLAYER)
   }
 }
 // 战斗开始结算

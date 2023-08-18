@@ -1,7 +1,7 @@
 const CareerInitInfo = {
 	[CareerType.HUMAN]: {
 		careerNam: '人类',
-		hp: 1,
+		hp: 3,
 		shd: 0,
 		mp: 0,
 		maxVit: 2,
