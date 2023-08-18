@@ -38,14 +38,3 @@ const FightResultTexts = {
 	[FightResultTypes.FAIL]: '败北',
 	[FightResultTypes.DRAW]: '平手',
 }
-// 战斗结束判断
-function getFightResultBoolean() {
-  switch (FightResult) {
-    case FightResultTypes.NULL:
-    case FightResultTypes.WAITING: return false
-    case FightResultTypes.WIN:
-    case FightResultTypes.FAIL:
-    case FightResultTypes.DRAW: return true
-    default: return false
-  }
-}

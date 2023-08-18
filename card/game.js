@@ -32,6 +32,18 @@ function gameStatusListener() {
 	GameStatusDom.innerHTML = GameStatusTexts[GameStatus]
 }
 
+// 战斗结束判断
+function isFightEnd() {
+  switch (FightResult) {
+    case FightResultTypes.NULL:
+    case FightResultTypes.WAITING: return false
+    case FightResultTypes.WIN:
+    case FightResultTypes.FAIL:
+    case FightResultTypes.DRAW: return true
+    default: return false
+  }
+}
+
 function fightStatusListener() {
 	switch (FightStatus) {
 		case FightStatusTypes.NULL: break;
@@ -46,7 +58,8 @@ function fightStatusListener() {
 			break;
 		case FightStatusTypes.FIGHTING:
 			// 战斗结果已出则战斗结束
-			if (getFightResultBoolean()) setFightStatus(FightStatusTypes.END)
+			if (isFightEnd()) setFightStatus(FightStatusTypes.END)
+			setFightStatus(fightingSettle())
 			break;
 		case FightStatusTypes.END:
 			// 战斗结束，清空回合状态

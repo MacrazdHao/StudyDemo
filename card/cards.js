@@ -38,10 +38,10 @@ const CardBaseProto = {
 		},
 	},
 	[CardTypes.ATTACK]: {
-		atk: { index: 0, defaultValue: 0 },
-		penAtk: { index: 1, defaultValue: 0 },
-		selfAtk: { index: 2, defaultValue: 0 },
-		selfPenAtk: { index: 3, defaultValue: 0 },
+		atk: { index: 0, defaultValue: 0 }, // 普通伤害
+		penAtk: { index: 1, defaultValue: 0 }, // 穿透伤害
+		selfAtk: { index: 2, defaultValue: 0 }, // 己方伤害
+		selfPenAtk: { index: 3, defaultValue: 0 }, // 己方穿透伤害
 	},
 	[CardTypes.DEFENSE]: {
 		shd: { index: 0, defaultValue: 0 },
@@ -75,7 +75,7 @@ const Cards = {
 		types: [CardTypes.DEFENSE],
 		values: {
 			[CardTypes.COMMON]: ['普通盾牌', '护盾+2'],
-			[CardTypes.DEFENSE]: [2]
+			[CardTypes.DEFENSE]: [1]
 		}
 	},
 }
@@ -94,12 +94,8 @@ const CardsConditions = {
 }
 // 卡牌影响函数
 const CardsEffects = {
-	NormalAttack1: function () {
-		attackPlayer(this)
-	},
-	NormalDefense1: function () {
-		addShield(this)
-	}
+	NormalAttack1: 'NormalAttack1',
+	NormalDefense1: 'NormalDefense1',
 }
 // 组合类型属性
 function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values = []) {
@@ -111,7 +107,7 @@ function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values =
 	return proto
 }
 // 创建卡牌对象
-function createCardObject(cardKey = '', extraAttr = {}) {
+function createCardObject(cardKey = '', extraAttr = {}, customEffects) {
 	const { types, values } = Cards[cardKey]
 	let card = { types: [...types, CardTypes.COMMON] }
 	const mType = card.types[0]
@@ -121,20 +117,20 @@ function createCardObject(cardKey = '', extraAttr = {}) {
 			...card,
 			...blendCardTypeProto(mType, vType, valuesArr),
 			conditions: CardsConditions[cardKey],
-			effects: CardsEffects[cardKey],
+			effects: customEffects || PresetEffects[CardsEffects[cardKey]],
 			...extraAttr
 		}
 	}
 	return { id: getRandomKey(), key: cardKey, ...card }
 }
 // 生成卡组
-function generateCardsGroup(id, cardsMap = {}) {
+function generateCardsGroup(playerId, cardsMap = {}) {
 	const cards = {}
 	for (let cKey in cardsMap) {
 		const num = cardsMap[cKey]
 		for (let i = 0; i < num; i++) {
 			const card = createCardObject(cKey)
-			cards[card.id] = { ...card, owner: id }
+			cards[card.id] = { ...card, owner: playerId }
 		}
 	}
 	return cards
