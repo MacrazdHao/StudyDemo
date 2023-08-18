@@ -23,8 +23,8 @@ const CardBaseProto = {
 		color: { index: 2, defaultValue: CardColors[CardTypes.COMMON] },
 		status: { index: 3, defaultValue: 0 },
 		statusTypes: { index: 4, defaultValue: [] },
-		fightUseTimes: { index: 5, defaultValue: 9999999 }, // 当次战斗可使用次数
-		gameUseTimes: { index: 6, defaultValue: 9999999 }, // 当局游戏可使用次数
+		fightUseTimes: { index: 5, defaultValue: MAXNUM }, // 当次战斗可使用次数
+		gameUseTimes: { index: 6, defaultValue: MAXNUM }, // 当局游戏可使用次数
 		vit: { index: 7, defaultValue: 1 }, // 体力消耗值
 		conditions: {
 			// 卡牌使用条件

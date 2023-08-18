@@ -1,5 +1,5 @@
-const MAXNUM = 9999999
-const MINNUM = -9999999
+const MAXNUM = 9999999 // 最大值
+const MINNUM = -9999999 // 最小值
 // 游戏状态
 const GameStatusTypes = {
 	NULL: -1,
