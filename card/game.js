@@ -58,7 +58,10 @@ function fightStatusListener() {
 			break;
 		case FightStatusTypes.FIGHTING:
 			// 战斗结果已出则战斗结束
-			if (isFightEnd()) setFightStatus(FightStatusTypes.END)
+			if (isFightEnd()) {
+				setFightStatus(FightStatusTypes.END)
+				return
+			}
 			setFightStatus(fightingSettle())
 			break;
 		case FightStatusTypes.END:

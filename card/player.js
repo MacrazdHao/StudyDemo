@@ -695,7 +695,6 @@ function roundEndSettle() {
   }
   return RoundStatusTypes.STARTWAITING
 }
-
 // 敌对APC自动出牌
 function enemyAutoPlayCard() {
   const enableHandCards = getEnableHandCards(false)
