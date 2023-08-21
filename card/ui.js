@@ -143,7 +143,7 @@ function drawHandCards() {
 }
 // 画出桌面的牌
 function drawDesktopCard() {
-	drawCard(DesktopCard, DesktopCardPosition)
+	if (DesktopCard) drawCard(DesktopCard, DesktopCardPosition)
 }
 // 更新玩家数据
 function updatePlayerInfoUI() {
@@ -170,7 +170,10 @@ function updatePlayerInfoUI() {
 function getFrame() {
 	Context.clearRect(0, 0, GameWindow.offsetWidth, GameWindow.offsetHeight)
 	updatePlayerInfoUI()
-	if (FightStatus === FightStatusTypes.FIGHTING) drawHandCards()
+	if (FightStatus === FightStatusTypes.FIGHTING) {
+		drawHandCards()
+		drawDesktopCard()
+	}
 	drawMouse()
 	DynamicFrames++
 }

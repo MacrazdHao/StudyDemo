@@ -67,14 +67,21 @@ const Cards = {
 	NormalAttack1: {
 		types: [CardTypes.ATTACK],
 		values: {
-			[CardTypes.COMMON]: ['普通攻击', '造成1点伤害'],
+			[CardTypes.COMMON]: ['小拳拳', '造成1点伤害'],
+			[CardTypes.ATTACK]: [1]
+		}
+	},
+	NormalAttack2: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: ['暗劲儿', '造成1点穿透伤害'],
 			[CardTypes.ATTACK]: [1]
 		}
 	},
 	NormalDefense1: {
 		types: [CardTypes.DEFENSE],
 		values: {
-			[CardTypes.COMMON]: ['普通盾牌', '护盾+2'],
+			[CardTypes.COMMON]: ['大锅盖', '护盾+1'],
 			[CardTypes.DEFENSE]: [1]
 		}
 	},
@@ -97,7 +104,7 @@ const CardsEffects = {
 	NormalAttack1: 'NormalAttack1',
 	NormalDefense1: 'NormalDefense1',
 }
-// 组合类型属性
+// 组合类属性
 function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values = []) {
 	const proto = {}
 	for (let pKey in CardBaseProto[type]) {
