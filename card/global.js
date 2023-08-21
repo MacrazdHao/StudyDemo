@@ -44,6 +44,39 @@ window.onresize = () => {
   GameWindow.height = WindowHeight
 }
 
+const ImageBaseUrl = 'http://127.0.0.1:5500/card'
+const CardImages = {
+  '/images/guo.jpg': null,
+  '/images/quan.jpg': null,
+}
+
+function loadCardImages() {
+  return new Promise(resolve => {
+    let finishImgNum = 0
+    let allImgNum = 0
+    for (let path in CardImages) {
+      allImgNum++
+      const img = new Image()
+      img.src = ImageBaseUrl + path
+      img.onload = function () {
+        CardImages[path] = this
+        finishImgNum++
+      }
+      img.onerror = function () {
+        CardImages[path] = 'notfound'
+        finishImgNum++
+      }
+    }
+    const waitingTimer = setInterval(() => {
+      if (finishImgNum === allImgNum) {
+        console.log(CardImages)
+        clearInterval(waitingTimer)
+        resolve()
+      }
+    }, 100)
+  })
+}
+
 let MousePos = { x: 0, y: 0, color: getRandomColor() }
 
 // 获取鼠标坐标

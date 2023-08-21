@@ -27,6 +27,7 @@ const CardBaseProto = {
 		gameUseTimes: { defaultValue: MAXNUM }, // 当局游戏可使用次数
 		needVit: { defaultValue: 1 }, // 体力消耗值
 		rare: { defaultValue: CardRareTypes.DEFAULT }, // 体力消耗值
+		image: { defaultValue: null },
 		conditions: { defaultValue: 'None' },
 		effects: { defaultValue: 'None' },
 	},
@@ -58,7 +59,7 @@ const Cards = {
 	NormalAttack1: {
 		types: [CardTypes.ATTACK],
 		values: {
-			[CardTypes.COMMON]: { name: '小拳拳', desc: '造成1点伤害', effects: 'BaseAttackEffect' },
+			[CardTypes.COMMON]: { name: '小拳拳', desc: '造成1点伤害', effects: 'BaseAttackEffect', image: '/images/quan.jpg' },
 			[CardTypes.ATTACK]: { atk: 1 }
 		}
 	},
@@ -72,7 +73,7 @@ const Cards = {
 	NormalDefense1: {
 		types: [CardTypes.DEFENSE],
 		values: {
-			[CardTypes.COMMON]: { name: '大锅盖', desc: '护盾+1', effects: 'BaseAttrEffect' },
+			[CardTypes.COMMON]: { name: '大锅盖', desc: '护盾+1', effects: 'BaseAttrEffect', image: '/images/guo.jpg' },
 			[CardTypes.DEFENSE]: { shd: 1 }
 		}
 	},

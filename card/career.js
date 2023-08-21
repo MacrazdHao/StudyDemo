@@ -17,12 +17,12 @@ const CareerInitInfo = {
 		[BaseValueAttributeKeys.ROUNDGETCARDNUM]: 2,
 		[BaseValueAttributeKeys.INITIALVITALITY]: 2,
 		initCards: {
-			// ...InitCards
-			Test1: 1,
-			Test2: 1,
-			Test3: 1,
-			Test4: 1,
-			Test5: 1,
+			...InitCards
+			// Test1: 1,
+			// Test2: 1,
+			// Test3: 1,
+			// Test4: 1,
+			// Test5: 1,
 		}
 	}
 }

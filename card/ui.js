@@ -15,11 +15,50 @@ let DesktopCard = null
 const CardPositionAnimation = {}
 
 const CardStyle = {
-	width: 150,
+	width: 180,
 	height: 240,
 	strokeColor: '#3f2400',
-	reverseColor: 'gray'
+	reverseColor: 'gray',
 }
+const NameStyle = {
+	background: 'white',
+	fontColor: 'black',
+	fontSize: 12,
+	width: CardStyle.width - 6 * 2,
+	height: 20,
+	offset: {
+		x: 6,
+		y: 6
+	},
+	textOffset: {
+		x: 6 + 4,
+		y: 6 + 14
+	}
+}
+const DescStyle = {
+	background: 'white',
+	fontColor: 'black',
+	fontSize: 10,
+	width: CardStyle.width - 6 * 2,
+	height: 48,
+	offset: {
+		x: 6,
+		y: CardStyle.height - 48 - 6
+	},
+	textOffset: {
+		x: 6 + 4,
+		y: CardStyle.height - 48 - 6 + 14
+	}
+}
+const IllustrationStyle = {
+	width: CardStyle.width - 6 * 2,
+	height: CardStyle.height - NameStyle.height - DescStyle.height - NameStyle.offset.y - 12 - 6,
+	offset: {
+		x: 6,
+		y: NameStyle.offset.y + NameStyle.height + 6
+	},
+}
+
 const DesktopCardPosition = {
 	x: (WhiteBoardWidth - CardStyle.width) / 2,
 	y: (WhiteBoardHeight - CardStyle.height) / 2,
@@ -106,7 +145,7 @@ function getHandCardPosition(index, isMine = true) {
 // 绘画卡牌
 function drawCard(card, pos, handCard) {
 	const isMine = PlayerId === card.owner
-	const { color, rare } = card
+	const { name, desc, image, color, rare } = card
 	const { width, height, strokeColor, reverseColor } = CardStyle
 	let x = pos ? pos.x : 0
 	let y = pos ? pos.y : 0
@@ -134,6 +173,23 @@ function drawCard(card, pos, handCard) {
 	Context.strokeStyle = strokeColor
 	Context.lineWidth = 1
 	Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
+
+
+	// 名称
+	Context.fillStyle = NameStyle.background
+	Context.fillRect(x + NameStyle.offset.x, y + NameStyle.offset.y, NameStyle.width, NameStyle.height)
+	Context.font = `${NameStyle.fontSize}px Georgia`;
+	Context.fillStyle = NameStyle.fontColor
+	Context.fillText(name, x + NameStyle.textOffset.x, y + NameStyle.textOffset.y)
+	// 插画
+	Context.fillStyle = 'blue'
+	Context.drawImage(CardImages[image], x + IllustrationStyle.offset.x, y + IllustrationStyle.offset.y, IllustrationStyle.width, IllustrationStyle.height)
+	// 描述
+	Context.fillStyle = DescStyle.background
+	Context.fillRect(x + DescStyle.offset.x, y + DescStyle.offset.y, DescStyle.width, DescStyle.height)
+	Context.font = `${DescStyle.fontSize}px Georgia`;
+	Context.fillStyle = DescStyle.fontColor
+	Context.fillText(desc, x + DescStyle.textOffset.x, y + DescStyle.textOffset.y)
 	return {
 		...card,
 		x, y
