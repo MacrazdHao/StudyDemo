@@ -98,20 +98,23 @@ const FightActionTypes = {
 	LOSEATK: 12, // 失去额外攻击
 	LOSEPENATK: 13, // 失去额外穿透攻击
 	LOSEBUFF: 14, // 失去Buff
-	ADDHP: 15, // 获得生命
-	ADDSHD: 16, // 获得护盾
-	ADDMP: 17, // 获得灵力
-	ADDVIT: 18, // 获得体力
-	ADDATK: 19, // 获得额外攻击
-	ADDPENATK: 20, // 获得额外穿透攻击
-	GETBUFF: 21, // 获得Buff
-	REBORN: 22, // 重生
+	LOSEREBORN: 15, // 失去重生
+	ADDHP: 16, // 获得生命
+	ADDSHD: 17, // 获得护盾
+	ADDMP: 18, // 获得灵力
+	ADDVIT: 19, // 获得体力
+	ADDATK: 20, // 获得额外攻击
+	ADDPENATK: 21, // 获得额外穿透攻击
+	ADDBUFF: 22, // 获得Buff
+	ADDREBORN: 23, // 获得重生
+	REBORN: 24, // 重生
+	DEAD: 25, // 阵亡
 }
 // 战斗行为触发类型
 const FightActionWayTypes = {
 	NULL: -1, // 无
 	WAITING: 0, // 等待战斗行为
-	INITIACTIVE: 1, // 主动和被动
+	ALL: 1, // 主动和被动
 	INITIACTIVE: 2, // 主动触发
 	FORCE: 3, // 被动触发
 }

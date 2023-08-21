@@ -11,7 +11,7 @@ const PlayerProto = {
   shd: 0, // 护盾
   mp: 0, // 灵力
   vit: 0, // 体力(每回合出牌张数，每回合重置为maxVit)
-  atk: 0, // 额外伤害
+  atk: 0, // 额外伤害，注意细分两种造成额外伤害的情况(penAtck同)：1-该atk属性的合并伤害；2-来自战斗行为类buff监听到攻击行为而造成的附加伤害；
   penAtk: 0, // 额外穿透伤害
   reborns: {}, // 重生对象
   rebornQueue: [], // 重生队列
@@ -123,16 +123,34 @@ function initFightCards(isMine = true, extraCards = {}) {
   _player.fightCards = randomArray(fightCards)
 }
 // 玩家从战斗卡池抽取手牌
-function getHandCards(isMine = true, num) {
+function getHandCards(isMine = true, num, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   const { fightCards, roundGetCardNum } = _player
   // 战斗卡池为空或不足抽牌数，则重置卡池
   if (!fightCards.length) initFightCards(isMine)
   // 卡池少于应抽卡数，以卡池剩余卡牌数量为准
   let cardNum = Math.min(_player.fightCards.length, num || roundGetCardNum)
+  if (cardNum > 0) {
+    setFightActionStatus(FightActionTypes.EXTRACTHANDCARD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+  }
   for (let i = 0; i < cardNum; i++) {
     _player.handCards.push(_player.fightCards.shift())
   }
+}
+// 从非战斗卡池的自定义额外卡池中获得卡牌
+function getHandCardsFromOthers(isMine = true, cardsArr = [], num, isForce = false) {
+  const _player = isMine ? Player : EnemyPlayer
+  // 卡池少于应抽卡数，以卡池剩余卡牌数量为准
+  let cardNum = Math.min(cardsArr.length, num)
+  if (cardNum > 0) {
+    setFightActionStatus(FightActionTypes.GETHANDCARD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+  }
+  // 打乱额外卡池顺序
+  const _cardsArr = randomArray(cardsArr)
+  for (let i = 0; i < cardNum; i++) {
+    _player.handCards.push(_cardsArr.shift())
+  }
+
 }
 // 判断手牌是否具有满足出牌条件
 function getEnableHandCards(isMine = true) {
@@ -146,7 +164,7 @@ function getEnableHandCards(isMine = true) {
   return cardIds
 }
 // 出牌
-function playCard(e, isMine = true, cardId) {
+function playCard(e, isMine = true, cardId, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   const _cardId = isMine ? MouseHandCard : cardId
   const enableHandCards = getEnableHandCards(isMine)
@@ -161,6 +179,7 @@ function playCard(e, isMine = true, cardId) {
     alert('体力不足')
     return
   }
+  setFightActionStatus(FightActionTypes.PLAYCARD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   // 卡牌使用次数减少
   _player.gameCardsTimes[_cardId]--
   _player.fightCardsTimes[_cardId]--
@@ -180,9 +199,10 @@ function playCard(e, isMine = true, cardId) {
   card.effects()
 }
 // 丢弃手牌
-function dropCard(e, isMine = true, cardId) {
+function dropCard(e, isMine = true, cardId, abandon = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   const _cardId = isMine ? MouseHandCard : cardId
+  setFightActionStatus(abandon ? FightActionTypes.ABANDONCARD : FightActionTypes.LOSEHANDCARD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   // 移出手牌
   _player.handCards = _player.handCards.filter(cId => cId !== _cardId)
   // 卡牌记录更新
@@ -238,99 +258,132 @@ function setFightActionStatus(fightActionTypes, fightActionWayTypes = FightActio
   _player.fightActionsBuffer[fightActionTypes] = fightActionWayTypes
 }
 // 增加额外伤害
-function addATK(addNum, isMine = true) {
+function addATK(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   _player.atk += addNum
+  setFightActionStatus(FightActionTypes.ADDATK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
-// 增加额外穿透伤害
-function addPENATK(addNum, isMine = true) {
+// 增加额外穿透伤害.
+function addPENATK(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   _player.penAtk += addNum
+  setFightActionStatus(FightActionTypes.ADDPENATK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
 // 增加血量
-function addHP(addNum, isMine = true) {
+function addHP(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   // 增加值不超过上限
   const _addNum = Math.min(addNum, _player.maxHp - _player.hp)
   _player.hp += _addNum
+  setFightActionStatus(FightActionTypes.ADDHP, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
 // 增加体力
-function addVIT(addNum, isMine = true) {
+function addVIT(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   // 增加值不超过上限
   const _addNum = Math.min(addNum, _player.maxVit - _player.vit)
   _player.vit += _addNum
+  setFightActionStatus(FightActionTypes.ADDVIT, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
 // 增加灵力
-function addMP(addNum, isMine = true) {
+function addMP(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   // 增加值不超过上限
   const _addNum = Math.min(addNum, _player.maxMp - _player.mp)
   _player.mp += _addNum
+  setFightActionStatus(FightActionTypes.ADDMP, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
 // 增加护盾
-function addSHD(addNum, isMine = true) {
+function addSHD(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   // 增加值不超过上限
   const _addNum = Math.min(addNum, _player.maxShd - _player.shd)
   _player.shd += _addNum
+  setFightActionStatus(FightActionTypes.ADDSHD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
 // 失去血量
-function loseHP(loseNum, isMine = true) {
+function loseHP(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   _player.hp -= loseNum
+  setFightActionStatus(FightActionTypes.LOSEHP, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   // 任意败北判断
   updateFightResult()
   return true
 }
 // 失去体力
-function loseVIT(loseNum, isMine = true) {
+function loseVIT(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   if (_player.vit === 0) return false
+  setFightActionStatus(FightActionTypes.LOSEVIT, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   const lastVIT = _player.vit - loseNum
   _player.vit = lastVIT > 0 ? lastVIT : 0
   return true
 }
 // 失去灵力值
-function loseMP(loseNum, isMine = true) {
+function loseMP(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   if (_player.mp === 0) return false
+  setFightActionStatus(FightActionTypes.LOSEMP, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   const lastMP = _player.mp - loseNum
   _player.mp = lastMP > 0 ? lastMP : 0
   return true
 }
 // 失去护盾
-function loseSHD(loseNum, isMine = true) {
+function loseSHD(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   const lastShd = _player.shd - loseNum
+  if (_player.shd > 0) setFightActionStatus(FightActionTypes.LOSESHD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   // 剩余护甲不足扣除伤害，直接扣血量
   if (lastShd < 0) {
-    loseHP(-lastShd, isMine)
+    loseHP(-lastShd, isMine, isForce)
     _player.shd = 0
     return
   }
   _player.shd = lastShd
   return true
 }
+// 失去额外伤害
+function loseATK(loseNum, isMine = true, isForce = false) {
+  const _player = isMine ? Player : EnemyPlayer
+  setFightActionStatus(FightActionTypes.LOSEATK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+  // 允许为负数
+  _player.atk -= loseNum
+  return true
+}
+// 失去额外穿透伤害
+function losePENATK(loseNum, isMine = true, isForce = false) {
+  const _player = isMine ? Player : EnemyPlayer
+  setFightActionStatus(FightActionTypes.LOSEPENATK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+  // 允许为负数
+  _player.penAtk -= loseNum
+  return true
+}
 // 造成伤害
-function attackPlayer({ owner, atk = 0, penAtk = 0, selfAtk = 0, selfPenAtk = 0 }) {
+function attackPlayer({ owner, atk = 0, penAtk = 0, selfAtk = 0, selfPenAtk = 0 }, isForce = false) {
+  // isMine指攻击者是否为自己
   const isMine = PlayerId === owner
   const _player = isMine ? Player : EnemyPlayer
   // 敌伤
   if (atk || penAtk) {
-    loseHP(_player.penAtk + penAtk, !isMine)
-    loseSHD(_player.atk + atk, !isMine)
+    // 额外伤害及额外穿刺伤害均可为负，因此两者伤害应同时设定最低限制为0
+    const _penAtk = Math.max(_player.penAtk + penAtk, 0)
+    const _atk = Math.max(_player.atk + atk, 0)
+    loseHP(_penAtk, !isMine, true)
+    loseSHD(_atk, !isMine, true)
+    setFightActionStatus(FightActionTypes.ATTACK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+    setFightActionStatus(FightActionTypes.BEATTACKED, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, !isMine)
   }
   // 自伤
   if (selfAtk || selfPenAtk) {
-    loseHP(selfPenAtk, isMine)
-    loseSHD(selfAtk, isMine)
+    loseHP(selfPenAtk, isMine, false)
+    loseSHD(selfAtk, isMine, false)
+    setFightActionStatus(FightActionTypes.BEATTACKED, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.FORCE, isMine)
   }
 }
 // 根据重生ID获取玩家重生信息
@@ -338,12 +391,10 @@ function getRebornInfo(rebornId, isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
   return _player.reborns[rebornId] || null
 }
-// 添加重生次数
-function addReborn(isMine = true, playerInfo, conditions = function () { return true }, effects = PresetEffects.None) {
-  // 重生对象基础属性等同于角色属性，重生后将根据playerInfo直接取代原角色属性，其余自行根据conditions所需添加
-  const _player = isMine ? Player : EnemyPlayer
+// 获取重生实例
+function getRebornObject({ playerInfo = {}, conditions = function () { return true }, effects = PresetEffects.None }) {
   const id = getRandomKey()
-  _player.reborns[id] = {
+  const reborn = {
     player: {
       ...playerInfo,
       hp: playerInfo.hp || 1 // 复活hp默认为1
@@ -353,7 +404,16 @@ function addReborn(isMine = true, playerInfo, conditions = function () { return 
     conditions,
     effects
   }
-  _player.rebornQueue.push(id)
+  return reborn
+}
+// 添加重生次数
+function addReborn(isMine = true, rebornInfo = {}, isForce = false) {
+  // 重生对象基础属性等同于角色属性，重生后将根据playerInfo直接取代原角色属性，其余自行根据conditions所需添加
+  const _player = isMine ? Player : EnemyPlayer
+  const reborn = getRebornObject(rebornInfo)
+  _player.rebornQueue.push(reborn.id)
+  _player[reborn.id] = reborn
+  setFightActionStatus(FightActionTypes.ADDREBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
 }
 // 判断重队列中是否具有满足重生条件
 function getEnableReborns(isMine = true) {
@@ -367,7 +427,7 @@ function getEnableReborns(isMine = true) {
   return rebornIds
 }
 // 触发一个重生
-function enableAPlayerReborn(rebornId, isMine = true) {
+function enableAPlayerReborn(rebornId, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   const reborn = getRebornInfo(rebornId, isMine)
   // 覆盖角色属性
@@ -378,7 +438,15 @@ function enableAPlayerReborn(rebornId, isMine = true) {
   reborn.effects()
   // 从角色的复活队列中移出
   _player.rebornQueue = _player.rebornQueue.filter((rId) => rId !== rebornId)
+  setFightActionStatus(FightActionTypes.REBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+  setFightActionStatus(FightActionTypes.LOSEREBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
+}
+// 清空所有重生
+function resetPlayerReborn(isMine = true, isForce = false) {
+  const _player = isMine ? Player : EnemyPlayer
+  _player.rebornQueue = []
+  setFightActionStatus(FightActionTypes.LOSEREBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
 }
 // 是否有角色败北
 function isPlayerDead(isMine = true) {
@@ -395,6 +463,8 @@ function isPlayerDead(isMine = true) {
 function updateFightResult() {
   const enemyDead = isPlayerDead(false)
   const meDead = isPlayerDead()
+  if (meDead) setFightActionStatus(FightActionTypes.DEAD, FightActionWayTypes.ALL, isMine)
+  if (enemyDead) setFightActionStatus(FightActionTypes.DEAD, FightActionWayTypes.ALL, isMine)
   if (enemyDead && meDead) return setFightResult(FightResultTypes.DRAW)
   if (enemyDead) return setFightResult(FightResultTypes.WIN)
   if (meDead) return setFightResult(FightResultTypes.FAIL)
@@ -413,7 +483,7 @@ function enableABuff(buffId, isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
   const { round, roundEffectTimes, maxRoundEffectTimes } = _player.usedBuffs[buffId]
   if (round === 0 || roundEffectTimes >= maxRoundEffectTimes) {
-    removeBuff(isMine, buffId)
+    removeBuff(isMine, buffId, false)
     return false
   }
   // 触发buff影响
@@ -423,9 +493,9 @@ function enableABuff(buffId, isMine = true) {
   return true
 }
 // 移除buff
-function removeBuff(isMine = true, buffId) {
+function removeBuff(isMine = true, buffId, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  // 触发buff的lose函数
+  // 触发buff的losed函数
   _player.usedBuffs[buffId].losed()
   // 重置属性影响记录器
   _player.usedBuffs[buffId].effectRecord = {}
@@ -435,9 +505,10 @@ function removeBuff(isMine = true, buffId) {
   _player.usedBuffs[buffId].roundEffectTimes = maxRoundEffectTimes
   // 从存活buffs中移除
   _player.buffs = _player.buffs.filter(bId => bId !== buffId)
+  setFightActionStatus(FightActionTypes.LOSEBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
 }
 // 添加buff
-function addBuff(isMine = true, buffKey) {
+function addBuff(isMine = true, buffKey, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   const buff = createBuffObject(_player.id, buffKey, { round: 3 })
   switch (buff.type) {
@@ -459,6 +530,7 @@ function addBuff(isMine = true, buffKey) {
       if (existBuffId) {
         // 叠加回合不超过上限
         _player.usedBuffs[bId].round = Math.min(buff.round + _player.usedBuffs[existBuffId].round, _player.usedBuffs[existBuffId].maxOverlayRound)
+        setFightActionStatus(FightActionTypes.ADDBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
         return true
       }
       // 不存在该buff，push进角色buffs中
@@ -482,6 +554,7 @@ function addBuff(isMine = true, buffKey) {
   _player.usedBuffs[buff.id] = buff
   _player.buffs.push(buff.id)
   if (buff.immdiately) enableABuff(buff.id)
+  setFightActionStatus(FightActionTypes.ADDBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
 // 重置所有buff回合触发次数
