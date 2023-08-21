@@ -108,7 +108,7 @@ const FightActionTypes = {
 	ADDBUFF: 22, // 获得Buff
 	ADDREBORN: 23, // 获得重生
 	REBORN: 24, // 重生
-	DEAD: 25, // 阵亡
+	DEAD: 25, // 阵亡(无被动主动之分，默认为ALL)
 }
 // 战斗行为触发类型
 const FightActionWayTypes = {

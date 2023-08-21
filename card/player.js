@@ -43,6 +43,38 @@ let CurrentRoundPlayerId = null // 当前回合玩家
 let Player = {}
 let EnemyPlayer = {}
 
+// 其他前置函数
+// 获取重生实例
+function getRebornObject({ playerInfo = {}, conditions = function () { return true }, effects = PresetEffects.None }) {
+  const id = getRandomKey()
+  const reborn = {
+    player: {
+      ...playerInfo,
+      hp: playerInfo.hp || 1 // 复活hp默认为1
+    },
+    id,
+    owner: isMine ? PlayerId : EnemyPlayerId,
+    conditions,
+    effects
+  }
+  return reborn
+}
+
+// 战斗行为标志信息相关函数
+// 重置战斗行为缓冲区
+function resetFightActionsBuffer(isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  for (let faKey in FightActionTypes) {
+    _player.fightActions[faKey] = FightActionWayTypes.WAITING
+  }
+}
+// 设置战斗行为(注意这里是设置Buffer——缓冲区，正式的值由在战斗行为结算函数settleFightActions中正式赋值)
+function setFightActionStatus(fightActionTypes, fightActionWayTypes = FightActionWayTypes.WAITING, isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  _player.fightActionsBuffer[fightActionTypes] = fightActionWayTypes
+}
+
+// 玩家信息初始化相关函数
 // 玩家角色初始化
 function initPlayer(isMine = true, name = '', career = CareerTypes.HUMAN) {
   const careerInitInfo = getCareerInitInfo(career)
@@ -68,11 +100,24 @@ function getUpperHandPlayer() {
   if (rand === 0) return UpperHandPlayerId = PlayerId
   if (rand === 1) return UpperHandPlayerId = EnemyPlayerId
 }
+
+// 一些属性对象信息相关的获取函数
 // 根据卡牌ID获取玩家卡组内卡牌信息
 function getCardInfo(cardId, isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
   return _player.cards[cardId] || _player.tempCards[cardId] || null
 }
+// 根据重生ID获取玩家重生信息
+function getRebornInfo(rebornId, isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  return _player.reborns[rebornId] || null
+}
+// 根据重生ID获取玩家Buff信息
+function getBuffInfo(buffId) {
+  return Player.usedBuffs[buffId] || EnemyPlayer.usedBuffs[buffId] || null
+}
+
+// 玩家卡牌信息相关函数
 // 初始化玩家卡组
 function initPlayerCards(isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
@@ -245,18 +290,8 @@ function addTempCards(cards = {}, cardLocations = {}) {
     addCardToFightCards(cId, cardLocations[cId])
   }
 }
-// 重置战斗行为缓冲区
-function resetFightActionsBuffer(isMine = true) {
-  const _player = isMine ? Player : EnemyPlayer
-  for (let faKey in FightActionTypes) {
-    _player.fightActions[faKey] = FightActionWayTypes.WAITING
-  }
-}
-// 设置战斗行为(注意这里是设置Buffer——缓冲区，正式的值由在战斗行为结算函数settleFightActions中正式赋值)
-function setFightActionStatus(fightActionTypes, fightActionWayTypes = FightActionWayTypes.WAITING, isMine = true) {
-  const _player = isMine ? Player : EnemyPlayer
-  _player.fightActionsBuffer[fightActionTypes] = fightActionWayTypes
-}
+
+// 玩家属性信息相关函数
 // 增加额外伤害
 function addATK(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
@@ -305,6 +340,65 @@ function addSHD(addNum, isMine = true, isForce = false) {
   const _addNum = Math.min(addNum, _player.maxShd - _player.shd)
   _player.shd += _addNum
   setFightActionStatus(FightActionTypes.ADDSHD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+  return true
+}
+// 添加重生次数
+function addReborn(isMine = true, rebornInfo = {}, isForce = false) {
+  // 重生对象基础属性等同于角色属性，重生后将根据playerInfo直接取代原角色属性，其余自行根据conditions所需添加
+  const _player = isMine ? Player : EnemyPlayer
+  const reborn = getRebornObject(rebornInfo)
+  _player.rebornQueue.push(reborn.id)
+  _player[reborn.id] = reborn
+  setFightActionStatus(FightActionTypes.ADDREBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+}
+// 添加buff
+function addBuff(isMine = true, buffKey, isForce = false) {
+  const _player = isMine ? Player : EnemyPlayer
+  const buff = createBuffObject(_player.id, buffKey, { round: 3 })
+  switch (buff.type) {
+    case BuffTypes.OVERLAY:
+      let existBuffId = null
+      for (let i = 0; i < _player.buffs; i++) {
+        const bId = _player.buffs[i]
+        // 叠加Buff
+        if (_player.usedBuffs[bId].key === buffKey) {
+          if (_player.usedBuffs[bId].round >= _player.usedBuffs[bId].maxOverlayRound) {
+            alert('该buff生效回合已达叠加上限')
+            return false
+          }
+          existBuffId = bId
+          break
+        }
+      }
+      // 已存在该buff，叠加回合
+      if (existBuffId) {
+        // 叠加回合不超过上限
+        _player.usedBuffs[bId].round = Math.min(buff.round + _player.usedBuffs[existBuffId].round, _player.usedBuffs[existBuffId].maxOverlayRound)
+        setFightActionStatus(FightActionTypes.ADDBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+        return true
+      }
+      // 不存在该buff，push进角色buffs中
+      break
+    case BuffTypes.UNIQUE:
+      for (let i = 0; i < _player.buffs; i++) {
+        const bId = _player.buffs[i]
+        // 唯一buff不可重复存在
+        if (_player.usedBuffs[bId].key === buffKey) {
+          alert('已存在相同的唯一buff')
+          return false
+        }
+      }
+      // 不存在该buff，push进角色buffs中
+      break;
+    case BuffTypes.REPEAT:
+      // REPEAT类型buff直接push进角色buffs中
+      break;
+  }
+  // 不存在的可OVERLAY类型buff，或符合条件的REPEAT和UNIQUE类型buff都是需要push到角色buffs最后面，并将其放入usedBuffs
+  _player.usedBuffs[buff.id] = buff
+  _player.buffs.push(buff.id)
+  if (buff.immdiately) enableABuff(buff.id)
+  setFightActionStatus(FightActionTypes.ADDBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
 // 失去血量
@@ -364,6 +458,97 @@ function losePENATK(loseNum, isMine = true, isForce = false) {
   _player.penAtk -= loseNum
   return true
 }
+// 移除buff
+function loseBuff(isMine = true, buffId, isForce = false) {
+  const _player = isMine ? Player : EnemyPlayer
+  // 触发buff的losed函数
+  _player.usedBuffs[buffId].losed()
+  // 重置属性影响记录器
+  _player.usedBuffs[buffId].effectRecord = {}
+  // 生效回合数归零
+  _player.usedBuffs[buffId].round = 0
+  // 重置回合影响触发次数
+  _player.usedBuffs[buffId].roundEffectTimes = maxRoundEffectTimes
+  // 从存活buffs中移除
+  _player.buffs = _player.buffs.filter(bId => bId !== buffId)
+  setFightActionStatus(FightActionTypes.LOSEBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+}
+
+// 获取可用的属性对象相关函数
+// 判断重队列中是否具有满足重生条件
+function getEnableReborns(isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  const rebornIds = []
+  for (let i = 0; i < _player.rebornQueue.length; i++) {
+    const rId = _player.handCards[i]
+    const reborn = getRebornInfo(rId, isMine)
+    if (reborn.conditions()) rebornIds.push(rId)
+  }
+  return rebornIds
+}
+// 获取符合触发条件的战斗行为触发类型的buff
+function getEnableFightActionBuffs(isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  const buffIds = []
+  _player.buffs.forEach(bId => {
+    const { enableTypes, enableFightActions } = getBuffInfo(bId)
+    // 过滤出buff效果触发类型包含战斗行为的buff
+    if (enableTypes.includes(BuffEnableTypes.FIGHTACTION)) {
+      for (let eKey in enableFightActions) {
+        // 筛选出符合该角色当前战斗行为的buff
+        if (enableFightActions[eKey] === _player.fightActions[eKey]) {
+          buffIds.push(bId)
+          break
+        }
+      }
+    }
+  })
+  return buffIds
+}
+// 属性对象效果触发函数
+// 触发一个重生
+function enableAPlayerReborn(rebornId, isMine = true, isForce = false) {
+  const _player = isMine ? Player : EnemyPlayer
+  const reborn = getRebornInfo(rebornId, isMine)
+  // 覆盖角色属性
+  for (let key in reborn.playerInfo) {
+    _player[key] = reborn.playerInfo[key]
+  }
+  // 其他处理
+  reborn.effects()
+  // 从角色的复活队列中移出
+  _player.rebornQueue = _player.rebornQueue.filter((rId) => rId !== rebornId)
+  setFightActionStatus(FightActionTypes.REBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+  setFightActionStatus(FightActionTypes.LOSEREBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
+  return true
+}
+// buff效果触发
+function enableABuff(buffId, isMine = true) {
+  const _player = isMine ? Player : EnemyPlayer
+  const { round, roundEffectTimes, maxRoundEffectTimes } = _player.usedBuffs[buffId]
+  if (round === 0 || roundEffectTimes >= maxRoundEffectTimes) {
+    loseBuff(isMine, buffId, false)
+    return false
+  }
+  // 触发buff影响
+  _player.usedBuffs[buffId].effects()
+  // 本回合触发次数+1
+  _player.usedBuffs[buffId].roundEffectTimes++
+  return true
+}
+
+// 其他一些函数
+// 重置所有buff回合触发次数
+function updateBuffRoundStatus() {
+  const isMine = isMyTurn()
+  const _player = isMine ? Player : EnemyPlayer
+  _player.buffs.forEach(bId => {
+    // 剩余回合数-1
+    _player.usedBuffs[bId].round--
+    // 重置当前回合已触发次数
+    _player.usedBuffs[bId].roundEffectTimes = 0
+  })
+}
 // 造成伤害
 function attackPlayer({ owner, atk = 0, penAtk = 0, selfAtk = 0, selfPenAtk = 0 }, isForce = false) {
   // isMine指攻击者是否为自己
@@ -386,68 +571,18 @@ function attackPlayer({ owner, atk = 0, penAtk = 0, selfAtk = 0, selfPenAtk = 0 
     setFightActionStatus(FightActionTypes.BEATTACKED, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.FORCE, isMine)
   }
 }
-// 根据重生ID获取玩家重生信息
-function getRebornInfo(rebornId, isMine = true) {
-  const _player = isMine ? Player : EnemyPlayer
-  return _player.reborns[rebornId] || null
-}
-// 获取重生实例
-function getRebornObject({ playerInfo = {}, conditions = function () { return true }, effects = PresetEffects.None }) {
-  const id = getRandomKey()
-  const reborn = {
-    player: {
-      ...playerInfo,
-      hp: playerInfo.hp || 1 // 复活hp默认为1
-    },
-    id,
-    owner: isMine ? PlayerId : EnemyPlayerId,
-    conditions,
-    effects
-  }
-  return reborn
-}
-// 添加重生次数
-function addReborn(isMine = true, rebornInfo = {}, isForce = false) {
-  // 重生对象基础属性等同于角色属性，重生后将根据playerInfo直接取代原角色属性，其余自行根据conditions所需添加
-  const _player = isMine ? Player : EnemyPlayer
-  const reborn = getRebornObject(rebornInfo)
-  _player.rebornQueue.push(reborn.id)
-  _player[reborn.id] = reborn
-  setFightActionStatus(FightActionTypes.ADDREBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
-}
-// 判断重队列中是否具有满足重生条件
-function getEnableReborns(isMine = true) {
-  const _player = isMine ? Player : EnemyPlayer
-  const rebornIds = []
-  for (let i = 0; i < _player.rebornQueue.length; i++) {
-    const rId = _player.handCards[i]
-    const reborn = getRebornInfo(rId, isMine)
-    if (reborn.conditions()) rebornIds.push(rId)
-  }
-  return rebornIds
-}
-// 触发一个重生
-function enableAPlayerReborn(rebornId, isMine = true, isForce = false) {
-  const _player = isMine ? Player : EnemyPlayer
-  const reborn = getRebornInfo(rebornId, isMine)
-  // 覆盖角色属性
-  for (let key in reborn.playerInfo) {
-    _player[key] = reborn.playerInfo[key]
-  }
-  // 其他处理
-  reborn.effects()
-  // 从角色的复活队列中移出
-  _player.rebornQueue = _player.rebornQueue.filter((rId) => rId !== rebornId)
-  setFightActionStatus(FightActionTypes.REBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
-  setFightActionStatus(FightActionTypes.LOSEREBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
-  return true
-}
 // 清空所有重生
 function resetPlayerReborn(isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   _player.rebornQueue = []
   setFightActionStatus(FightActionTypes.LOSEREBORN, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
 }
+// 增加播报
+function addBroadcast(text) {
+
+}
+
+// 角色阵亡相关判断函数
 // 是否有角色败北
 function isPlayerDead(isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
@@ -470,103 +605,39 @@ function updateFightResult() {
   if (meDead) return setFightResult(FightResultTypes.FAIL)
   return setFightResult(FightResultTypes.WAITING)
 }
-// 增加播报
-function addBroadcast(text) {
 
+// 回合处理及信息获取相关函数
+// 获取是否为己方回合的判断结果
+function isMyTurn() {
+  return CurrentRoundPlayerId === PlayerId
 }
-// 根据重生ID获取玩家重生信息
-function getBuffInfo(buffId) {
-  return Player.usedBuffs[buffId] || EnemyPlayer.usedBuffs[buffId] || null
-}
-// buff效果触发
-function enableABuff(buffId, isMine = true) {
-  const _player = isMine ? Player : EnemyPlayer
-  const { round, roundEffectTimes, maxRoundEffectTimes } = _player.usedBuffs[buffId]
-  if (round === 0 || roundEffectTimes >= maxRoundEffectTimes) {
-    removeBuff(isMine, buffId, false)
-    return false
+// 交换回合角色
+function switchRoundTurn() {
+  if (!CurrentRoundPlayerId) {
+    CurrentRoundPlayerId = UpperHandPlayerId
+    setRoundPlayer(UpperHandPlayerId === PlayerId ? RoundPlayerTypes.PLAYER : RoundPlayerTypes.ENEMY)
   }
-  // 触发buff影响
-  _player.usedBuffs[buffId].effects()
-  // 本回合触发次数+1
-  _player.usedBuffs[buffId].roundEffectTimes++
-  return true
-}
-// 移除buff
-function removeBuff(isMine = true, buffId, isForce = false) {
-  const _player = isMine ? Player : EnemyPlayer
-  // 触发buff的losed函数
-  _player.usedBuffs[buffId].losed()
-  // 重置属性影响记录器
-  _player.usedBuffs[buffId].effectRecord = {}
-  // 生效回合数归零
-  _player.usedBuffs[buffId].round = 0
-  // 重置回合影响触发次数
-  _player.usedBuffs[buffId].roundEffectTimes = maxRoundEffectTimes
-  // 从存活buffs中移除
-  _player.buffs = _player.buffs.filter(bId => bId !== buffId)
-  setFightActionStatus(FightActionTypes.LOSEBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
-}
-// 添加buff
-function addBuff(isMine = true, buffKey, isForce = false) {
-  const _player = isMine ? Player : EnemyPlayer
-  const buff = createBuffObject(_player.id, buffKey, { round: 3 })
-  switch (buff.type) {
-    case BuffTypes.OVERLAY:
-      let existBuffId = null
-      for (let i = 0; i < _player.buffs; i++) {
-        const bId = _player.buffs[i]
-        // 叠加Buff
-        if (_player.usedBuffs[bId].key === buffKey) {
-          if (_player.usedBuffs[bId].round >= _player.usedBuffs[bId].maxOverlayRound) {
-            alert('该buff生效回合已达叠加上限')
-            return false
-          }
-          existBuffId = bId
-          break
-        }
-      }
-      // 已存在该buff，叠加回合
-      if (existBuffId) {
-        // 叠加回合不超过上限
-        _player.usedBuffs[bId].round = Math.min(buff.round + _player.usedBuffs[existBuffId].round, _player.usedBuffs[existBuffId].maxOverlayRound)
-        setFightActionStatus(FightActionTypes.ADDBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
-        return true
-      }
-      // 不存在该buff，push进角色buffs中
-      break
-    case BuffTypes.UNIQUE:
-      for (let i = 0; i < _player.buffs; i++) {
-        const bId = _player.buffs[i]
-        // 唯一buff不可重复存在
-        if (_player.usedBuffs[bId].key === buffKey) {
-          alert('已存在相同的唯一buff')
-          return false
-        }
-      }
-      // 不存在该buff，push进角色buffs中
-      break;
-    case BuffTypes.REPEAT:
-      // REPEAT类型buff直接push进角色buffs中
-      break;
+  else {
+    let myTurn = isMyTurn()
+    CurrentRoundPlayerId = myTurn ? EnemyPlayerId : PlayerId
+    setRoundPlayer(myTurn ? RoundPlayerTypes.ENEMY : RoundPlayerTypes.PLAYER)
   }
-  // 不存在的可OVERLAY类型buff，或符合条件的REPEAT和UNIQUE类型buff都是需要push到角色buffs最后面，并将其放入usedBuffs
-  _player.usedBuffs[buff.id] = buff
-  _player.buffs.push(buff.id)
-  if (buff.immdiately) enableABuff(buff.id)
-  setFightActionStatus(FightActionTypes.ADDBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
-  return true
 }
-// 重置所有buff回合触发次数
-function updateBuffRoundStatus() {
-  const isMine = isMyTurn()
-  const _player = isMine ? Player : EnemyPlayer
-  _player.buffs.forEach(bId => {
-    // 剩余回合数-1
-    _player.usedBuffs[bId].round--
-    // 重置当前回合已触发次数
-    _player.usedBuffs[bId].roundEffectTimes = 0
-  })
+
+// 属性对象及信息相关结算函数
+// 战斗行为结算
+function settleFightActions() {
+  // 与战斗行为相关的buff结算
+  settleFightActionBuffs()
+  // 其他与战斗行为相关的结算
+  // TODO...
+  // 采用fightActionsBuffer缓冲区的原因：无法保证在结算战斗行为相关的buff或其他相关结算时，会出现变更fightActions的情况
+  // 而读取时，则直接采用fightActions，保证本轮战斗行为不被其他先处理了的战斗行为相关buff结算或其他结算影响
+  Player.fightActions = JSON.parse(JSON.stringify(Player.fightActionsBuffer))
+  EnemyPlayer.fightActions = JSON.parse(JSON.stringify(EnemyPlayer.fightActionsBuffer))
+  resetFightActionsBuffer()
+  resetFightActionsBuffer(false)
+  return
 }
 // 回合前buff结算
 function settleBeforeRoundBuffs() {
@@ -586,25 +657,6 @@ function settleAfterRoundBuffs() {
     if (enableTypes.includes(BuffEnableTypes.AFTERROUND)) enableABuff(bId)
   })
 }
-// 获取符合触发条件的战斗行为触发类型的buff
-function getEnableFightActionBuffs(isMine = true) {
-  const _player = isMine ? Player : EnemyPlayer
-  const buffIds = []
-  _player.buffs.forEach(bId => {
-    const { enableTypes, enableFightActions } = getBuffInfo(bId)
-    // 过滤出buff效果触发类型包含战斗行为的buff
-    if (enableTypes.includes(BuffEnableTypes.FIGHTACTION)) {
-      for (let eKey in enableFightActions) {
-        // 筛选出符合该角色当前战斗行为的buff
-        if (enableFightActions[eKey] === _player.fightActions[eKey]) {
-          buffIds.push(bId)
-          break
-        }
-      }
-    }
-  })
-  return buffIds
-}
 // 战斗行为触发类型的buff结算
 function settleFightActionBuffs() {
   const myFightActionBuffs = getEnableFightActionBuffs()
@@ -616,36 +668,8 @@ function settleFightActionBuffs() {
     enableABuff(bId, false)
   })
 }
-// 战斗行为结算
-function settleFightActions() {
-  // 与战斗行为相关的buff结算
-  settleFightActionBuffs()
-  // 其他与战斗行为相关的结算
-  // TODO...
-  // 采用fightActionsBuffer缓冲区的原因：无法保证在结算战斗行为相关的buff或其他相关结算时，会出现变更fightActions的情况
-  // 而读取时，则直接采用fightActions，保证本轮战斗行为不被其他先处理了的战斗行为相关buff结算或其他结算影响
-  Player.fightActions = JSON.parse(JSON.stringify(Player.fightActionsBuffer))
-  EnemyPlayer.fightActions = JSON.parse(JSON.stringify(EnemyPlayer.fightActionsBuffer))
-  resetFightActionsBuffer()
-  resetFightActionsBuffer(false)
-  return
-}
-// 获取是否为己方回合的判断结果
-function isMyTurn() {
-  return CurrentRoundPlayerId === PlayerId
-}
-// 交换回合角色
-function switchRoundTurn() {
-  if (!CurrentRoundPlayerId) {
-    CurrentRoundPlayerId = UpperHandPlayerId
-    setRoundPlayer(UpperHandPlayerId === PlayerId ? RoundPlayerTypes.PLAYER : RoundPlayerTypes.ENEMY)
-  }
-  else {
-    let myTurn = isMyTurn()
-    CurrentRoundPlayerId = myTurn ? EnemyPlayerId : PlayerId
-    setRoundPlayer(myTurn ? RoundPlayerTypes.ENEMY : RoundPlayerTypes.PLAYER)
-  }
-}
+
+// 战斗周期相关结算函数
 // 战斗开始结算
 function fightStartSettle() {
   // 初始化玩家战斗信息
@@ -696,6 +720,7 @@ function fightEndSettle() {
   return FightStatusTypes.WAITING
 }
 
+// 回合周期结算相关函数
 // 玩家回合起始等待结算
 function roundStartWaitingSettle() {
   // 交换当前回合角色
@@ -768,6 +793,8 @@ function roundEndSettle() {
   }
   return RoundStatusTypes.STARTWAITING
 }
+
+// 敌对APC相关自动函数
 // 敌对APC自动出牌
 function enemyAutoPlayCard() {
   const enableHandCards = getEnableHandCards(false)
