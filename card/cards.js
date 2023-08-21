@@ -18,39 +18,36 @@ const CardTypesProto = {
 // [属性Key]: index
 const CardBaseProto = {
 	[CardTypes.COMMON]: {
-		name: { index: 0, defaultValue: '' },
-		desc: { index: 1, defaultValue: '' },
-		color: { index: 2, defaultValue: CardColors[CardTypes.COMMON] },
-		status: { index: 3, defaultValue: 0 },
-		statusTypes: { index: 4, defaultValue: [] },
-		fightUseTimes: { index: 5, defaultValue: MAXNUM }, // 当次战斗可使用次数
-		gameUseTimes: { index: 6, defaultValue: MAXNUM }, // 当局游戏可使用次数
-		vit: { index: 7, defaultValue: 1 }, // 体力消耗值
+		name: { defaultValue: '' },
+		desc: { defaultValue: '' },
+		color: { defaultValue: CardColors[CardTypes.COMMON] },
+		status: { defaultValue: 0 },
+		statusTypes: { defaultValue: [] },
+		fightUseTimes: { defaultValue: MAXNUM }, // 当次战斗可使用次数
+		gameUseTimes: { defaultValue: MAXNUM }, // 当局游戏可使用次数
+		vit: { defaultValue: 1 }, // 体力消耗值
+		rare: { defaultValue: 1 }, // 体力消耗值
 		conditions: {
 			// 卡牌使用条件
-			index: 8,
 			defaultValue: function () { return true }
 		},
 		effects: {
 			// 卡牌特殊效果
-			index: 9,
 			defaultValue: function () { }
 		},
 	},
 	[CardTypes.ATTACK]: {
-		atk: { index: 0, defaultValue: 0 }, // 普通伤害
-		penAtk: { index: 1, defaultValue: 0 }, // 穿透伤害
-		selfAtk: { index: 2, defaultValue: 0 }, // 己方伤害
-		selfPenAtk: { index: 3, defaultValue: 0 }, // 己方穿透伤害
+		atk: { defaultValue: 0 }, // 普通伤害
+		penAtk: { defaultValue: 0 }, // 穿透伤害
+		selfAtk: { defaultValue: 0 }, // 己方伤害
+		selfPenAtk: { defaultValue: 0 }, // 己方穿透伤害
 	},
 	[CardTypes.DEFENSE]: {
-		shd: { index: 0, defaultValue: 0 },
+		shd: { defaultValue: 0 },
 	},
 	[CardTypes.MAGIC]: {
-
 	},
 	[CardTypes.PROPS]: {
-
 	},
 }
 /**
@@ -67,22 +64,22 @@ const Cards = {
 	NormalAttack1: {
 		types: [CardTypes.ATTACK],
 		values: {
-			[CardTypes.COMMON]: ['小拳拳', '造成1点伤害'],
-			[CardTypes.ATTACK]: [1]
+			[CardTypes.COMMON]: { name: '小拳拳', desc: '造成1点伤害' },
+			[CardTypes.ATTACK]: { atk: 1 }
 		}
 	},
 	NormalAttack2: {
 		types: [CardTypes.ATTACK],
 		values: {
-			[CardTypes.COMMON]: ['暗劲儿', '造成1点穿透伤害'],
-			[CardTypes.ATTACK]: [1]
+			[CardTypes.COMMON]: { name: '暗劲儿', desc: '造成1点穿透伤害' },
+			[CardTypes.ATTACK]: { penAtk: 1 }
 		}
 	},
 	NormalDefense1: {
 		types: [CardTypes.DEFENSE],
 		values: {
-			[CardTypes.COMMON]: ['大锅盖', '护盾+1'],
-			[CardTypes.DEFENSE]: [1]
+			[CardTypes.COMMON]: { name: '大锅盖', desc: '护盾+1' },
+			[CardTypes.DEFENSE]: { shd: 1 }
 		}
 	},
 }
@@ -108,8 +105,8 @@ const CardsEffects = {
 function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values = []) {
 	const proto = {}
 	for (let pKey in CardBaseProto[type]) {
-		const { index, defaultValue } = CardBaseProto[type][pKey]
-		proto[pKey] = values[index] || CardTypesProto[mainCardType][pKey] || defaultValue
+		const { defaultValue } = CardBaseProto[type][pKey]
+		proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || defaultValue
 	}
 	return proto
 }

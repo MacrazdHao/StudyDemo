@@ -12,3 +12,12 @@ const CardColors = {
 	[CardTypes.MAGIC]: 'pupple', // 魔法
 	[CardTypes.PROPS]: 'green', // 道具
 }
+// 卡牌稀有度颜色（标题、边框）
+const CardRareColors = {
+	[CardRareTypes.DEFAULT]: 'gray', // 灰，默认
+	[CardRareTypes.NORMAL]: 'blue', // 蓝，普通
+	[CardRareTypes.UNUSUAL]: 'purple', // 紫，罕见
+	[CardRareTypes.PRECIOUS]: 'pink', // 粉，珍稀
+	[CardRareTypes.LEGEND]: 'orange', // 橙，传说
+	[CardRareTypes.UNIQUE]: 'colorful', // 彩，唯一
+}

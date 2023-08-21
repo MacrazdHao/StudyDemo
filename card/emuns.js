@@ -52,6 +52,15 @@ const CardTypes = {
 	MAGIC: 3, // 魔法
 	PROPS: 4, // 道具
 }
+// 卡牌类型
+const CardRareTypes = {
+	DEFAULT: 0, // 灰，默认
+	NORMAL: 1, // 蓝，普通
+	UNUSUAL: 2, // 紫，罕见
+	PRECIOUS: 3, // 粉，珍稀
+	LEGEND: 4, // 橙，传说
+	UNIQUE: 5, // 彩，唯一
+}
 // 卡牌操作事件类型
 const CardEventStatusTypes = {
 	DROP: 0,

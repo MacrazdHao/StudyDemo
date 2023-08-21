@@ -107,7 +107,7 @@ function getHandCardPosition(index, isMine = true) {
 function drawCard(card, pos, handCard) {
 	const isMine = PlayerId === card.owner
 	const { color } = card
-	const { width, height, strokeColor, reverseColor } = CardStyle
+	const { width, height, strokeColor, reverseColor, rare } = CardStyle
 	let x = pos ? pos.x : 0
 	let y = pos ? pos.y : 0
 	if (handCard) {
