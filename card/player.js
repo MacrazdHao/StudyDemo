@@ -598,8 +598,8 @@ function isPlayerDead(isMine = true) {
 function updateFightResult() {
   const enemyDead = isPlayerDead(false)
   const meDead = isPlayerDead()
-  if (meDead) setFightActionStatus(FightActionTypes.DEAD, FightActionWayTypes.ALL, isMine)
-  if (enemyDead) setFightActionStatus(FightActionTypes.DEAD, FightActionWayTypes.ALL, isMine)
+  if (meDead) setFightActionStatus(FightActionTypes.DEAD, FightActionWayTypes.ALL, true)
+  if (enemyDead) setFightActionStatus(FightActionTypes.DEAD, FightActionWayTypes.ALL, false)
   if (enemyDead && meDead) return setFightResult(FightResultTypes.DRAW)
   if (enemyDead) return setFightResult(FightResultTypes.WIN)
   if (meDead) return setFightResult(FightResultTypes.FAIL)
