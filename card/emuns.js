@@ -66,11 +66,6 @@ const CardEventStatusTypes = {
 	DROP: 0,
 	PLAY: 1
 }
-// 初始卡组
-const InitCards = {
-	NormalAttack1: 3,
-	NormalDefense1: 3,
-}
 // 卡牌位置类型
 const CardLocTypes = {
 	DOWN: -1,
@@ -126,4 +121,20 @@ const FightActionWayTypes = {
 	ALL: 1, // 主动和被动
 	INITIACTIVE: 2, // 主动触发
 	FORCE: 3, // 被动触发
+}
+// 基础数值属性Key值
+const BaseValueAttributeKeys = {
+	MAXHP: 'maxHp', // 最大血量
+	MAXSHIELD: 'maxShd', // 最大护盾
+	MAXMP: 'maxMp', // 最大灵力
+	MAXVITALITY: 'maxVit', // 最大体力
+	HP: 'hp', // 血量
+	SHIELD: 'shd', // 护盾
+	MP: 'mp', // 灵力
+	VITALITY: 'vit', // 体力
+	ATTACK: 'atk', // 额外伤害
+	PENATTACK: 'penAtk', // 额外穿透伤害
+	MAXHANDCARDSNUM: 'maxHandCardsNum', // 最大手牌数
+	ROUNDGETCARDNUM: 'roundGetCardNum', // 回合卡牌抽取数
+	INITIALVITALITY: 'initVit', // 初始体力
 }

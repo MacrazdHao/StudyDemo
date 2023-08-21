@@ -106,8 +106,8 @@ function getHandCardPosition(index, isMine = true) {
 // 绘画卡牌
 function drawCard(card, pos, handCard) {
 	const isMine = PlayerId === card.owner
-	const { color } = card
-	const { width, height, strokeColor, reverseColor, rare } = CardStyle
+	const { color, rare } = card
+	const { width, height, strokeColor, reverseColor } = CardStyle
 	let x = pos ? pos.x : 0
 	let y = pos ? pos.y : 0
 	if (handCard) {
@@ -116,11 +116,24 @@ function drawCard(card, pos, handCard) {
 		x = pos.x
 		y = pos.y
 	}
-	Context.fillStyle = isMine ? color : reverseColor
+	let _strokeColor = strokeColor
+	if (isMine || !handCard) {
+		Context.fillStyle = color
+		_strokeColor = CardRareColors[rare]
+		if (rare === CardRareTypes.UNIQUE) {
+			_strokeColor = Context.createLinearGradient(x, y, x + width, y + height)
+			CardRareColors[rare].forEach((color, index, arr) => {
+				_strokeColor.addColorStop(index / arr.length, color)
+			})
+		}
+	} else Context.fillStyle = reverseColor
 	Context.fillRect(x, y, width, height)
-	Context.strokeStyle = strokeColor
+	Context.strokeStyle = _strokeColor
 	Context.lineWidth = 2
 	Context.strokeRect(x, y, width, height)
+	Context.strokeStyle = strokeColor
+	Context.lineWidth = 1
+	Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
 	return {
 		...card,
 		x, y
@@ -149,19 +162,19 @@ function drawDesktopCard() {
 function updatePlayerInfoUI() {
 	if (JSON.stringify(Player) !== '{}') {
 		MyNameDom.innerHTML = Player.name
-		MySHDDom.innerHTML = Player.shd
-		MyHPDom.innerHTML = Player.hp
-		MyMPDom.innerHTML = Player.mp
-		MyVITDom.innerHTML = Player.vit
+		MyHPDom.innerHTML = Player[BaseValueAttributeKeys.HP]
+		MySHDDom.innerHTML = Player[BaseValueAttributeKeys.SHIELD]
+		MyMPDom.innerHTML = Player[BaseValueAttributeKeys.MP]
+		MyVITDom.innerHTML = Player[BaseValueAttributeKeys.VITALITY]
 		MyFightCardsDom.innerHTML = Player.fightCards.length
 		MyFightUsedCardsDom.innerHTML = Player.fightUsedCards.length
 	}
 	if (JSON.stringify(EnemyPlayer) !== '{}') {
 		EnemyNameDom.innerHTML = EnemyPlayer.name
-		EnemySHDDom.innerHTML = EnemyPlayer.shd
-		EnemyHPDom.innerHTML = EnemyPlayer.hp
-		EnemyMPDom.innerHTML = EnemyPlayer.mp
-		EnemyVITDom.innerHTML = EnemyPlayer.vit
+		EnemyHPDom.innerHTML = EnemyPlayer[BaseValueAttributeKeys.HP]
+		EnemySHDDom.innerHTML = EnemyPlayer[BaseValueAttributeKeys.SHIELD]
+		EnemyMPDom.innerHTML = EnemyPlayer[BaseValueAttributeKeys.MP]
+		EnemyVITDom.innerHTML = EnemyPlayer[BaseValueAttributeKeys.VITALITY]
 		EnemyFightCardsDom.innerHTML = EnemyPlayer.fightCards.length
 		EnemyFightUsedCardsDom.innerHTML = EnemyPlayer.fightUsedCards.length
 	}

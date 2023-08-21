@@ -1,16 +1,29 @@
+const InitCards = {
+	NormalAttack1: 3,
+	NormalDefense1: 3,
+}
+
 const CareerInitInfo = {
 	[CareerTypes.HUMAN]: {
 		careerNam: '人类',
-		maxHp: 5, // 最大血量
-		maxMp: 2, // 最大灵力
-		maxShd: 10, // 最大护盾
-		maxVit: 5, // 最大体力
-		hp: 3,
-		shd: 0,
-		mp: 0,
-		initVit: 2,
-		maxHandCardsNum: 3,
-		roundGetCardNum: 2
+		[BaseValueAttributeKeys.MAXHP]: 5,
+		[BaseValueAttributeKeys.MAXSHIELD]: 10,
+		[BaseValueAttributeKeys.MAXMP]: 2,
+		[BaseValueAttributeKeys.MAXVITALITY]: 5,
+		[BaseValueAttributeKeys.HP]: 3,
+		[BaseValueAttributeKeys.SHIELD]: 0,
+		[BaseValueAttributeKeys.MP]: 0,
+		[BaseValueAttributeKeys.MAXHANDCARDSNUM]: 3,
+		[BaseValueAttributeKeys.ROUNDGETCARDNUM]: 2,
+		[BaseValueAttributeKeys.INITIALVITALITY]: 2,
+		initCards: {
+			// ...InitCards
+			Test1: 1,
+			Test2: 1,
+			Test3: 1,
+			Test4: 1,
+			Test5: 1,
+		}
 	}
 }
 

@@ -25,20 +25,14 @@ const CardBaseProto = {
 		statusTypes: { defaultValue: [] },
 		fightUseTimes: { defaultValue: MAXNUM }, // 当次战斗可使用次数
 		gameUseTimes: { defaultValue: MAXNUM }, // 当局游戏可使用次数
-		vit: { defaultValue: 1 }, // 体力消耗值
-		rare: { defaultValue: 1 }, // 体力消耗值
-		conditions: {
-			// 卡牌使用条件
-			defaultValue: function () { return true }
-		},
-		effects: {
-			// 卡牌特殊效果
-			defaultValue: function () { }
-		},
+		needVit: { defaultValue: 1 }, // 体力消耗值
+		rare: { defaultValue: CardRareTypes.DEFAULT }, // 体力消耗值
+		conditions: { defaultValue: 'None' },
+		effects: { defaultValue: 'None' },
 	},
 	[CardTypes.ATTACK]: {
-		atk: { defaultValue: 0 }, // 普通伤害
-		penAtk: { defaultValue: 0 }, // 穿透伤害
+		[BaseValueAttributeKeys.ATTACK]: { defaultValue: 0 }, // 普通伤害
+		[BaseValueAttributeKeys.PENATTACK]: { defaultValue: 0 }, // 穿透伤害
 		selfAtk: { defaultValue: 0 }, // 己方伤害
 		selfPenAtk: { defaultValue: 0 }, // 己方穿透伤害
 	},
@@ -64,7 +58,7 @@ const Cards = {
 	NormalAttack1: {
 		types: [CardTypes.ATTACK],
 		values: {
-			[CardTypes.COMMON]: { name: '小拳拳', desc: '造成1点伤害' },
+			[CardTypes.COMMON]: { name: '小拳拳', desc: '造成1点伤害', effects: 'BaseAttackEffect' },
 			[CardTypes.ATTACK]: { atk: 1 }
 		}
 	},
@@ -72,34 +66,51 @@ const Cards = {
 		types: [CardTypes.ATTACK],
 		values: {
 			[CardTypes.COMMON]: { name: '暗劲儿', desc: '造成1点穿透伤害' },
-			[CardTypes.ATTACK]: { penAtk: 1 }
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.PENATTACK]: 1 }
 		}
 	},
 	NormalDefense1: {
 		types: [CardTypes.DEFENSE],
 		values: {
-			[CardTypes.COMMON]: { name: '大锅盖', desc: '护盾+1' },
+			[CardTypes.COMMON]: { name: '大锅盖', desc: '护盾+1', effects: 'BaseAttrEffect' },
 			[CardTypes.DEFENSE]: { shd: 1 }
 		}
 	},
-}
-// 卡牌条件函数
-const CardsConditions = {
-	NormalAttack1: function () {
-		const isMine = this.owner === PlayerId
-		const _player = isMine ? Player : EnemyPlayer
-		return true
+	Test1: {
+		types: [CardTypes.MAGIC],
+		values: {
+			[CardTypes.COMMON]: { name: '测试卡-稀有1', desc: '灵力+1', rare: CardRareTypes.NORMAL },
+			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+		}
 	},
-	NormalDefense1: function () {
-		const isMine = this.owner === PlayerId
-		const _player = isMine ? Player : EnemyPlayer
-		return true
-	}
-}
-// 卡牌影响函数
-const CardsEffects = {
-	NormalAttack1: 'NormalAttack1',
-	NormalDefense1: 'NormalDefense1',
+	Test2: {
+		types: [CardTypes.MAGIC],
+		values: {
+			[CardTypes.COMMON]: { name: '测试卡-稀有2', desc: '灵力+1', rare: CardRareTypes.UNUSUAL },
+			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+		}
+	},
+	Test3: {
+		types: [CardTypes.MAGIC],
+		values: {
+			[CardTypes.COMMON]: { name: '测试卡-稀有3', desc: '灵力+1', rare: CardRareTypes.PRECIOUS },
+			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+		}
+	},
+	Test4: {
+		types: [CardTypes.MAGIC],
+		values: {
+			[CardTypes.COMMON]: { name: '测试卡-稀有4', desc: '灵力+1', rare: CardRareTypes.LEGEND },
+			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+		}
+	},
+	Test5: {
+		types: [CardTypes.MAGIC],
+		values: {
+			[CardTypes.COMMON]: { name: '测试卡-稀有5', desc: '灵力+1', rare: CardRareTypes.UNIQUE },
+			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+		}
+	},
 }
 // 组合类属性
 function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values = []) {
@@ -107,25 +118,33 @@ function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values =
 	for (let pKey in CardBaseProto[type]) {
 		const { defaultValue } = CardBaseProto[type][pKey]
 		proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || defaultValue
+		if (pKey === 'effects') {
+			proto[pKey] = PresetEffects[proto[pKey]]
+		}
+		if (pKey === 'conditions') {
+			proto[pKey] = PresetConditions[proto[pKey]]
+		}
 	}
 	return proto
 }
 // 创建卡牌对象
-function createCardObject(cardKey = '', extraAttr = {}, customEffects) {
+function createCardObject(cardKey = '', extraAttr = {}) {
 	const { types, values } = Cards[cardKey]
 	let card = { types: [...types, CardTypes.COMMON] }
 	const mType = card.types[0]
 	for (let vType in values) {
-		const valuesArr = values[vType]
+		const typeAttrs = values[vType]
 		card = {
 			...card,
-			...blendCardTypeProto(mType, vType, valuesArr),
-			conditions: CardsConditions[cardKey],
-			effects: customEffects || PresetEffects[CardsEffects[cardKey]],
+			...blendCardTypeProto(mType, vType, typeAttrs),
 			...extraAttr
 		}
 	}
-	return { id: getRandomKey(), key: cardKey, ...card }
+	return {
+		id: getRandomKey(), key: cardKey, ...card,
+		// conditions: PresetConditions[conditions],
+		// effects: PresetEffects[effects],
+	}
 }
 // 生成卡组
 function generateCardsGroup(playerId, cardsMap = {}) {

@@ -3,21 +3,21 @@ const EnemyPlayerId = getRandomKey()
 const PlayerProto = {
   id: '',
   name: '', // 玩家名字
-  maxHp: 0, // 最大血量
-  maxShd: 0, // 最大护盾
-  maxMp: 0, // 最大灵力
-  maxVit: 0, // 最大体力
-  hp: 0, // 血量
-  shd: 0, // 护盾
-  mp: 0, // 灵力
-  vit: 0, // 体力(每回合出牌张数，每回合重置为maxVit)
-  atk: 0, // 额外伤害，注意细分两种造成额外伤害的情况(penAtck同)：1-该atk属性的合并伤害；2-来自战斗行为类buff监听到攻击行为而造成的附加伤害；
-  penAtk: 0, // 额外穿透伤害
+  [BaseValueAttributeKeys.MAXHP]: 0, // 最大血量
+  [BaseValueAttributeKeys.MAXSHIELD]: 0, // 最大护盾
+  [BaseValueAttributeKeys.MAXMP]: 0, // 最大灵力
+  [BaseValueAttributeKeys.MAXVITALITY]: 0, // 最大体力
+  [BaseValueAttributeKeys.HP]: 0, // 血量
+  [BaseValueAttributeKeys.SHIELD]: 0, // 护盾
+  [BaseValueAttributeKeys.MP]: 0, // 灵力
+  [BaseValueAttributeKeys.VITALITY]: 0, // 体力(每回合出牌张数，每回合重置为maxVit)
+  [BaseValueAttributeKeys.ATTACK]: 0, // 额外伤害，注意细分两种造成额外伤害的情况(penAtck同)：1-该atk属性的合并伤害；2-来自战斗行为类buff监听到攻击行为而造成的附加伤害；
+  [BaseValueAttributeKeys.PENATTACK]: 0, // 额外穿透伤害
+  [BaseValueAttributeKeys.MAXHANDCARDSNUM]: 0, // 手牌上限
+  [BaseValueAttributeKeys.ROUNDGETCARDNUM]: 0, // 每回合抽取卡牌数
+  [BaseValueAttributeKeys.INITIALVITALITY]: 0, // 回合初始体力
   reborns: {}, // 重生对象
   rebornQueue: [], // 重生队列
-  initVit: 0, // 回合初始体力
-  maxHandCardsNum: 0, // 手牌上限
-  roundGetCardNum: 0, // 每回合抽取卡牌数
   buffs: [], // 存活的buff(id)
   usedBuffs: {}, // 玩家buff，key值为随机生成的id
   cards: {}, // 卡组，卡牌对象根据卡牌id从此获取，其余数组仅存id
@@ -50,7 +50,7 @@ function getRebornObject({ playerInfo = {}, conditions = function () { return tr
   const reborn = {
     player: {
       ...playerInfo,
-      hp: playerInfo.hp || 1 // 复活hp默认为1
+      [BaseValueAttributeKeys.HP]: playerInfo[BaseValueAttributeKeys.HP] || 1 // 复活hp默认为1
     },
     id,
     owner: isMine ? PlayerId : EnemyPlayerId,
@@ -121,7 +121,7 @@ function getBuffInfo(buffId) {
 // 初始化玩家卡组
 function initPlayerCards(isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
-  _player.cards = generateCardsGroup(_player.id, InitCards)
+  _player.cards = generateCardsGroup(_player.id, _player.initCards)
 }
 // 获取当前卡牌是否能够加入战斗卡池判断结果
 function jurdgeCardCanPushFightCards({ id, owner }) {
@@ -170,7 +170,7 @@ function initFightCards(isMine = true, extraCards = {}) {
 // 玩家从战斗卡池抽取手牌
 function getHandCards(isMine = true, num, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  const { fightCards, roundGetCardNum } = _player
+  const { fightCards, [BaseValueAttributeKeys.ROUNDGETCARDNUM]: roundGetCardNum } = _player
   // 战斗卡池为空或不足抽牌数，则重置卡池
   if (!fightCards.length) initFightCards(isMine)
   // 卡池少于应抽卡数，以卡池剩余卡牌数量为准
@@ -219,7 +219,7 @@ function playCard(e, isMine = true, cardId, isForce = false) {
   }
   const card = getCardInfo(_cardId, isMine)
   // 出牌行为使体力扣减
-  const vitRes = loseVIT(card.vit, isMine)
+  const vitRes = changeVIT(-card.needVit, isMine)
   if (!vitRes) {
     alert('体力不足')
     return
@@ -295,14 +295,14 @@ function addTempCards(cards = {}, cardLocations = {}) {
 // 增加额外伤害
 function addATK(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  _player.atk += addNum
+  _player[BaseValueAttributeKeys.ATTACK] += addNum
   setFightActionStatus(FightActionTypes.ADDATK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
 // 增加额外穿透伤害.
 function addPENATK(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  _player.penAtk += addNum
+  _player[BaseValueAttributeKeys.PENATTACK] += addNum
   setFightActionStatus(FightActionTypes.ADDPENATK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
@@ -310,8 +310,8 @@ function addPENATK(addNum, isMine = true, isForce = false) {
 function addHP(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   // 增加值不超过上限
-  const _addNum = Math.min(addNum, _player.maxHp - _player.hp)
-  _player.hp += _addNum
+  const _addNum = Math.min(addNum, _player[BaseValueAttributeKeys.MAXHP] - _player[BaseValueAttributeKeys.HP])
+  _player[BaseValueAttributeKeys.HP] += _addNum
   setFightActionStatus(FightActionTypes.ADDHP, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
@@ -319,8 +319,8 @@ function addHP(addNum, isMine = true, isForce = false) {
 function addVIT(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   // 增加值不超过上限
-  const _addNum = Math.min(addNum, _player.maxVit - _player.vit)
-  _player.vit += _addNum
+  const _addNum = Math.min(addNum, _player[BaseValueAttributeKeys.MAXVITALITY] - _player[BaseValueAttributeKeys.VITALITY])
+  _player[BaseValueAttributeKeys.VITALITY] += _addNum
   setFightActionStatus(FightActionTypes.ADDVIT, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
@@ -328,8 +328,8 @@ function addVIT(addNum, isMine = true, isForce = false) {
 function addMP(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   // 增加值不超过上限
-  const _addNum = Math.min(addNum, _player.maxMp - _player.mp)
-  _player.mp += _addNum
+  const _addNum = Math.min(addNum, _player[BaseValueAttributeKeys.MAXMP] - _player[BaseValueAttributeKeys.MP])
+  _player[BaseValueAttributeKeys.MP] += _addNum
   setFightActionStatus(FightActionTypes.ADDMP, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
@@ -337,7 +337,7 @@ function addMP(addNum, isMine = true, isForce = false) {
 function addSHD(addNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   // 增加值不超过上限
-  const _addNum = Math.min(addNum, _player.maxShd - _player.shd)
+  const _addNum = Math.min(addNum, _player[BaseValueAttributeKeys.MAXSHIELD] - _player[BaseValueAttributeKeys.SHIELD])
   _player.shd += _addNum
   setFightActionStatus(FightActionTypes.ADDSHD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
@@ -404,7 +404,7 @@ function addBuff(isMine = true, buffKey, isForce = false) {
 // 失去血量
 function loseHP(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  _player.hp -= loseNum
+  _player[BaseValueAttributeKeys.HP] -= loseNum
   setFightActionStatus(FightActionTypes.LOSEHP, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   // 任意败北判断
   updateFightResult()
@@ -413,19 +413,19 @@ function loseHP(loseNum, isMine = true, isForce = false) {
 // 失去体力
 function loseVIT(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  if (_player.vit === 0) return false
+  if (_player[BaseValueAttributeKeys.VITALITY] === 0) return false
   setFightActionStatus(FightActionTypes.LOSEVIT, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
-  const lastVIT = _player.vit - loseNum
-  _player.vit = lastVIT > 0 ? lastVIT : 0
+  const lastVIT = _player[BaseValueAttributeKeys.VITALITY] - loseNum
+  _player[BaseValueAttributeKeys.VITALITY] = lastVIT > 0 ? lastVIT : 0
   return true
 }
 // 失去灵力值
 function loseMP(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  if (_player.mp === 0) return false
+  if (_player[BaseValueAttributeKeys.MP] === 0) return false
   setFightActionStatus(FightActionTypes.LOSEMP, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
-  const lastMP = _player.mp - loseNum
-  _player.mp = lastMP > 0 ? lastMP : 0
+  const lastMP = _player[BaseValueAttributeKeys.MP] - loseNum
+  _player[BaseValueAttributeKeys.MP] = lastMP > 0 ? lastMP : 0
   return true
 }
 // 失去护盾
@@ -435,7 +435,7 @@ function loseSHD(loseNum, isMine = true, isForce = false) {
   if (_player.shd > 0) setFightActionStatus(FightActionTypes.LOSESHD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   // 剩余护甲不足扣除伤害，直接扣血量
   if (lastShd < 0) {
-    loseHP(-lastShd, isMine, isForce)
+    changeHP(lastShd, isMine, isForce)
     _player.shd = 0
     return
   }
@@ -447,7 +447,7 @@ function loseATK(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   setFightActionStatus(FightActionTypes.LOSEATK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   // 允许为负数
-  _player.atk -= loseNum
+  _player[BaseValueAttributeKeys.ATTACK] -= loseNum
   return true
 }
 // 失去额外穿透伤害
@@ -455,7 +455,7 @@ function losePENATK(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   setFightActionStatus(FightActionTypes.LOSEPENATK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   // 允许为负数
-  _player.penAtk -= loseNum
+  _player[BaseValueAttributeKeys.PENATTACK] -= loseNum
   return true
 }
 // 移除buff
@@ -473,6 +473,37 @@ function loseBuff(isMine = true, buffId, isForce = false) {
   _player.buffs = _player.buffs.filter(bId => bId !== buffId)
   setFightActionStatus(FightActionTypes.LOSEBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
 }
+// 改变血量
+function changeHP(num, isMine = false, isForce = false) {
+  if (num > 0) return addHP(num, isMine, isForce)
+  if (num < 0) return loseHP(-num, isMine, isForce)
+}
+// 改变护盾
+function changeSHD(num, isMine = false, isForce = false) {
+  if (num > 0) return addSHD(num, isMine, isForce)
+  if (num < 0) return loseSHD(-num, isMine, isForce)
+}
+// 改变灵力值
+function changeMP(num, isMine = false, isForce = false) {
+  if (num > 0) return addMP(num, isMine, isForce)
+  if (num < 0) return loseMP(-num, isMine, isForce)
+}
+// 改变体力
+function changeVIT(num, isMine = false, isForce = false) {
+  if (num > 0) return addVIT(num, isMine, isForce)
+  if (num < 0) return loseVIT(-num, isMine, isForce)
+}
+// 改变伤害
+function changeATK(num, isMine = false, isForce = false) {
+  if (num > 0) return addATK(num, isMine, isForce)
+  if (num < 0) return loseATK(-num, isMine, isForce)
+}
+// 改变穿透伤害
+function changePENATK(num, isMine = false, isForce = false) {
+  if (num > 0) return addPENATK(num, isMine, isForce)
+  if (num < 0) return losePENATK(-num, isMine, isForce)
+}
+
 
 // 获取可用的属性对象相关函数
 // 判断重队列中是否具有满足重生条件
@@ -550,24 +581,25 @@ function updateBuffRoundStatus() {
   })
 }
 // 造成伤害
-function attackPlayer({ owner, atk = 0, penAtk = 0, selfAtk = 0, selfPenAtk = 0 }, isForce = false) {
+function attackPlayer(attackInfo = {}, isForce = false) {
+  const { owner, [BaseValueAttributeKeys.ATTACK]: atk, [BaseValueAttributeKeys.PENATTACK]: penAtk, selfAtk, selfPenAtk } = attackInfo
   // isMine指攻击者是否为自己
   const isMine = PlayerId === owner
   const _player = isMine ? Player : EnemyPlayer
   // 敌伤
   if (atk || penAtk) {
     // 额外伤害及额外穿刺伤害均可为负，因此两者伤害应同时设定最低限制为0
-    const _penAtk = Math.max(_player.penAtk + penAtk, 0)
-    const _atk = Math.max(_player.atk + atk, 0)
-    loseHP(_penAtk, !isMine, true)
-    loseSHD(_atk, !isMine, true)
+    const _penAtk = -Math.max(_player[BaseValueAttributeKeys.PENATTACK] + penAtk, 0)
+    const _atk = -Math.max(_player[BaseValueAttributeKeys.ATTACK] + atk, 0)
+    changeHP(_penAtk, !isMine, true)
+    changeSHD(_atk, !isMine, true)
     setFightActionStatus(FightActionTypes.ATTACK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
     setFightActionStatus(FightActionTypes.BEATTACKED, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, !isMine)
   }
   // 自伤
   if (selfAtk || selfPenAtk) {
-    loseHP(selfPenAtk, isMine, false)
-    loseSHD(selfAtk, isMine, false)
+    changeHP(selfPenAtk, isMine, false)
+    changeSHD(selfAtk, isMine, false)
     setFightActionStatus(FightActionTypes.BEATTACKED, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.FORCE, isMine)
   }
 }
@@ -586,7 +618,7 @@ function addBroadcast(text) {
 // 是否有角色败北
 function isPlayerDead(isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
-  if (_player.hp > 0) return false
+  if (_player[BaseValueAttributeKeys.HP] > 0) return false
   if (!_player.rebornQueue.length) return true
   const enableReborns = getEnableReborns(isMine)
   if (!enableReborns.length) return true
@@ -684,8 +716,8 @@ function fightStartSettle() {
   initFightCards(true)
   initFightCards(false)
   // 获取战斗初始手牌
-  getHandCards(true, Player.maxHandCardsNum)
-  getHandCards(false, EnemyPlayer.maxHandCardsNum)
+  getHandCards(true, Player[BaseValueAttributeKeys.MAXHANDCARDSNUM])
+  getHandCards(false, EnemyPlayer[BaseValueAttributeKeys.MAXHANDCARDSNUM])
   // 回合重置为1
   Round = 1
   console.log(Player, EnemyPlayer)
@@ -741,11 +773,11 @@ function roundStartSettle() {
   const _player = isMine ? Player : EnemyPlayer
   CardEventStatus = CardEventStatusTypes.PLAY
   // 重置体力
-  _player.vit = _player.initVit
+  _player[BaseValueAttributeKeys.VITALITY] = _player[BaseValueAttributeKeys.INITIALVITALITY]
   // 前置buff结算
   settleAfterRoundBuffs()
   // 抽牌
-  getHandCards(isMine, _player.roundGetCardNum)
+  getHandCards(isMine, _player[BaseValueAttributeKeys.ROUNDGETCARDNUM])
   return RoundStatusTypes.PLAYWAITING
 }
 // 玩家回合中前置结算
@@ -766,7 +798,7 @@ function roundEndWaitingSettle() {
   const isMine = isMyTurn()
   const _player = isMine ? Player : EnemyPlayer
   // 判断是否丢弃手牌
-  const cardDropNum = _player.handCards.length - _player.maxHandCardsNum
+  const cardDropNum = _player.handCards.length - _player[BaseValueAttributeKeys.MAXHANDCARDSNUM]
   if (cardDropNum <= 0) {
     CardEventPlayerId = _player.id
     CardEventStatus = CardEventStatusTypes.PLAY
@@ -800,7 +832,7 @@ function enemyAutoPlayCard() {
   const enableHandCards = getEnableHandCards(false)
   // 没有可使用的手牌
   if (!enableHandCards.length) return
-  const { vit: cNum } = EnemyPlayer
+  const { [BaseValueAttributeKeys.VITALITY]: cNum } = EnemyPlayer
   for (let i = 0; i < cNum; i++) {
     if (EnemyPlayer.handCards.length === 0) return
     const cIndex = getIntRandom(EnemyPlayer.handCards.length - 1)
@@ -811,7 +843,7 @@ function enemyAutoPlayCard() {
 }
 // 敌对APC自动弃牌
 function enemyAutoDropCard() {
-  const cardDropNum = EnemyPlayer.handCards.length - EnemyPlayer.maxHandCardsNum
+  const cardDropNum = EnemyPlayer.handCards.length - EnemyPlayer[BaseValueAttributeKeys.MAXHANDCARDSNUM]
   if (cardDropNum <= 0) return
   for (let i = 0; i < cardDropNum; i++) {
     if (EnemyPlayer.handCards.length === 0) return
