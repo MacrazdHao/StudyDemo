@@ -165,31 +165,37 @@ function drawCard(card, pos, handCard) {
 				_strokeColor.addColorStop(index / arr.length, color)
 			})
 		}
-	} else Context.fillStyle = reverseColor
-	Context.fillRect(x, y, width, height)
-	Context.strokeStyle = _strokeColor
-	Context.lineWidth = 2
-	Context.strokeRect(x, y, width, height)
-	Context.strokeStyle = strokeColor
-	Context.lineWidth = 1
-	Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
-
-
-	// 名称
-	Context.fillStyle = NameStyle.background
-	Context.fillRect(x + NameStyle.offset.x, y + NameStyle.offset.y, NameStyle.width, NameStyle.height)
-	Context.font = `${NameStyle.fontSize}px Georgia`;
-	Context.fillStyle = NameStyle.fontColor
-	Context.fillText(name, x + NameStyle.textOffset.x, y + NameStyle.textOffset.y)
-	// 插画
-	Context.fillStyle = 'blue'
-	Context.drawImage(CardImages[image], x + IllustrationStyle.offset.x, y + IllustrationStyle.offset.y, IllustrationStyle.width, IllustrationStyle.height)
-	// 描述
-	Context.fillStyle = DescStyle.background
-	Context.fillRect(x + DescStyle.offset.x, y + DescStyle.offset.y, DescStyle.width, DescStyle.height)
-	Context.font = `${DescStyle.fontSize}px Georgia`;
-	Context.fillStyle = DescStyle.fontColor
-	Context.fillText(desc, x + DescStyle.textOffset.x, y + DescStyle.textOffset.y)
+		Context.fillRect(x, y, width, height)
+		Context.strokeStyle = _strokeColor
+		Context.lineWidth = 2
+		Context.strokeRect(x, y, width, height)
+		Context.strokeStyle = strokeColor
+		Context.lineWidth = 1
+		Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
+		// 插画
+		Context.drawImage(CardImages[image], x + IllustrationStyle.offset.x, y + IllustrationStyle.offset.y, IllustrationStyle.width, IllustrationStyle.height)
+		// 名称
+		Context.fillStyle = NameStyle.background
+		Context.fillRect(x + NameStyle.offset.x, y + NameStyle.offset.y, NameStyle.width, NameStyle.height)
+		Context.font = `${NameStyle.fontSize}px Georgia`;
+		Context.fillStyle = NameStyle.fontColor
+		Context.fillText(name, x + NameStyle.textOffset.x, y + NameStyle.textOffset.y)
+		// 描述
+		Context.fillStyle = DescStyle.background
+		Context.fillRect(x + DescStyle.offset.x, y + DescStyle.offset.y, DescStyle.width, DescStyle.height)
+		Context.font = `${DescStyle.fontSize}px Georgia`;
+		Context.fillStyle = DescStyle.fontColor
+		Context.fillText(desc, x + DescStyle.textOffset.x, y + DescStyle.textOffset.y)
+	} else {
+		Context.fillStyle = reverseColor
+		Context.fillRect(x, y, width, height)
+		Context.strokeStyle = _strokeColor
+		Context.lineWidth = 2
+		Context.strokeRect(x, y, width, height)
+		Context.strokeStyle = strokeColor
+		Context.lineWidth = 1
+		Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
+	}
 	return {
 		...card,
 		x, y
