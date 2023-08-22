@@ -1,9 +1,9 @@
 const InitCards = {
 	NormalAttack1: 2,
-	Zhexuefuti: 2,
-	// NormalDefense1: 2,
-	// NormalAttack2: 2,
-	// NormalAttack3: 1,
+	Zhexuefuti: 1,
+	NormalDefense1: 2,
+	NormalAttack2: 2,
+	NormalAttack3: 1,
 }
 
 const CareerInitInfo = {

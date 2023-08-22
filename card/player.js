@@ -591,11 +591,11 @@ function attackPlayer(attackInfo = {}, isForce = false) {
   // isMine指攻击者是否为自己
   const isMine = PlayerId === owner
   const _player = isMine ? Player : EnemyPlayer
+  const _penAtk = -Math.max(_player[BaseValueAttributeKeys.PENATTACK] + penAtk, 0)
+  const _atk = -Math.max(_player[BaseValueAttributeKeys.ATTACK] + atk, 0)
   // 敌伤
-  if (atk || penAtk) {
+  if (_penAtk || _atk) {
     // 额外伤害及额外穿刺伤害均可为负，因此两者伤害应同时设定最低限制为0
-    const _penAtk = -Math.max(_player[BaseValueAttributeKeys.PENATTACK] + penAtk, 0)
-    const _atk = -Math.max(_player[BaseValueAttributeKeys.ATTACK] + atk, 0)
     changeHP(_penAtk, !isMine, true)
     changeSHD(_atk, !isMine, true)
     setFightActionStatus(FightActionTypes.ATTACK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
