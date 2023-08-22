@@ -30,6 +30,23 @@ function getRandomColor(minR = 0, maxR = 255, minG = 0, maxG = 255, minB = 0, ma
 	const colorB = getIntRandom(maxB, minB)
 	return `rgb(${colorR}, ${colorG}, ${colorB})`
 }
+// 逐色增加
+// function getUpperColor(rgba) {
+// 	let UpperColorTimer = 0
+// 	let ColorBuffer = null
+// 	return function () {
+// 		ColorBuffer = rgba
+// 		UpperColorTimer++
+// 		if (UpperColorTimer % 120 * 3 === 0) {
+// 			const _rgba = ColorBuffer.replace(/rgba\(|\)/g, '').split(',')
+// 			const r = _rgba[0] + 10 ? 0 : (_rgba[0] + 10)
+// 			const g = _rgba[1] + 10 ? 0 : (_rgba[1] + 10)
+// 			const b = _rgba[2] + 10 ? 0 : (_rgba[2] + 10)
+// 			const a = _rgba[3] || 1
+// 			ColorBuffer = `rgba(${r},${g},${b},${a})`
+// 		}
+// 	}
+// }
 // 随机重排数组
 function randomArray(arr = []) {
 	return arr.sort(() => Math.random() - 0.5)

@@ -18,7 +18,7 @@ const CareerInitInfo = {
 		[BaseValueAttributeKeys.ROUNDGETCARDNUM]: 2,
 		[BaseValueAttributeKeys.INITIALVITALITY]: 2,
 		initCards: {
-			// ...InitCards
+			// ...InitCards,
 			Test1: 1,
 			Test2: 1,
 			Test3: 1,

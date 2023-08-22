@@ -14,10 +14,15 @@ const CardColors = {
 }
 // 卡牌稀有度颜色（标题、边框）
 const CardRareColors = {
-	[CardRareTypes.DEFAULT]: 'white', // 灰，默认
-	[CardRareTypes.NORMAL]: 'blue', // 蓝，普通
-	[CardRareTypes.UNUSUAL]: 'purple', // 紫，罕见
-	[CardRareTypes.PRECIOUS]: 'pink', // 粉，珍稀
-	[CardRareTypes.LEGEND]: 'orange', // 橙，传说
-	[CardRareTypes.UNIQUE]: ['red', 'orange', 'pink', 'purple', 'blue'], // 彩，唯一
+	[CardRareTypes.DEFAULT]: '#6b6b6b', // 灰，默认
+	[CardRareTypes.NORMAL]: '#8787e6', // 蓝，普通
+	[CardRareTypes.UNUSUAL]: '#bf92e3', // 紫，罕见
+	[CardRareTypes.PRECIOUS]: '#f49191', // 粉，珍稀
+	[CardRareTypes.LEGEND]: '#eab789', // 橙，传说
+	[CardRareTypes.UNIQUE]: ['rgba(266,1,65,1)',
+		'rgba(135,135,230,1)',
+		'rgba(191,146,227,1)',
+		'rgba(244,145,145,1)',
+		'rgba(234,183,137,1)',
+	], // 彩，唯一
 }

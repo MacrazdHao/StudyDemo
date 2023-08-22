@@ -171,7 +171,8 @@ function drawCard(card, pos, handCard) {
 		if (rare === CardRareTypes.UNIQUE) {
 			_strokeColor = Context.createLinearGradient(x, y, x + width, y + height)
 			CardRareColors[rare].forEach((color, index, arr) => {
-				_strokeColor.addColorStop(index / arr.length, color)
+				// _strokeColor.addColorStop(index / arr.length, color)
+				_strokeColor.addColorStop(index / arr.length, getRandomColor())
 			})
 		}
 		Context.fillRect(x, y, width, height)
@@ -227,7 +228,7 @@ function drawCard(card, pos, handCard) {
 		Context.fillStyle = NameStyle.background
 		Context.fillRect(nameBoxOffset.x, nameBoxOffset.y, nameWidth, NameStyle.height)
 		Context.font = `${NameStyle.fontSize}px Georgia`;
-		Context.fillStyle = NameStyle.fontColor
+		Context.fillStyle = _strokeColor
 		Context.fillText(name, nameFontOffset.x, nameFontOffset.y)
 		// 插画
 		const illustrationWidth = CardStyle.width - IllustrationStyle.margin[1] - IllustrationStyle.margin[3]
@@ -243,7 +244,6 @@ function drawCard(card, pos, handCard) {
 			x: x + DescStyle.margin[1],
 			y: illustrationOffset.y + IllustrationStyle.height + DescStyle.margin[0]
 		}
-		// 名称
 		const descFontOffset = {
 			x: descOffset.x + DescStyle.padding[1],
 			y: descOffset.y + DescStyle.fontSize / 2 + DescStyle.padding[0]
