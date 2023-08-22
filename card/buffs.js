@@ -42,7 +42,7 @@ const Buffs = {
 		name: '攻击力提升',
 		desc: '效果持续期间，每回合攻击力+1',
 		funcType: BuffFunctionTypes.BUFF,
-		type: BuffTypes.REPEAT,
+		type: BuffTypes.OVERLAY,
 		immediately: true,
 		round: 2,
 		losed: '', // 任何buff都会执行BaseBuffLoseEffect，而无需指定
@@ -55,7 +55,6 @@ const Buffs = {
 }
 
 function pushBuffRecord(context) {
-	console.log('推送', context.id)
 	const isMine = context.owner === PlayerId
 	const _player = isMine ? Player : EnemyPlayer
 	const { id, baseAttrEffects } = context

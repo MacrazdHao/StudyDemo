@@ -1,7 +1,6 @@
 const PresetEffects = {
 	None: function () { },
 	BaseAttrEffect: function (context, attributes = null, reverse = false) {
-		console.log('触发了', context.id)
 		// 用于数值类型基础属性值的加减，可自定义属性，或反转作用目标
 		const isMine = context.owner === PlayerId
 		const _player = !reverse && isMine ? Player : EnemyPlayer

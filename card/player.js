@@ -354,13 +354,13 @@ function addReborn(isMine = true, rebornInfo = {}, isForce = false) {
 // 添加buff
 function addBuff(isMine = true, buffKey, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  const buff = createBuffObject(_player.id, buffKey)
-  switch (buff.type) {
+  let buff = null
+  switch (Buffs[buffKey].type) {
     case BuffTypes.OVERLAY:
+      // 叠加Buff，只会叠加生效回合数
       let existBuffId = null
-      for (let i = 0; i < _player.buffs; i++) {
+      for (let i = 0; i < _player.buffs.length; i++) {
         const bId = _player.buffs[i]
-        // 叠加Buff
         if (_player.usedBuffs[bId].key === buffKey) {
           if (_player.usedBuffs[bId].round >= _player.usedBuffs[bId].maxOverlayRound) {
             alert('该buff生效回合已达叠加上限')
@@ -373,26 +373,29 @@ function addBuff(isMine = true, buffKey, isForce = false) {
       // 已存在该buff，叠加回合
       if (existBuffId) {
         // 叠加回合不超过上限
-        _player.usedBuffs[bId].round = Math.min(buff.round + _player.usedBuffs[existBuffId].round, _player.usedBuffs[existBuffId].maxOverlayRound)
+        _player.usedBuffs[existBuffId].round = Math.min(Buffs[buffKey].round + _player.usedBuffs[existBuffId].round, _player.usedBuffs[existBuffId].maxOverlayRound)
         setFightActionStatus(FightActionTypes.ADDBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
         return true
       }
       // 不存在该buff，push进角色buffs中
+      buff = createBuffObject(_player.id, buffKey)
       break
     case BuffTypes.UNIQUE:
-      for (let i = 0; i < _player.buffs; i++) {
+      for (let i = 0; i < _player.buffs.length; i++) {
         const bId = _player.buffs[i]
         // 唯一buff不可重复存在
         if (_player.usedBuffs[bId].key === buffKey) {
-          alert('已存在相同的唯一buff')
+          if (isMine) alert('已存在相同的唯一buff')
           return false
         }
       }
       // 不存在该buff，push进角色buffs中
-      break;
+      buff = createBuffObject(_player.id, buffKey)
+      break
     case BuffTypes.REPEAT:
       // REPEAT类型buff直接push进角色buffs中
-      break;
+      buff = createBuffObject(_player.id, buffKey)
+      break
   }
   // 不存在的可OVERLAY类型buff，或符合条件的REPEAT和UNIQUE类型buff都是需要push到角色buffs最后面，并将其放入usedBuffs
   _player.usedBuffs[buff.id] = buff
