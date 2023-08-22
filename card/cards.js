@@ -60,13 +60,13 @@ const Cards = {
 		types: [CardTypes.ATTACK],
 		values: {
 			[CardTypes.COMMON]: { name: '小拳拳', desc: '造成1点伤害', effects: 'BaseAttackEffect', image: '/images/quan.jpg' },
-			[CardTypes.ATTACK]: { atk: 1 }
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 1 }
 		}
 	},
 	NormalAttack2: {
 		types: [CardTypes.ATTACK],
 		values: {
-			[CardTypes.COMMON]: { name: '暗劲儿', desc: '造成1点穿透伤害' },
+			[CardTypes.COMMON]: { name: '咸鱼突刺', desc: '造成1点穿透伤害', effects: 'BaseAttackEffect', image: '/images/xianyu.jpg' },
 			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.PENATTACK]: 1 }
 		}
 	},
@@ -74,7 +74,7 @@ const Cards = {
 		types: [CardTypes.DEFENSE],
 		values: {
 			[CardTypes.COMMON]: { name: '大锅盖', desc: '护盾+1', effects: 'BaseAttrEffect', image: '/images/guo.jpg' },
-			[CardTypes.DEFENSE]: { shd: 1 }
+			[CardTypes.DEFENSE]: { [BaseValueAttributeKeys.SHIELD]: 1 }
 		}
 	},
 	Test1: {

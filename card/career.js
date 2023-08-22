@@ -1,6 +1,7 @@
 const InitCards = {
-	NormalAttack1: 3,
-	NormalDefense1: 3,
+	NormalAttack1: 2,
+	NormalDefense1: 2,
+	NormalAttack2: 2,
 }
 
 const CareerInitInfo = {

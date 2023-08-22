@@ -45,9 +45,12 @@ window.onresize = () => {
 }
 
 const ImageBaseUrl = 'http://127.0.0.1:5500/card'
+const DefaultCardPath = '/images/none.png'
 const CardImages = {
+  '/images/none.png': null,
   '/images/guo.jpg': null,
   '/images/quan.jpg': null,
+  '/images/xianyu.jpg': null,
 }
 
 function loadCardImages() {
@@ -69,7 +72,11 @@ function loadCardImages() {
     }
     const waitingTimer = setInterval(() => {
       if (finishImgNum === allImgNum) {
-        console.log(CardImages)
+        for (let path in CardImages) {
+          if (CardImages[path] === 'notfound') {
+            CardImages[path] = CardImages[DefaultCardPath]
+          }
+        }
         clearInterval(waitingTimer)
         resolve()
       }
