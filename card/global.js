@@ -48,7 +48,7 @@ window.onresize = () => {
   GameWindow.height = WindowHeight
 }
 
-const ImageBaseUrl = 'http://192.168.203.48:5500/card'
+const ImageBasePath = '/card'
 const DefaultCardPath = '/images/none.png'
 const CardImages = {
   '/images/none.png': null,
@@ -66,7 +66,7 @@ function loadCardImages() {
     for (let path in CardImages) {
       allImgNum++
       const img = new Image()
-      img.src = ImageBaseUrl + path
+      img.src = baseurl+ ImageBasePath + path
       img.onload = function () {
         CardImages[path] = this
         finishImgNum++
