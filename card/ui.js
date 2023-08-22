@@ -14,49 +14,58 @@ function drawMouse() {
 let DesktopCard = null
 const CardPositionAnimation = {}
 
+const HeaderBoxMargin = 3
+const HeaderBoxPadding = 3
 const CardStyle = {
 	width: 180,
 	height: 240,
 	strokeColor: '#3f2400',
 	reverseColor: 'gray',
 }
+const NeedVitStyle = {
+	fontColor: 'white',
+	fontSize: 12,
+	width: 20,
+	height: 20,
+	margin: [6, 6],
+	padding: [8, 7],
+}
+const NeedMpStyle = {
+	fontColor: 'white',
+	fontSize: 12,
+	width: 20,
+	height: 20,
+	margin: [6, 6],
+	padding: [8, 7],
+}
 const NameStyle = {
 	background: 'white',
 	fontColor: 'black',
 	fontSize: 12,
-	width: CardStyle.width - 6 * 2,
+	// width: CardStyle.width - NeedVitStyle.width - NeedVitStyle.margin[1] - 6,
 	height: 20,
+	margin: [6, 6, 0, 6],
+	padding: [8, 7],
 	offset: {
-		x: 6,
-		y: 6
+		x: CardStyle.width + NeedVitStyle.width + 6 + 6,
+		y: HeaderBoxMargin * 2
 	},
 	textOffset: {
-		x: 6 + 4,
-		y: 6 + 14
+		x: CardStyle.width + NeedVitStyle.width + 6 + 6 + 6,
+		y: HeaderBoxMargin * 2 + 14
 	}
+}
+const IllustrationStyle = {
+	height: 148,
+	margin: [6, 6, 0, 6],
 }
 const DescStyle = {
 	background: 'white',
 	fontColor: 'black',
 	fontSize: 10,
-	width: CardStyle.width - 6 * 2,
 	height: 48,
-	offset: {
-		x: 6,
-		y: CardStyle.height - 48 - 6
-	},
-	textOffset: {
-		x: 6 + 4,
-		y: CardStyle.height - 48 - 6 + 14
-	}
-}
-const IllustrationStyle = {
-	width: CardStyle.width - 6 * 2,
-	height: CardStyle.height - NameStyle.height - DescStyle.height - NameStyle.offset.y - 12 - 6,
-	offset: {
-		x: 6,
-		y: NameStyle.offset.y + NameStyle.height + 6
-	},
+	margin: [6, 6, 6, 6],
+	padding: [8, 7],
 }
 
 const DesktopCardPosition = {
@@ -145,7 +154,7 @@ function getHandCardPosition(index, isMine = true) {
 // 绘画卡牌
 function drawCard(card, pos, handCard) {
 	const isMine = PlayerId === card.owner
-	const { name, desc, image, color, rare } = card
+	const { name, desc, image, color, rare, needVit, needMp, types } = card
 	const { width, height, strokeColor, reverseColor } = CardStyle
 	let x = pos ? pos.x : 0
 	let y = pos ? pos.y : 0
@@ -172,20 +181,78 @@ function drawCard(card, pos, handCard) {
 		Context.strokeStyle = strokeColor
 		Context.lineWidth = 1
 		Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
-		// 插画
-		Context.drawImage(CardImages[image || DefaultCardPath], x + IllustrationStyle.offset.x, y + IllustrationStyle.offset.y, IllustrationStyle.width, IllustrationStyle.height)
+		// 体力消耗
+		const needVitBoxOffset = {
+			x: x + NeedVitStyle.margin[1],
+			y: y + NeedVitStyle.margin[0]
+		}
+		const needVitFontOffset = {
+			x: needVitBoxOffset.x + NeedVitStyle.padding[1],
+			y: needVitBoxOffset.y + NeedVitStyle.fontSize / 2 + NeedVitStyle.padding[0]
+		}
+		Context.fillStyle = _strokeColor
+		Context.fillRect(needVitBoxOffset.x, needVitBoxOffset.y, NeedVitStyle.width, NeedVitStyle.height)
+		Context.font = `${NeedVitStyle.fontSize}px Georgia`;
+		Context.fillStyle = NeedVitStyle.fontColor
+		Context.fillText(needVit, needVitFontOffset.x, needVitFontOffset.y)
+		const nameBoxOffset = {
+			x: needVitBoxOffset.x + NeedVitStyle.width + NameStyle.margin[1],
+			y: y + NeedVitStyle.margin[0]
+		}
+		let nameWidth = CardStyle.width - NameStyle.margin[1] - NameStyle.margin[3] - NeedVitStyle.width - NeedMpStyle.margin[1]
+		// 魔法消耗
+		const isMagicCard = types.includes(CardTypes.MAGIC)
+		if (isMagicCard) {
+			const needMpBoxOffset = {
+				x: needVitBoxOffset.x + NeedVitStyle.width + NeedMpStyle.margin[1],
+				y: y + NeedMpStyle.margin[0]
+			}
+			const needMpFontOffset = {
+				x: needMpBoxOffset.x + NeedVitStyle.padding[1],
+				y: needMpBoxOffset.y + NeedMpStyle.fontSize / 2 + NeedMpStyle.padding[0]
+			}
+			Context.fillStyle = _strokeColor
+			Context.fillRect(needMpBoxOffset.x, needMpBoxOffset.y, NeedMpStyle.width, NeedMpStyle.height)
+			Context.font = `${NeedMpStyle.fontSize}px Georgia`;
+			Context.fillStyle = NeedMpStyle.fontColor
+			Context.fillText(needMp, needMpFontOffset.x, needMpFontOffset.y)
+			nameBoxOffset.x = needMpBoxOffset.x + NeedMpStyle.width + NameStyle.margin[1]
+			nameWidth = nameWidth - NeedMpStyle.width - NeedMpStyle.margin[1]
+		}
 		// 名称
+		const nameFontOffset = {
+			x: nameBoxOffset.x + NameStyle.padding[1],
+			y: nameBoxOffset.y + NameStyle.fontSize / 2 + NameStyle.padding[0]
+		}
 		Context.fillStyle = NameStyle.background
-		Context.fillRect(x + NameStyle.offset.x, y + NameStyle.offset.y, NameStyle.width, NameStyle.height)
+		Context.fillRect(nameBoxOffset.x, nameBoxOffset.y, nameWidth, NameStyle.height)
 		Context.font = `${NameStyle.fontSize}px Georgia`;
 		Context.fillStyle = NameStyle.fontColor
-		Context.fillText(name, x + NameStyle.textOffset.x, y + NameStyle.textOffset.y)
+		Context.fillText(name, nameFontOffset.x, nameFontOffset.y)
+		// 插画
+		const illustrationWidth = CardStyle.width - IllustrationStyle.margin[1] - IllustrationStyle.margin[3]
+		const illustrationOffset = {
+			x: x + IllustrationStyle.margin[1],
+			y: nameBoxOffset.y + NameStyle.height + IllustrationStyle.margin[0]
+		}
+		Context.drawImage(CardImages[image || DefaultCardPath], illustrationOffset.x, illustrationOffset.y, illustrationWidth, IllustrationStyle.height)
 		// 描述
+		const descWidth = CardStyle.width - DescStyle.margin[1] - DescStyle.margin[3]
+		const descHeight = CardStyle.height - NameStyle.margin[0] - NameStyle.height - IllustrationStyle.margin[0] - IllustrationStyle.height - DescStyle.margin[0] - DescStyle.margin[2]
+		const descOffset = {
+			x: x + DescStyle.margin[1],
+			y: illustrationOffset.y + IllustrationStyle.height + DescStyle.margin[0]
+		}
+		// 名称
+		const descFontOffset = {
+			x: descOffset.x + DescStyle.padding[1],
+			y: descOffset.y + DescStyle.fontSize / 2 + DescStyle.padding[0]
+		}
 		Context.fillStyle = DescStyle.background
-		Context.fillRect(x + DescStyle.offset.x, y + DescStyle.offset.y, DescStyle.width, DescStyle.height)
+		Context.fillRect(descOffset.x, descOffset.y, descWidth, descHeight)
 		Context.font = `${DescStyle.fontSize}px Georgia`;
 		Context.fillStyle = DescStyle.fontColor
-		Context.fillText(desc, x + DescStyle.textOffset.x, y + DescStyle.textOffset.y)
+		Context.fillText(desc, descFontOffset.x, descFontOffset.y)
 	} else {
 		Context.fillStyle = reverseColor
 		Context.fillRect(x, y, width, height)
