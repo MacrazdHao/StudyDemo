@@ -52,7 +52,7 @@ const CardImages = {
   '/images/quan.jpg': null,
   '/images/xianyu.jpg': null,
 }
-
+// 静态资源加载
 function loadCardImages() {
   return new Promise(resolve => {
     let finishImgNum = 0
