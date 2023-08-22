@@ -44,7 +44,7 @@ window.onresize = () => {
   GameWindow.height = WindowHeight
 }
 
-const ImageBaseUrl = 'http://127.0.0.1:5500/card'
+const ImageBaseUrl = 'http://192.168.203.48:5500/card'
 const DefaultCardPath = '/images/none.png'
 const CardImages = {
   '/images/none.png': null,
