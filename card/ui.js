@@ -173,7 +173,7 @@ function drawCard(card, pos, handCard) {
 		Context.lineWidth = 1
 		Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
 		// 插画
-		Context.drawImage(CardImages[image], x + IllustrationStyle.offset.x, y + IllustrationStyle.offset.y, IllustrationStyle.width, IllustrationStyle.height)
+		Context.drawImage(CardImages[image || DefaultCardPath], x + IllustrationStyle.offset.x, y + IllustrationStyle.offset.y, IllustrationStyle.width, IllustrationStyle.height)
 		// 名称
 		Context.fillStyle = NameStyle.background
 		Context.fillRect(x + NameStyle.offset.x, y + NameStyle.offset.y, NameStyle.width, NameStyle.height)

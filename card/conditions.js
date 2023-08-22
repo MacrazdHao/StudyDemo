@@ -1,3 +1,3 @@
 const PresetConditions = {
-	None: function () { return true },
+	None: function (context) { return true },
 }

@@ -27,7 +27,8 @@ const CardBaseProto = {
 		gameUseTimes: { defaultValue: MAXNUM }, // 当局游戏可使用次数
 		needVit: { defaultValue: 1 }, // 体力消耗值
 		rare: { defaultValue: CardRareTypes.DEFAULT }, // 体力消耗值
-		image: { defaultValue: null },
+		image: { defaultValue: DefaultCardPath },
+		playerInfo: { defaultValue: {} }, // 基础数值属性变更(仅作用于自己)
 		conditions: { defaultValue: 'None' },
 		effects: { defaultValue: 'None' },
 	},
@@ -38,9 +39,9 @@ const CardBaseProto = {
 		selfPenAtk: { defaultValue: 0 }, // 己方穿透伤害
 	},
 	[CardTypes.DEFENSE]: {
-		shd: { defaultValue: 0 },
 	},
 	[CardTypes.MAGIC]: {
+		needMp: { defaultValue: 0 }, // 灵力消耗值
 	},
 	[CardTypes.PROPS]: {
 	},
@@ -52,10 +53,18 @@ function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values =
 		const { defaultValue } = CardBaseProto[type][pKey]
 		proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || defaultValue
 		if (pKey === 'effects') {
-			proto[pKey] = PresetEffects[proto[pKey]]
+			const effectsFunc = PresetEffects[proto[pKey]]
+			proto[pKey] = function () {
+				PresetEffects.BaseAttrEffect(this, this.playerInfo)
+				if (effectsFunc) effectsFunc(this)
+			}
 		}
 		if (pKey === 'conditions') {
-			proto[pKey] = PresetConditions[proto[pKey]]
+			const conditionsFunc = PresetConditions[proto[pKey]]
+			proto[pKey] = function () {
+				if (conditionsFunc) return conditionsFunc(this)
+				return true
+			}
 		}
 	}
 	return proto

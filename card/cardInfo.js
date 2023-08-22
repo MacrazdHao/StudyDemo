@@ -27,43 +27,58 @@ const Cards = {
 	NormalDefense1: {
 		types: [CardTypes.DEFENSE],
 		values: {
-			[CardTypes.COMMON]: { name: '大锅盖', desc: '护盾+1', effects: 'BaseAttrEffect', image: '/images/guo.jpg' },
-			[CardTypes.DEFENSE]: { [BaseValueAttributeKeys.SHIELD]: 1 }
+			[CardTypes.COMMON]: { name: '大锅盖', desc: '护盾+1', effects: '', image: '/images/guo.jpg' },
+			[CardTypes.DEFENSE]: { playerInfo: { [BaseValueAttributeKeys.SHIELD]: 1 } }
 		}
 	},
 	Test1: {
 		types: [CardTypes.MAGIC],
 		values: {
-			[CardTypes.COMMON]: { name: '测试卡-稀有1', desc: '灵力+1', rare: CardRareTypes.NORMAL },
-			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+			[CardTypes.COMMON]: {
+				name: '测试卡-稀有1', desc: '灵力+1', effects: '', rare: CardRareTypes.NORMAL,
+				playerInfo: { [BaseValueAttributeKeys.MP]: 1 }
+			},
+			[CardTypes.MAGIC]: {}
 		}
 	},
 	Test2: {
 		types: [CardTypes.MAGIC],
 		values: {
-			[CardTypes.COMMON]: { name: '测试卡-稀有2', desc: '灵力+1', rare: CardRareTypes.UNUSUAL },
-			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+			[CardTypes.COMMON]: {
+				name: '测试卡-稀有2', desc: '灵力+1', effects: '', rare: CardRareTypes.UNUSUAL,
+				playerInfo: { [BaseValueAttributeKeys.MP]: 1 }
+			},
+			[CardTypes.MAGIC]: {}
 		}
 	},
 	Test3: {
 		types: [CardTypes.MAGIC],
 		values: {
-			[CardTypes.COMMON]: { name: '测试卡-稀有3', desc: '灵力+1', rare: CardRareTypes.PRECIOUS },
-			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+			[CardTypes.COMMON]: {
+				name: '测试卡-稀有3', desc: '灵力+1', effects: '', rare: CardRareTypes.PRECIOUS,
+				playerInfo: { [BaseValueAttributeKeys.MP]: 1 }
+			},
+			[CardTypes.MAGIC]: {}
 		}
 	},
 	Test4: {
 		types: [CardTypes.MAGIC],
 		values: {
-			[CardTypes.COMMON]: { name: '测试卡-稀有4', desc: '灵力+1', rare: CardRareTypes.LEGEND },
-			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+			[CardTypes.COMMON]: {
+				name: '测试卡-稀有4', desc: '灵力+1', effects: 'BaseAttrEffect', rare: CardRareTypes.LEGEND,
+				playerInfo: { [BaseValueAttributeKeys.MP]: 1 }
+			},
+			[CardTypes.MAGIC]: {}
 		}
 	},
 	Test5: {
 		types: [CardTypes.MAGIC],
 		values: {
-			[CardTypes.COMMON]: { name: '测试卡-稀有5', desc: '灵力+1', rare: CardRareTypes.UNIQUE },
-			[CardTypes.MAGIC]: { [BaseValueAttributeKeys.MP]: 1 }
+			[CardTypes.COMMON]: {
+				name: '测试卡-稀有5', desc: '灵力+1', effects: 'BaseAttrEffect', rare: CardRareTypes.UNIQUE,
+				playerInfo: { [BaseValueAttributeKeys.MP]: 1 }
+			},
+			[CardTypes.MAGIC]: {}
 		}
 	},
 }
