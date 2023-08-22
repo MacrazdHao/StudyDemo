@@ -23,6 +23,8 @@ const BroadcaseListDom = document.getElementById('BroadcaseList')
 
 const PlayerBoxDom = document.getElementById('PlayerBox')
 const EnemyNameDom = document.getElementById('EnemyName')
+const EnemyAtkDom = document.getElementById('EnemyAtk')
+const EnemyPenAtkDom = document.getElementById('EnemyPenAtk')
 const EnemySHDDom = document.getElementById('EnemySHD')
 const EnemyHPDom = document.getElementById('EnemyHP')
 const EnemyMPDom = document.getElementById('EnemyMP')
@@ -30,6 +32,8 @@ const EnemyVITDom = document.getElementById('EnemyVIT')
 const EnemyFightCardsDom = document.getElementById('EnemyFightCards')
 const EnemyFightUsedCardsDom = document.getElementById('EnemyFightUsedCards')
 const MyNameDom = document.getElementById('MyName')
+const MyAtkDom = document.getElementById('MyAtk')
+const MyPenAtkDom = document.getElementById('MyPenAtk')
 const MySHDDom = document.getElementById('MySHD')
 const MyHPDom = document.getElementById('MyHP')
 const MyMPDom = document.getElementById('MyMP')
@@ -51,6 +55,8 @@ const CardImages = {
   '/images/guo.jpg': null,
   '/images/quan.jpg': null,
   '/images/xianyu.jpg': null,
+  '/images/xianyu_dian.jpg': null,
+  '/images/zhexue.jpg': null,
 }
 // 静态资源加载
 function loadCardImages() {

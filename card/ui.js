@@ -291,6 +291,8 @@ function drawDesktopCard() {
 function updatePlayerInfoUI() {
 	if (JSON.stringify(Player) !== '{}') {
 		MyNameDom.innerHTML = Player.name
+		MyAtkDom.innerHTML = Player[BaseValueAttributeKeys.ATTACK]
+		MyPenAtkDom.innerHTML = Player[BaseValueAttributeKeys.PENATTACK]
 		MyHPDom.innerHTML = Player[BaseValueAttributeKeys.HP]
 		MySHDDom.innerHTML = Player[BaseValueAttributeKeys.SHIELD]
 		MyMPDom.innerHTML = Player[BaseValueAttributeKeys.MP]
@@ -300,6 +302,8 @@ function updatePlayerInfoUI() {
 	}
 	if (JSON.stringify(EnemyPlayer) !== '{}') {
 		EnemyNameDom.innerHTML = EnemyPlayer.name
+		EnemyAtkDom.innerHTML = EnemyPlayer[BaseValueAttributeKeys.ATTACK]
+		EnemyPenAtkDom.innerHTML = EnemyPlayer[BaseValueAttributeKeys.PENATTACK]
 		EnemyHPDom.innerHTML = EnemyPlayer[BaseValueAttributeKeys.HP]
 		EnemySHDDom.innerHTML = EnemyPlayer[BaseValueAttributeKeys.SHIELD]
 		EnemyMPDom.innerHTML = EnemyPlayer[BaseValueAttributeKeys.MP]

@@ -1,4 +1,53 @@
 
+// 卡牌类型-属性自带默认值
+const CardTypesProto = {
+	[CardTypes.COMMON]: {},
+	[CardTypes.ATTACK]: {
+		color: CardColors[CardTypes.ATTACK]
+	},
+	[CardTypes.DEFENSE]: {
+		color: CardColors[CardTypes.DEFENSE]
+	},
+	[CardTypes.MAGIC]: {
+		color: CardColors[CardTypes.MAGIC]
+	},
+	[CardTypes.PROPS]: {
+		color: CardColors[CardTypes.PROPS]
+	},
+}
+// 卡牌类型属性key-index
+// [属性Key]: index
+const CardBaseProto = {
+	[CardTypes.COMMON]: {
+		name: { defaultValue: '' },
+		desc: { defaultValue: '' },
+		color: { defaultValue: CardColors[CardTypes.COMMON] },
+		status: { defaultValue: 0 },
+		statusTypes: { defaultValue: [] },
+		fightUseTimes: { defaultValue: MAXNUM }, // 当次战斗可使用次数
+		gameUseTimes: { defaultValue: MAXNUM }, // 当局游戏可使用次数
+		needVit: { defaultValue: 1 }, // 体力消耗值
+		rare: { defaultValue: CardRareTypes.DEFAULT }, // 体力消耗值
+		image: { defaultValue: DefaultCardPath },
+		playerInfo: { defaultValue: {} }, // 基础数值属性变更(仅作用于自己)
+		conditions: { defaultValue: 'None' },
+		effects: { defaultValue: 'None' },
+		buffs: { defaultValue: {} }, // 增加的buff，数据结构: { [BuffKey]: EffectTargetTypes }
+	},
+	[CardTypes.ATTACK]: {
+		[BaseValueAttributeKeys.ATTACK]: { defaultValue: 0 }, // 普通伤害
+		[BaseValueAttributeKeys.PENATTACK]: { defaultValue: 0 }, // 穿透伤害
+		selfAtk: { defaultValue: 0 }, // 己方伤害
+		selfPenAtk: { defaultValue: 0 }, // 己方穿透伤害
+	},
+	[CardTypes.DEFENSE]: {
+	},
+	[CardTypes.MAGIC]: {
+		needMp: { defaultValue: 0 }, // 灵力消耗值
+	},
+	[CardTypes.PROPS]: {
+	},
+}
 /**
  * 卡牌原型
  * [卡牌Key]: {
@@ -24,11 +73,22 @@ const Cards = {
 			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.PENATTACK]: 1 }
 		}
 	},
+	NormalAttack3: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: { name: '咸鱼雷电突刺', desc: '造成2点穿透伤害', effects: 'BaseAttackEffect', image: '/images/xianyu_dian.jpg' },
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.PENATTACK]: 2 }
+		}
+	},
 	NormalDefense1: {
 		types: [CardTypes.DEFENSE],
 		values: {
-			[CardTypes.COMMON]: { name: '大锅盖', desc: '护盾+1', effects: '', image: '/images/guo.jpg' },
-			[CardTypes.DEFENSE]: { playerInfo: { [BaseValueAttributeKeys.SHIELD]: 1 } }
+			[CardTypes.COMMON]: {
+				name: '大锅盖',
+				desc: '护盾+1', effects: '', image: '/images/guo.jpg',
+				playerInfo: { [BaseValueAttributeKeys.SHIELD]: 1 }
+			},
+			[CardTypes.DEFENSE]: {}
 		}
 	},
 	Test1: {
@@ -65,7 +125,7 @@ const Cards = {
 		types: [CardTypes.MAGIC],
 		values: {
 			[CardTypes.COMMON]: {
-				name: '测试卡-稀有4', desc: '灵力+1', effects: 'BaseAttrEffect', rare: CardRareTypes.LEGEND,
+				name: '测试卡-稀有4', desc: '灵力+1', effects: '', rare: CardRareTypes.LEGEND,
 				playerInfo: { [BaseValueAttributeKeys.MP]: 1 }
 			},
 			[CardTypes.MAGIC]: {}
@@ -75,10 +135,23 @@ const Cards = {
 		types: [CardTypes.MAGIC],
 		values: {
 			[CardTypes.COMMON]: {
-				name: '测试卡-稀有5', desc: '灵力+1', effects: 'BaseAttrEffect', rare: CardRareTypes.UNIQUE,
+				name: '测试卡-稀有5', desc: '灵力+1', effects: '', rare: CardRareTypes.UNIQUE,
 				playerInfo: { [BaseValueAttributeKeys.MP]: 1 }
 			},
 			[CardTypes.MAGIC]: {}
+		}
+	},
+	Zhexuefuti: {
+		types: [CardTypes.PROPS],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '哲学附体', desc: '每次攻击额外附带', effects: '', image: '/images/zhexue.jpg', rare: CardRareTypes.PRECIOUS,
+				playerInfo: {},
+				buffs: {
+					AddAtk2: EffectTargetTypes.PLAYER
+				}
+			},
+			[CardTypes.PROPS]: {}
 		}
 	},
 }

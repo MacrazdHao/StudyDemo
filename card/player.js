@@ -354,7 +354,7 @@ function addReborn(isMine = true, rebornInfo = {}, isForce = false) {
 // 添加buff
 function addBuff(isMine = true, buffKey, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  const buff = createBuffObject(_player.id, buffKey, { round: 3 })
+  const buff = createBuffObject(_player.id, buffKey)
   switch (buff.type) {
     case BuffTypes.OVERLAY:
       let existBuffId = null
@@ -397,7 +397,7 @@ function addBuff(isMine = true, buffKey, isForce = false) {
   // 不存在的可OVERLAY类型buff，或符合条件的REPEAT和UNIQUE类型buff都是需要push到角色buffs最后面，并将其放入usedBuffs
   _player.usedBuffs[buff.id] = buff
   _player.buffs.push(buff.id)
-  if (buff.immdiately) enableABuff(buff.id)
+  if (buff.immediately) enableABuff(buff.id, isMine)
   setFightActionStatus(FightActionTypes.ADDBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   return true
 }
@@ -464,11 +464,11 @@ function loseBuff(isMine = true, buffId, isForce = false) {
   // 触发buff的losed函数
   _player.usedBuffs[buffId].losed()
   // 重置属性影响记录器
-  _player.usedBuffs[buffId].effectRecord = {}
+  // _player.usedBuffs[buffId].effectRecord = {}
   // 生效回合数归零
   _player.usedBuffs[buffId].round = 0
   // 重置回合影响触发次数
-  _player.usedBuffs[buffId].roundEffectTimes = maxRoundEffectTimes
+  _player.usedBuffs[buffId].roundEffectTimes = 0
   // 从存活buffs中移除
   _player.buffs = _player.buffs.filter(bId => bId !== buffId)
   setFightActionStatus(FightActionTypes.LOSEBUFF, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
@@ -556,12 +556,9 @@ function enableAPlayerReborn(rebornId, isMine = true, isForce = false) {
 // buff效果触发
 function enableABuff(buffId, isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
-  const { round, roundEffectTimes, maxRoundEffectTimes } = _player.usedBuffs[buffId]
-  if (round === 0 || roundEffectTimes >= maxRoundEffectTimes) {
-    loseBuff(isMine, buffId, false)
-    return false
-  }
-  // 触发buff影响
+  const { roundEffectTimes, maxRoundEffectTimes } = _player.usedBuffs[buffId]
+  if (roundEffectTimes >= maxRoundEffectTimes) return false
+  // 总触发次数仍有剩余，则触发buff影响
   _player.usedBuffs[buffId].effects()
   // 本回合触发次数+1
   _player.usedBuffs[buffId].roundEffectTimes++
@@ -573,11 +570,16 @@ function enableABuff(buffId, isMine = true) {
 function updateBuffRoundStatus() {
   const isMine = isMyTurn()
   const _player = isMine ? Player : EnemyPlayer
-  _player.buffs.forEach(bId => {
+  const buffs = JSON.parse(JSON.stringify(_player.buffs))
+  buffs.forEach(bId => {
     // 剩余回合数-1
     _player.usedBuffs[bId].round--
     // 重置当前回合已触发次数
     _player.usedBuffs[bId].roundEffectTimes = 0
+    if (_player.usedBuffs[bId].round <= 0) {
+      loseBuff(isMine, bId, false)
+      return false
+    }
   })
 }
 // 造成伤害
@@ -677,7 +679,7 @@ function settleBeforeRoundBuffs() {
   const _player = isMine ? Player : EnemyPlayer
   _player.buffs.forEach(bId => {
     const { enableTypes } = getBuffInfo(bId)
-    if (enableTypes.includes(BuffEnableTypes.BEFOREROUND)) enableABuff(bId)
+    if (enableTypes.includes(BuffEnableTypes.BEFOREROUND)) enableABuff(bId, isMine)
   })
 }
 // 回合后buff结算
@@ -686,7 +688,7 @@ function settleAfterRoundBuffs() {
   const _player = isMine ? Player : EnemyPlayer
   _player.buffs.forEach(bId => {
     const { enableTypes } = getBuffInfo(bId)
-    if (enableTypes.includes(BuffEnableTypes.AFTERROUND)) enableABuff(bId)
+    if (enableTypes.includes(BuffEnableTypes.AFTERROUND)) enableABuff(bId, isMine)
   })
 }
 // 战斗行为触发类型的buff结算
@@ -763,7 +765,7 @@ function roundStartWaitingSettle() {
   EndRoundButton.style.display = isMine ? 'inline' : 'none'
   WhoseRoundDom.style.color = RoundPlayerColors[RoundPlayer]
   WhoseRoundDom.innerHTML = RoundPlayerTexts[RoundPlayer]
-  console.log(Player, EnemyPlayer)
+  // console.log(Player, EnemyPlayer)
   return RoundStatusTypes.START
 }
 // 玩家回合起始结算
@@ -775,7 +777,7 @@ function roundStartSettle() {
   // 重置体力
   _player[BaseValueAttributeKeys.VITALITY] = _player[BaseValueAttributeKeys.INITIALVITALITY]
   // 前置buff结算
-  settleAfterRoundBuffs()
+  settleBeforeRoundBuffs()
   // 抽牌
   getHandCards(isMine, _player[BaseValueAttributeKeys.ROUNDGETCARDNUM])
   return RoundStatusTypes.PLAYWAITING
@@ -837,7 +839,7 @@ function enemyAutoPlayCard() {
     if (EnemyPlayer.handCards.length === 0) return
     const cIndex = getIntRandom(EnemyPlayer.handCards.length - 1)
     const cId = EnemyPlayer.handCards[cIndex]
-    console.log('敌方出牌', cId)
+    // console.log('敌方出牌', cId)
     playCard(null, false, cId)
   }
 }
@@ -849,7 +851,7 @@ function enemyAutoDropCard() {
     if (EnemyPlayer.handCards.length === 0) return
     const cIndex = getIntRandom(EnemyPlayer.handCards.length - 1)
     const cId = EnemyPlayer.handCards[cIndex]
-    console.log('敌方弃牌', cId)
+    // console.log('敌方弃牌', cId)
     dropCard(null, false, cId)
   }
 }

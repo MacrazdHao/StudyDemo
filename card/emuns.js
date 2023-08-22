@@ -86,6 +86,14 @@ const BuffEnableTypes = {
 	AFTERROUND: 1,
 	FIGHTACTION: 2,
 }
+// buff功能类型
+const BuffFunctionTypes = {
+	NONE: 0, // 无类型
+	BUFF: 1, // 增益buff
+	DEBUFF: 2, // 减益buff
+	ALL: 3, // 同时是增益和减益buff
+	STATIC: 4, // 不可清除buff
+}
 // 战斗行为类型（一般用于Buff，行为细节用effect做限制即可）
 const FightActionTypes = {
 	PLAYCARD: 1, // 出牌
@@ -137,4 +145,10 @@ const BaseValueAttributeKeys = {
 	MAXHANDCARDSNUM: 'maxHandCardsNum', // 最大手牌数
 	ROUNDGETCARDNUM: 'roundGetCardNum', // 回合卡牌抽取数
 	INITIALVITALITY: 'initVit', // 初始体力
+}
+// 生效对象类型
+const EffectTargetTypes = {
+	ENEMY: 0, // 敌人
+	PLAYER: 1, // 自己
+	ALL: 2, // 所有人
 }

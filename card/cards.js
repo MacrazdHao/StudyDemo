@@ -1,70 +1,32 @@
-// 卡牌类型-属性自带默认值
-const CardTypesProto = {
-	[CardTypes.COMMON]: {},
-	[CardTypes.ATTACK]: {
-		color: CardColors[CardTypes.ATTACK]
-	},
-	[CardTypes.DEFENSE]: {
-		color: CardColors[CardTypes.DEFENSE]
-	},
-	[CardTypes.MAGIC]: {
-		color: CardColors[CardTypes.MAGIC]
-	},
-	[CardTypes.PROPS]: {
-		color: CardColors[CardTypes.PROPS]
-	},
-}
-// 卡牌类型属性key-index
-// [属性Key]: index
-const CardBaseProto = {
-	[CardTypes.COMMON]: {
-		name: { defaultValue: '' },
-		desc: { defaultValue: '' },
-		color: { defaultValue: CardColors[CardTypes.COMMON] },
-		status: { defaultValue: 0 },
-		statusTypes: { defaultValue: [] },
-		fightUseTimes: { defaultValue: MAXNUM }, // 当次战斗可使用次数
-		gameUseTimes: { defaultValue: MAXNUM }, // 当局游戏可使用次数
-		needVit: { defaultValue: 1 }, // 体力消耗值
-		rare: { defaultValue: CardRareTypes.DEFAULT }, // 体力消耗值
-		image: { defaultValue: DefaultCardPath },
-		playerInfo: { defaultValue: {} }, // 基础数值属性变更(仅作用于自己)
-		conditions: { defaultValue: 'None' },
-		effects: { defaultValue: 'None' },
-	},
-	[CardTypes.ATTACK]: {
-		[BaseValueAttributeKeys.ATTACK]: { defaultValue: 0 }, // 普通伤害
-		[BaseValueAttributeKeys.PENATTACK]: { defaultValue: 0 }, // 穿透伤害
-		selfAtk: { defaultValue: 0 }, // 己方伤害
-		selfPenAtk: { defaultValue: 0 }, // 己方穿透伤害
-	},
-	[CardTypes.DEFENSE]: {
-	},
-	[CardTypes.MAGIC]: {
-		needMp: { defaultValue: 0 }, // 灵力消耗值
-	},
-	[CardTypes.PROPS]: {
-	},
-}
 // 组合类属性
 function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values = []) {
 	const proto = {}
 	for (let pKey in CardBaseProto[type]) {
 		const { defaultValue } = CardBaseProto[type][pKey]
-		proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || defaultValue
-		if (pKey === 'effects') {
-			const effectsFunc = PresetEffects[proto[pKey]]
-			proto[pKey] = function () {
-				PresetEffects.BaseAttrEffect(this, this.playerInfo)
-				if (effectsFunc) effectsFunc(this)
-			}
-		}
-		if (pKey === 'conditions') {
-			const conditionsFunc = PresetConditions[proto[pKey]]
-			proto[pKey] = function () {
-				if (conditionsFunc) return conditionsFunc(this)
-				return true
-			}
+		// 以下数组、对象不能直接使用默认值，而需要直接重置，因为会存在内存空间冲突问题，所以需要重新分配
+		switch (pKey) {
+			case 'statusTypes': proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || []; break;
+			case 'playerInfo': proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || {}; break;
+			case 'buffs': proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || {}; break;
+			case 'effects':
+				proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || defaultValue
+				const effectsFunc = PresetEffects[proto[pKey]]
+				proto[pKey] = function () {
+					PresetEffects.BaseAttrEffect(this, this.playerInfo)
+					if (effectsFunc) effectsFunc(this)
+				}
+				break
+			case 'conditions':
+				proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || defaultValue
+				const conditionsFunc = PresetConditions[proto[pKey]]
+				proto[pKey] = function () {
+					if (conditionsFunc) return conditionsFunc(this)
+					return true
+				}
+				break
+			default:
+				proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || defaultValue
+				break
 		}
 	}
 	return proto

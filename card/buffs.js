@@ -4,19 +4,21 @@ const BaseBuffPoto = {
 	name: '',
 	desc: '',
 	owner: '',
+	funcType: BuffFunctionTypes.NONE,
 	type: BuffTypes.REPEAT,
-	enableTypes: [BuffEnableTypes.BEFOREROUND], // buff触发时机类型
-	enableFightActions: {}, // 当enableTypes包含FIGHTACTION时该属性生效，当前角色的战斗行为包含此处所设定的行为时触发当前buff，对应[战斗行为]:[战斗行为触发类型]即[FightActionType]:[FightActionWayTypes]
+	enableTypes: null, // buff结算时机类型
+	enableFightActions: null, // 当enableTypes包含FIGHTACTION时该属性生效，当前角色的战斗行为包含此处所设定的行为时触发当前buff，对应[战斗行为]:[战斗行为触发类型]即[FightActionType]:[FightActionWayTypes]
 	immediately: false, // 是否在获得当前buff时立即触发
 	round: 1, // 生效回合数
 	maxOverlayRound: MAXNUM, // 可叠加生效回合数上限，用于type为REPEAT的buff
 	maxRoundEffectTimes: 1, // 回合触发次数上限
-	baseAttrEffects: {}, // 影响的基础数值类型属性，仅作用于自己
-	effectRecord: {}, // 属性影响记录，仅支持数值类属性，记录的值与增益值相反(增益为正则记录为负数，否则相反)，其余的请在lose函数中处理
+	baseAttrEffects: null, // 影响的基础数值类型属性，仅作用于自己
+	effectRecord: null, // 属性影响记录，仅支持数值类属性，记录的值与增益值相反(增益为正则记录为负数，否则相反)，其余的请在lose函数中处理
 	losed: '', // 任何buff都会执行BaseBuffLoseEffect，而无需指定，这里所填写的影响函数，将会在原BaseBuffLoseEffect基础上额外执行
 	effects: '', // 任何buff都会执行BaseBuffEffect，而无需指定，这里所填写的影响函数，将会在原BaseBuffEffect基础上额外执行
 	effectTimes: 0, // effect执行次数
 	maxEffectTimes: 1, // effect最大可执行次数
+	buffs: null, // 增加的buff，数据结构: { [BuffKey]: EffectTargetTypes }
 }
 
 const Buffs = {
@@ -24,9 +26,10 @@ const Buffs = {
 		key: 'AddAtk1',
 		name: '攻击力提升',
 		desc: '效果持续期间攻击力+1',
+		funcType: BuffFunctionTypes.BUFF,
 		type: BuffTypes.REPEAT,
 		immediately: true,
-		round: 2,
+		round: 1,
 		losed: '', // 任何buff都会执行BaseBuffLoseEffect，而无需指定
 		effects: '', // 任何buff都会执行BaseBuffEffect，而无需指定
 		baseAttrEffects: {
@@ -38,6 +41,7 @@ const Buffs = {
 		key: 'AddAtk2',
 		name: '攻击力提升',
 		desc: '效果持续期间，每回合攻击力+1',
+		funcType: BuffFunctionTypes.BUFF,
 		type: BuffTypes.REPEAT,
 		immediately: true,
 		round: 2,
@@ -51,7 +55,11 @@ const Buffs = {
 }
 
 function pushBuffRecord(context) {
-	for (let aKey in context.baseAttrEffects) {
+	console.log('推送', context.id)
+	const isMine = context.owner === PlayerId
+	const _player = isMine ? Player : EnemyPlayer
+	const { id, baseAttrEffects } = context
+	for (let aKey in baseAttrEffects) {
 		switch (aKey) {
 			case BaseValueAttributeKeys.MAXHP:
 			case BaseValueAttributeKeys.MAXSHIELD:
@@ -66,7 +74,7 @@ function pushBuffRecord(context) {
 			case BaseValueAttributeKeys.VITALITY:
 			case BaseValueAttributeKeys.ATTACK:
 			case BaseValueAttributeKeys.PENATTACK:
-				context.effectRecord[aKey] = (context.effectRecord[aKey] || 0) - context.baseAttrEffects[aKey]
+				_player.usedBuffs[id].effectRecord[aKey] = (_player.usedBuffs[id].effectRecord[aKey] || 0) - baseAttrEffects[aKey]
 				break
 		}
 	}
@@ -75,6 +83,13 @@ function pushBuffRecord(context) {
 function createBuffObject(playerId, buffKey, extraAttr = {}) {
 	const { effects, losed } = Buffs[buffKey]
 	return {
+		...BaseBuffPoto,
+		// 以下数组、对象不能直接使用默认值，而需要直接重置，因为会存在内存空间冲突问题，所以需要重新分配
+		enableFightActions: {},
+		baseAttrEffects: {},
+		effectRecord: {},
+		buffs: {},
+		enableTypes: [BuffEnableTypes.BEFOREROUND],
 		...Buffs[buffKey],
 		id: getRandomKey(),
 		owner: playerId,
