@@ -145,7 +145,7 @@ const Cards = {
 		types: [CardTypes.PROPS],
 		values: {
 			[CardTypes.COMMON]: {
-				name: '哲学附体', desc: '获得[哲学之魂]Buff，效果：buff持续期间，每出一张卡牌，附加伤害+1，效果持续3回合', effects: '', image: '/images/zhexue.jpg', rare: CardRareTypes.PRECIOUS,
+				name: '哲♂学附体', desc: '获得[哲♂学之魂]Buff，效果：buff持续期间，每出一张卡牌，附加伤害+1，效果持续3回合', effects: '', image: '/images/zhexue.jpg', rare: CardRareTypes.PRECIOUS,
 				playerInfo: {},
 				buffs: {
 					AddAtk2: EffectTargetTypes.PLAYER
