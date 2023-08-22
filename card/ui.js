@@ -56,16 +56,15 @@ const NameStyle = {
 	}
 }
 const IllustrationStyle = {
-	height: 148,
+	height: 140,
 	margin: [6, 6, 0, 6],
 }
 const DescStyle = {
 	background: 'white',
 	fontColor: 'black',
 	fontSize: 10,
-	height: 48,
 	margin: [6, 6, 6, 6],
-	padding: [8, 7],
+	padding: [8, 7, 8, 7],
 }
 
 const DesktopCardPosition = {
@@ -150,7 +149,33 @@ function getHandCardPosition(index, isMine = true) {
 	}
 	return updateCardPosisitonAnimationPos(currentCardId, null, { x, y })
 }
-
+// 获取文字内容的行内容
+function getTextLines(text, width, height, fontSize, lineHeight) {
+	const _text = text.split('')
+	let line = ''
+	let lines = []
+	for (let i = 0; i < _text.length; i++) {
+		const isOverHeight = !(lines.length * lineHeight < height && lines.length * lineHeight + lineHeight < height)
+		if (Context.measureText(line).width < width && Context.measureText(line + _text[i]).width < width) {
+			line += _text[i]
+		} else {
+			lines.push(line)
+			line = _text[i]
+		}
+	}
+	lines.push(line)
+	return lines
+}
+// 绘画文字
+function drawText(text, width, height, fontSize, lineHeight, color = 'black', position, wrap = false, hidden = true) {
+	Context.font = `${fontSize} Georgia`
+	lineHeight = lineHeight || fontSize + 4
+	const lines = getTextLines(text, width, height, lineHeight, lineHeight)
+	lines.forEach((line, index) => {
+		Context.fillStyle = color
+		Context.fillText(line, position.x, position.y + index * lineHeight)
+	})
+}
 // 绘画卡牌
 function drawCard(card, pos, handCard) {
 	const isMine = PlayerId === card.owner
@@ -239,7 +264,9 @@ function drawCard(card, pos, handCard) {
 		Context.drawImage(CardImages[image || DefaultCardPath], illustrationOffset.x, illustrationOffset.y, illustrationWidth, IllustrationStyle.height)
 		// 描述
 		const descWidth = CardStyle.width - DescStyle.margin[1] - DescStyle.margin[3]
+		const textWidth = descWidth - DescStyle.padding[1] - DescStyle.padding[3]
 		const descHeight = CardStyle.height - NameStyle.margin[0] - NameStyle.height - IllustrationStyle.margin[0] - IllustrationStyle.height - DescStyle.margin[0] - DescStyle.margin[2]
+		const textHeight = descHeight - DescStyle.padding[0] - DescStyle.padding[2]
 		const descOffset = {
 			x: x + DescStyle.margin[1],
 			y: illustrationOffset.y + IllustrationStyle.height + DescStyle.margin[0]
@@ -250,9 +277,10 @@ function drawCard(card, pos, handCard) {
 		}
 		Context.fillStyle = DescStyle.background
 		Context.fillRect(descOffset.x, descOffset.y, descWidth, descHeight)
-		Context.font = `${DescStyle.fontSize}px Georgia`;
-		Context.fillStyle = DescStyle.fontColor
-		Context.fillText(desc, descFontOffset.x, descFontOffset.y)
+		// Context.font = `${DescStyle.fontSize}px Georgia`;
+		// Context.fillStyle = DescStyle.fontColor
+		// Context.fillText(desc, descFontOffset.x, descFontOffset.y)
+		drawText(desc, textWidth, textHeight, DescStyle.fontSize, DescStyle.fontSize + 2, DescStyle.fontColor, descFontOffset)
 	} else {
 		Context.fillStyle = reverseColor
 		Context.fillRect(x, y, width, height)

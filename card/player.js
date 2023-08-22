@@ -65,13 +65,13 @@ function getRebornObject({ playerInfo = {}, conditions = function () { return tr
 function resetFightActionsBuffer(isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
   for (let faKey in FightActionTypes) {
-    _player.fightActions[faKey] = FightActionWayTypes.WAITING
+    _player.fightActionsBuffer[FightActionTypes[faKey]] = FightActionWayTypes.WAITING
   }
 }
 // 设置战斗行为(注意这里是设置Buffer——缓冲区，正式的值由在战斗行为结算函数settleFightActions中正式赋值)
-function setFightActionStatus(fightActionTypes, fightActionWayTypes = FightActionWayTypes.WAITING, isMine = true) {
+function setFightActionStatus(fightActionType, fightActionWayType = FightActionWayTypes.WAITING, isMine = true) {
   const _player = isMine ? Player : EnemyPlayer
-  _player.fightActionsBuffer[fightActionTypes] = fightActionWayTypes
+  _player.fightActionsBuffer[fightActionType] = fightActionWayType
 }
 
 // 玩家信息初始化相关函数
@@ -85,8 +85,8 @@ function initPlayer(isMine = true, name = '', career = CareerTypes.HUMAN) {
     name: name || (isMine ? PlayerId : EnemyPlayerId),
   }
   for (let faKey in FightActionTypes) {
-    player.fightActions[faKey] = FightActionWayTypes.WAITING
-    player.fightActionsBuffer[faKey] = FightActionWayTypes.WAITING
+    player.fightActions[FightActionTypes[faKey]] = FightActionWayTypes.WAITING
+    player.fightActionsBuffer[FightActionTypes[faKey]] = FightActionWayTypes.WAITING
   }
   for (let key in player) {
     const _player = isMine ? Player : EnemyPlayer
@@ -530,7 +530,12 @@ function getEnableFightActionBuffs(isMine = true) {
     if (enableTypes.includes(BuffEnableTypes.FIGHTACTION)) {
       for (let eKey in enableFightActions) {
         // 筛选出符合该角色当前战斗行为的buff
-        if (enableFightActions[eKey] === _player.fightActions[eKey]) {
+        if (enableFightActions[eKey] === _player.fightActions[eKey]
+          || (enableFightActions[eKey] === FightActionWayTypes.ALL
+            && (_player.fightActions[eKey] === FightActionWayTypes.FORCE
+              || _player.fightActions[eKey] === FightActionWayTypes.INITIACTIVE)
+          )
+        ) {
           buffIds.push(bId)
           break
         }
@@ -664,14 +669,14 @@ function switchRoundTurn() {
 // 属性对象及信息相关结算函数
 // 战斗行为结算
 function settleFightActions() {
-  // 与战斗行为相关的buff结算
-  settleFightActionBuffs()
-  // 其他与战斗行为相关的结算
-  // TODO...
   // 采用fightActionsBuffer缓冲区的原因：无法保证在结算战斗行为相关的buff或其他相关结算时，会出现变更fightActions的情况
   // 而读取时，则直接采用fightActions，保证本轮战斗行为不被其他先处理了的战斗行为相关buff结算或其他结算影响
   Player.fightActions = JSON.parse(JSON.stringify(Player.fightActionsBuffer))
   EnemyPlayer.fightActions = JSON.parse(JSON.stringify(EnemyPlayer.fightActionsBuffer))
+  // 与战斗行为相关的buff结算
+  settleFightActionBuffs()
+  // 其他与战斗行为相关的结算
+  // TODO...
   resetFightActionsBuffer()
   resetFightActionsBuffer(false)
   return
@@ -697,6 +702,7 @@ function settleAfterRoundBuffs() {
 // 战斗行为触发类型的buff结算
 function settleFightActionBuffs() {
   const myFightActionBuffs = getEnableFightActionBuffs()
+  if (myFightActionBuffs.length) console.log(myFightActionBuffs)
   const enemyFightActionBuffs = getEnableFightActionBuffs(false)
   myFightActionBuffs.forEach(bId => {
     enableABuff(bId)

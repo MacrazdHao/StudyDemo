@@ -4,8 +4,8 @@ const BaseBuffPoto = {
 	name: '',
 	desc: '',
 	owner: '',
-	funcType: BuffFunctionTypes.NONE,
-	type: BuffTypes.REPEAT,
+	funcType: BuffFunctionTypes.NONE, // 功能类型，是否为增益/减益等
+	type: BuffTypes.REPEAT, // buff复数处理类型
 	enableTypes: null, // buff结算时机类型
 	enableFightActions: null, // 当enableTypes包含FIGHTACTION时该属性生效，当前角色的战斗行为包含此处所设定的行为时触发当前buff，对应[战斗行为]:[战斗行为触发类型]即[FightActionType]:[FightActionWayTypes]
 	immediately: false, // 是否在获得当前buff时立即触发
@@ -39,11 +39,14 @@ const Buffs = {
 	},
 	AddAtk2: {
 		key: 'AddAtk2',
-		name: '攻击力提升',
-		desc: '效果持续期间，每回合攻击力+1',
+		name: '哲♂学之魂',
+		desc: 'buff持续期间，每主动打出一张卡牌，附加伤害+1',
 		funcType: BuffFunctionTypes.BUFF,
 		type: BuffTypes.OVERLAY,
-		immediately: true,
+		enableTypes: [BuffEnableTypes.FIGHTACTION],
+		enableFightActions: { [FightActionTypes.PLAYCARD]: FightActionWayTypes.ALL },
+		immediately: false,
+		maxRoundEffectTimes: 3,
 		round: 2,
 		losed: '', // 任何buff都会执行BaseBuffLoseEffect，而无需指定
 		effects: '', // 任何buff都会执行BaseBuffEffect，而无需指定
