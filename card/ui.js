@@ -19,7 +19,7 @@ const HeaderBoxPadding = 3
 const CardStyle = {
 	width: 180,
 	height: 240,
-	reverseColor: 'gray',
+	reverseImage: 'reverse',
 }
 const NeedVitStyle = {
 	fontSize: 12,
@@ -174,8 +174,6 @@ function drawCard(card, pos, handCard) {
 	const isMine = PlayerId === card.owner
 	const { name, desc, image, color, rare, needVit, needMp, types } = card
 	const { width, height } = CardStyle
-	const strokeColor = CardItemColors[CardItems.BORDER]
-	const reverseColor = CardItemColors[CardItems.REVERSE]
 	let x = pos ? pos.x : 0
 	let y = pos ? pos.y : 0
 	if (handCard) {
@@ -185,16 +183,12 @@ function drawCard(card, pos, handCard) {
 		y = pos.y
 	}
 	let _strokeColor = CardRareColors[CardRareTypes.DEFAULT]
-	// 卡牌默认内边框色
-	Context.strokeStyle = strokeColor
-	Context.lineWidth = 1
-	Context.strokeRect(x, y, width, height)
 	if (isMine || !handCard) {
 		// 卡牌类型背景色
 		Context.fillStyle = color
-		_strokeColor = getGradientColor(Context, CardRareColors[rare], { x, y }, { x: x + width, y: y + height })
 		Context.fillRect(x, y, width, height)
 		// 卡牌稀有度边框色
+		_strokeColor = getGradientColor(Context, CardRareColors[rare], { x, y }, { x: x + width, y: y + height })
 		Context.strokeStyle = _strokeColor
 		Context.lineWidth = 2
 		Context.strokeRect(x, y, width, height)
@@ -270,15 +264,9 @@ function drawCard(card, pos, handCard) {
 		Context.fillRect(descOffset.x, descOffset.y, descWidth, descHeight)
 		drawText(desc, textWidth, textHeight, DescStyle.fontSize, DescStyle.fontSize + 2, CardItemFontColors[CardItems.DESC], descFontOffset)
 	} else {
-		Context.fillStyle = reverseColor
-		Context.fillRect(x, y, width, height)
-		// Context.strokeStyle = _strokeColor
-		// Context.lineWidth = 2
-		// Context.strokeRect(x, y, width, height)
-		// Context.strokeStyle = strokeColor
-		// Context.lineWidth = 1
-		// Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
+		Context.drawImage(getImage(CardStyle.reverseImage), x, y, width, height)
 	}
+	// 卡牌稀有度炫彩色
 	Context.fillStyle = _strokeColor
 	Context.fillRect(x, y, width, height)
 	return {

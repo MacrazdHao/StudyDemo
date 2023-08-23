@@ -1,3 +1,17 @@
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+  const min_size = Math.min(w, h);
+  if (r > min_size / 2) r = min_size / 2;
+  // 开始绘制
+  this.beginPath();
+  this.moveTo(x + r, y);
+  this.arcTo(x + w, y, x + w, y + h, r);
+  this.arcTo(x + w, y + h, x, y + h, r);
+  this.arcTo(x, y + h, x, y, r);
+  this.arcTo(x, y, x + w, y, r);
+  this.closePath();
+  return this;
+}
+
 const GameWindow = document.getElementById('WhiteBoard')
 const Context = GameWindow.getContext('2d')
 let WindowWdith = document.body.offsetWidth
@@ -48,69 +62,6 @@ window.onresize = () => {
   WindowHeight = document.body.offsetHeight
   GameWindow.width = WindowWdith
   GameWindow.height = WindowHeight
-}
-
-const DefaultCardPath = '/images/none.png'
-const ImagesMap = {}
-const CardImages = {
-  '/images/none.png': null, // 默认图，不会存入ImagesMap中
-}
-function addImage(key, path) {
-  LoadingInfoDom.style.display = 'inline'
-  LoadingInfoDom.innerHTML = `加载资源中 - ${path}`
-  return new Promise(resolve => {
-    ImagesMap[key] = path
-    CardImages[path] = null
-    loadCardImages().then(() => {
-      resolve()
-      LoadingInfoDom.style.display = 'none'
-      LoadingInfoDom.innerHTML = ''
-    })
-  })
-}
-// 根据ImagesMapKey或CardImagesPath获取图片资源
-function getImage(key) {
-  if (!ImagesMap[key]) {
-    if (!CardImages[key]) return CardImages[DefaultCardPath]
-    return CardImages[key]
-  }
-  return ImagesMap[key]
-}
-// 静态资源加载
-function loadCardImages() {
-  return new Promise(resolve => {
-    let finishImgNum = 0
-    let allImgNum = 0
-    for (let path in CardImages) {
-      if (CardImages[path]) continue
-      allImgNum++
-      const img = new Image()
-      img.src = baseurl + path
-      img.onload = function () {
-        CardImages[path] = this
-        finishImgNum++
-      }
-      img.onerror = function () {
-        CardImages[path] = 'notfound'
-        finishImgNum++
-      }
-    }
-    const waitingTimer = setInterval(() => {
-      if (finishImgNum === allImgNum) {
-        for (let path in CardImages) {
-          if (CardImages[path] === 'notfound') {
-            CardImages[path] = CardImages[DefaultCardPath]
-          }
-        }
-        clearInterval(waitingTimer)
-        resolve()
-      }
-    }, 100)
-  })
-}
-// 默认静态图片资源加载
-async function loadDefaultImages() {
-  await loadCardImages()
 }
 
 let MousePos = { x: 0, y: 0, color: getRandomColor() }

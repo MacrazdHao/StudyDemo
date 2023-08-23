@@ -8,6 +8,7 @@ function startPolling() {
 }
 // 自定义函数：加载所需静态资源
 async function setImages() {
+	addImage('reverse', '/images/reverse2.jpg')
 	addImage('guo', '/images/guo.jpg')
 	addImage('quan', '/images/quan.jpg')
 	addImage('xianyu', '/images/xianyu.jpg')
