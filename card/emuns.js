@@ -152,3 +152,13 @@ const EffectTargetTypes = {
 	PLAYER: 1, // 自己
 	ALL: 2, // 所有人
 }
+// 卡牌绘图元素
+const CardItems = {
+	NEEDVIT: 'needVit',
+	NEEDMP: 'needMp',
+	NAME: 'name',
+	IMAGE: 'image',
+	DESC: 'desc',
+	BORDER: 'border',
+	REVERSE: 'reverse'
+}

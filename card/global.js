@@ -108,6 +108,10 @@ function loadCardImages() {
     }, 100)
   })
 }
+// 默认静态图片资源加载
+async function loadDefaultImages() {
+  await loadCardImages()
+}
 
 let MousePos = { x: 0, y: 0, color: getRandomColor() }
 

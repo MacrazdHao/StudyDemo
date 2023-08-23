@@ -19,11 +19,9 @@ const HeaderBoxPadding = 3
 const CardStyle = {
 	width: 180,
 	height: 240,
-	strokeColor: '#3f2400',
 	reverseColor: 'gray',
 }
 const NeedVitStyle = {
-	fontColor: 'white',
 	fontSize: 12,
 	width: 20,
 	height: 20,
@@ -31,7 +29,6 @@ const NeedVitStyle = {
 	padding: [8, 7],
 }
 const NeedMpStyle = {
-	fontColor: 'white',
 	fontSize: 12,
 	width: 20,
 	height: 20,
@@ -39,8 +36,6 @@ const NeedMpStyle = {
 	padding: [8, 7],
 }
 const NameStyle = {
-	background: 'white',
-	fontColor: 'black',
 	fontSize: 12,
 	// width: CardStyle.width - NeedVitStyle.width - NeedVitStyle.margin[1] - 6,
 	height: 20,
@@ -60,8 +55,6 @@ const IllustrationStyle = {
 	margin: [6, 6, 0, 6],
 }
 const DescStyle = {
-	background: 'white',
-	fontColor: 'black',
 	fontSize: 10,
 	margin: [6, 6, 6, 6],
 	padding: [8, 7, 8, 7],
@@ -180,7 +173,9 @@ function drawText(text, width, height, fontSize, lineHeight, color = 'black', po
 function drawCard(card, pos, handCard) {
 	const isMine = PlayerId === card.owner
 	const { name, desc, image, color, rare, needVit, needMp, types } = card
-	const { width, height, strokeColor, reverseColor } = CardStyle
+	const { width, height } = CardStyle
+	const strokeColor = CardItemColors[CardItems.BORDER]
+	const reverseColor = CardItemColors[CardItems.REVERSE]
 	let x = pos ? pos.x : 0
 	let y = pos ? pos.y : 0
 	if (handCard) {
@@ -189,7 +184,11 @@ function drawCard(card, pos, handCard) {
 		x = pos.x
 		y = pos.y
 	}
-	let _strokeColor = strokeColor
+	let _strokeColor = CardRareColors[CardRareTypes.DEFAULT]
+	// 卡牌默认内边框色
+	Context.strokeStyle = strokeColor
+	Context.lineWidth = 1
+	Context.strokeRect(x, y, width, height)
 	if (isMine || !handCard) {
 		// 卡牌类型背景色
 		Context.fillStyle = color
@@ -199,10 +198,6 @@ function drawCard(card, pos, handCard) {
 		Context.strokeStyle = _strokeColor
 		Context.lineWidth = 2
 		Context.strokeRect(x, y, width, height)
-		// 卡牌默认内边框色
-		Context.strokeStyle = strokeColor
-		Context.lineWidth = 1
-		Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
 		// 体力消耗
 		const needVitBoxOffset = {
 			x: x + NeedVitStyle.margin[1],
@@ -212,10 +207,10 @@ function drawCard(card, pos, handCard) {
 			x: needVitBoxOffset.x + NeedVitStyle.padding[1],
 			y: needVitBoxOffset.y + NeedVitStyle.fontSize / 2 + NeedVitStyle.padding[0]
 		}
-		Context.fillStyle = CardNeedColor[BaseValueAttributeKeys.VITALITY]
+		Context.fillStyle = CardItemColors[CardItems.NEEDVIT]
 		Context.fillRect(needVitBoxOffset.x, needVitBoxOffset.y, NeedVitStyle.width, NeedVitStyle.height)
 		Context.font = `${NeedVitStyle.fontSize}px Georgia`;
-		Context.fillStyle = NeedVitStyle.fontColor
+		Context.fillStyle = CardItemFontColors[CardItems.NEEDVIT]
 		Context.fillText(needVit, needVitFontOffset.x, needVitFontOffset.y)
 		const nameBoxOffset = {
 			x: needVitBoxOffset.x + NeedVitStyle.width + NameStyle.margin[1],
@@ -233,10 +228,10 @@ function drawCard(card, pos, handCard) {
 				x: needMpBoxOffset.x + NeedVitStyle.padding[1],
 				y: needMpBoxOffset.y + NeedMpStyle.fontSize / 2 + NeedMpStyle.padding[0]
 			}
-			Context.fillStyle = CardNeedColor[BaseValueAttributeKeys.MP]
+			Context.fillStyle = CardItemColors[CardItems.NEEDMP]
 			Context.fillRect(needMpBoxOffset.x, needMpBoxOffset.y, NeedMpStyle.width, NeedMpStyle.height)
 			Context.font = `${NeedMpStyle.fontSize}px Georgia`;
-			Context.fillStyle = NeedMpStyle.fontColor
+			Context.fillStyle = CardItemFontColors[CardItems.NEEDMP]
 			Context.fillText(needMp, needMpFontOffset.x, needMpFontOffset.y)
 			nameBoxOffset.x = needMpBoxOffset.x + NeedMpStyle.width + NameStyle.margin[1]
 			nameWidth = nameWidth - NeedMpStyle.width - NeedMpStyle.margin[1]
@@ -246,7 +241,7 @@ function drawCard(card, pos, handCard) {
 			x: nameBoxOffset.x + NameStyle.padding[1],
 			y: nameBoxOffset.y + NameStyle.fontSize / 2 + NameStyle.padding[0]
 		}
-		Context.fillStyle = NameStyle.background
+		Context.fillStyle = CardItemColors[CardItems.NAME]
 		Context.fillRect(nameBoxOffset.x, nameBoxOffset.y, nameWidth, NameStyle.height)
 		Context.font = `${NameStyle.fontSize}px Georgia`;
 		Context.fillStyle = '#000'
@@ -271,21 +266,18 @@ function drawCard(card, pos, handCard) {
 			x: descOffset.x + DescStyle.padding[1],
 			y: descOffset.y + DescStyle.fontSize / 2 + DescStyle.padding[0]
 		}
-		Context.fillStyle = DescStyle.background
+		Context.fillStyle = CardItemColors[CardItems.DESC]
 		Context.fillRect(descOffset.x, descOffset.y, descWidth, descHeight)
-		// Context.font = `${DescStyle.fontSize}px Georgia`;
-		// Context.fillStyle = DescStyle.fontColor
-		// Context.fillText(desc, descFontOffset.x, descFontOffset.y)
-		drawText(desc, textWidth, textHeight, DescStyle.fontSize, DescStyle.fontSize + 2, DescStyle.fontColor, descFontOffset)
+		drawText(desc, textWidth, textHeight, DescStyle.fontSize, DescStyle.fontSize + 2, CardItemFontColors[CardItems.DESC], descFontOffset)
 	} else {
 		Context.fillStyle = reverseColor
 		Context.fillRect(x, y, width, height)
-		Context.strokeStyle = _strokeColor
-		Context.lineWidth = 2
-		Context.strokeRect(x, y, width, height)
-		Context.strokeStyle = strokeColor
-		Context.lineWidth = 1
-		Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
+		// Context.strokeStyle = _strokeColor
+		// Context.lineWidth = 2
+		// Context.strokeRect(x, y, width, height)
+		// Context.strokeStyle = strokeColor
+		// Context.lineWidth = 1
+		// Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
 	}
 	Context.fillStyle = _strokeColor
 	Context.fillRect(x, y, width, height)

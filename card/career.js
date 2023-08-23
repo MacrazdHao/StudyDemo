@@ -9,13 +9,14 @@ const InitCards = {
 const CareerInitInfo = {
 	[CareerTypes.HUMAN]: {
 		careerNam: '人类',
-		[BaseValueAttributeKeys.MAXHP]: 10,
-		[BaseValueAttributeKeys.MAXSHIELD]: 10,
+		[BaseValueAttributeKeys.MAXHP]: 100,
+		[BaseValueAttributeKeys.MAXSHIELD]: 100,
 		[BaseValueAttributeKeys.MAXMP]: 2,
 		[BaseValueAttributeKeys.MAXVITALITY]: 5,
 		[BaseValueAttributeKeys.HP]: 100,
 		[BaseValueAttributeKeys.SHIELD]: 100,
 		[BaseValueAttributeKeys.MP]: 0,
+		[BaseValueAttributeKeys.VITALITY]: 2,
 		[BaseValueAttributeKeys.MAXHANDCARDSNUM]: 3,
 		[BaseValueAttributeKeys.ROUNDGETCARDNUM]: 2,
 		[BaseValueAttributeKeys.INITIALVITALITY]: 2,
@@ -31,5 +32,17 @@ const CareerInitInfo = {
 }
 
 function getCareerInitInfo(careerType) {
+	if (CareerInitInfo[careerType][BaseValueAttributeKeys.HP] > CareerInitInfo[careerType][BaseValueAttributeKeys.MAXHP]) {
+		CareerInitInfo[careerType][BaseValueAttributeKeys.HP] = CareerInitInfo[careerType][BaseValueAttributeKeys.MAXHP]
+	}
+	if (CareerInitInfo[careerType][BaseValueAttributeKeys.SHIELD] > CareerInitInfo[careerType][BaseValueAttributeKeys.MAXSHIELD]) {
+		CareerInitInfo[careerType][BaseValueAttributeKeys.SHIELD] = CareerInitInfo[careerType][BaseValueAttributeKeys.MAXSHIELD]
+	}
+	if (CareerInitInfo[careerType][BaseValueAttributeKeys.MP] > CareerInitInfo[careerType][BaseValueAttributeKeys.MAXMP]) {
+		CareerInitInfo[careerType][BaseValueAttributeKeys.MP] = CareerInitInfo[careerType][BaseValueAttributeKeys.MAXMP]
+	}
+	if (CareerInitInfo[careerType][BaseValueAttributeKeys.VITALITY] > CareerInitInfo[careerType][BaseValueAttributeKeys.MAXVITALITY]) {
+		CareerInitInfo[careerType][BaseValueAttributeKeys.VITALITY] = CareerInitInfo[careerType][BaseValueAttributeKeys.MAXVITALITY]
+	}
 	return CareerInitInfo[careerType]
 }

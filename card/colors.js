@@ -4,10 +4,22 @@ const RoundPlayerColors = {
 	[RoundPlayerTypes.ENEMY]: 'red',
 	[RoundPlayerTypes.PLAYER]: 'green',
 }
-// 卡片消耗颜色
-const CardNeedColor = {
-	[BaseValueAttributeKeys.VITALITY]: 'rgba(223,182,124,1)',
-	[BaseValueAttributeKeys.MP]: 'rgba(159,124,223,1)',
+// 卡片元素默认颜色
+const CardItemColors = {
+	[CardItems.NEEDVIT]: 'rgba(223,182,124,1)',
+	[CardItems.NEEDMP]: 'rgba(159,124,223,1)',
+	[CardItems.NAME]: 'rgba(255,255,255,1)',
+	[CardItems.DESC]: 'rgba(255,255,255,1)',
+	[CardItems.IMAGE]: 'rgba(255,255,255,1)',
+	[CardItems.BORDER]: 'rgba(255,255,255,1)',
+	[CardItems.REVERSE]: 'rgba(116,95,67,1)',
+}
+// 卡片元素文字默认颜色
+const CardItemFontColors = {
+	[CardItems.NEEDVIT]: 'rgba(255,255,255,1)',
+	[CardItems.NEEDMP]: 'rgba(255,255,255,1)',
+	[CardItems.NAME]: 'rgba(0,0,0,1)',
+	[CardItems.DESC]: 'rgba(0,0,0,1)',
 }
 // 卡牌颜色
 const CardColors = {
