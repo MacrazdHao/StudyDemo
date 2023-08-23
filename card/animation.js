@@ -5,6 +5,7 @@ let ConvertFpsRatio = OriginFps / RealFps // 原始帧和映射帧的比例 - n�
 let OriginFpsTimer = 0 // 原始帧计数器
 let RealFpsTimer = 0 // 映射帧计数器
 
+let RealFpsTimestamp = new Date().getTime()
 let FpsTimestamp = new Date().getTime() // 计时时间戳
 
 // 帧率侦听器
@@ -15,6 +16,7 @@ function fpsListener() {
 		OriginFpsTimer = OriginFps
 		if (RealFpsTimer === 60) RealFpsTimer = 0
 		RealFpsTimer++
+		RealFpsTimestamp = ts
 		doWhenFpsUpdate()
 	}
 	if (ts - FpsTimestamp >= 1000) {
@@ -36,8 +38,8 @@ function pushAnimation(start, end, duration = 200, type = AnimationTypes.LINEAR)
 	const key = getRandomKey()
 	NumberStartFpsRecorder[key] = {
 		type, duration,
-		ts: FpsTimestamp, // 当前帧的时间戳
-		startFps: RealFpsTimer, // 起始帧
+		ts: RealFpsTimestamp, // 当前映射帧的时间戳
+		startFps: RealFpsTimer, // 起始映射帧
 		start, end, // 起始值和终点值
 		unit: getUnitNum(start, end, duration) // 单位数值变化量
 	}
@@ -52,7 +54,7 @@ function updateAnimationInfo(key, { type = AnimationTypes.LINEAR, start, end, du
 	NumberStartFpsRecorder[key] = {
 		type, duration,
 		start, end, // 起始值和终点值
-		ts: FpsTimestamp, // 起始帧对应的时间戳
+		ts: RealFpsTimestamp, // 起始帧对应的时间戳
 		startFps: RealFpsTimer, // 起始帧
 		unit: getUnitNum(start, end, duration) // 单位数值变化量
 	}
@@ -77,22 +79,28 @@ function getUnitNum(start, end, duration) {
 function getCurrentAnimationNum(key) {
 	if (!key || !NumberStartFpsRecorder[key]) return null
 	const { type, ts, startFps, start, end, unit } = NumberStartFpsRecorder[key]
-	const tsDiff = (new Date()).getTime() - ts
-	// // 前后不足1000ms的时间片段的帧数
-	// const fpsDiff = RealFpsTimer > startFps ? (RealFpsTimer - startFps) : (RealFps - startFps + RealFpsTimer)
-	// let addFps = fpsDiff
-	// if (tsDiff >= 1000) {
-	// 	// 加上 中间大于等于1000ms的时间片段的帧数
-	// 	addFps = addFps + RealFps * Math.floor(tsDiff / 1000)
-	// }
-	const addFps = Math.floor(tsDiff / (1000 / RealFps))
-	// console.log(tsDiff, (1000 / RealFps))
+	const tsDiff = RealFpsTimestamp - ts
+	let addFps = 0
+	if (tsDiff < 1000) {
+		if (startFps > RealFpsTimer) {
+			// 跨域一个60帧周期
+			addFps = RealFps - startFps + RealFpsTimer
+		} else {
+			// 同一个60帧周期
+			addFps = RealFpsTimer - startFps
+		}
+	} else {
+		// 整数的60帧周期数
+		const fullFpsCycle = tsDiff % 1000
+		// 剩余不满一60帧周期的时间(ms)
+		const reduceTime = tsDiff - fullFpsCycle
+		addFps = RealFps * fullFpsCycle + Math.floor(reduceTime / (1000 / RealFps))
+	}
 	let resNum = 0
 	switch (type) {
 		case AnimationTypes.LINEAR:
 			resNum = start > end ? Math.max(start + addFps * unit, end) : Math.min(start + addFps * unit, end)
 			break
 	}
-	// if (resNum === end) delete NumberStartFpsRecorder[key]
 	return resNum
 }

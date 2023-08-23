@@ -139,7 +139,6 @@ function getHandCardPosition(index, isMine = true) {
 		// 当前鼠标不在手牌范围内
 		MouseHandCard = null
 		// 所有卡牌回到底部
-		// console.log(getAnimationInfo(CardPositionAnimation[`pos_y_${currentCardId}`]))
 		position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY })
 	} else {
 		// 当前鼠标在手牌范围内
@@ -148,14 +147,11 @@ function getHandCardPosition(index, isMine = true) {
 			// 当前index对应卡牌为鼠标所在卡牌
 			MouseHandCard = currentCardId
 			// 去往顶部
-			// const _p = { x: position.x, y: position.y }
-			// console.log(getAnimationInfo(CardPositionAnimation[`pos_y_${currentCardId}`]))
 			position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY - MouseHandCardHoverHeight })
 			// console.log(_p, position, getAnimationInfo(CardPositionAnimation[`pos_y_${currentCardId}`]))
 		} else {
 			// 当前index对应卡牌不为鼠标所在卡牌
-			// console.log(getAnimationInfo(CardPositionAnimation[`pos_y_${currentCardId}`]))
-			position = updateCardPosisitonAnimationPos(currentCardId, { x: startX + index * ShowCardWidth, y: startY }, { x, y: startY })
+			position = updateCardPosisitonAnimationPos(currentCardId, { x: startX + index * ShowCardWidth, y }, { x, y: startY })
 		}
 	}
 	return position
