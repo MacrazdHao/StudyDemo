@@ -47,6 +47,15 @@ function getRandomColor(minR = 0, maxR = 255, minG = 0, maxG = 255, minB = 0, ma
 // 		}
 // 	}
 // }
+// 获取渐变色
+function getGradientColor(ctx, colorsMap = {}, startPos, endPos) {
+	let strokeColor = ctx.createLinearGradient(startPos.x, startPos.y, endPos.x, endPos.y)
+	const colorProcess = Object.keys(colorsMap).sort((a, b) => a - b)
+	colorProcess.forEach((process) => {
+		strokeColor.addColorStop(process, colorsMap[process])
+	})
+	return strokeColor
+}
 // 随机重排数组
 function randomArray(arr = []) {
 	return arr.sort(() => Math.random() - 0.5)

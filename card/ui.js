@@ -191,19 +191,15 @@ function drawCard(card, pos, handCard) {
 	}
 	let _strokeColor = strokeColor
 	if (isMine || !handCard) {
+		// 卡牌类型背景色
 		Context.fillStyle = color
-		_strokeColor = CardRareColors[rare]
-		if (rare === CardRareTypes.UNIQUE) {
-			_strokeColor = Context.createLinearGradient(x, y, x + width, y + height)
-			CardRareColors[rare].forEach((color, index, arr) => {
-				// _strokeColor.addColorStop(index / arr.length, color)
-				_strokeColor.addColorStop(index / arr.length, getRandomColor())
-			})
-		}
+		_strokeColor = getGradientColor(Context, CardRareColors[rare], { x, y }, { x: x + width, y: y + height })
 		Context.fillRect(x, y, width, height)
+		// 卡牌稀有度边框色
 		Context.strokeStyle = _strokeColor
 		Context.lineWidth = 2
 		Context.strokeRect(x, y, width, height)
+		// 卡牌默认内边框色
 		Context.strokeStyle = strokeColor
 		Context.lineWidth = 1
 		Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
@@ -253,7 +249,7 @@ function drawCard(card, pos, handCard) {
 		Context.fillStyle = NameStyle.background
 		Context.fillRect(nameBoxOffset.x, nameBoxOffset.y, nameWidth, NameStyle.height)
 		Context.font = `${NameStyle.fontSize}px Georgia`;
-		Context.fillStyle = _strokeColor
+		Context.fillStyle = '#000'
 		Context.fillText(name, nameFontOffset.x, nameFontOffset.y)
 		// 插画
 		const illustrationWidth = CardStyle.width - IllustrationStyle.margin[1] - IllustrationStyle.margin[3]
@@ -291,6 +287,8 @@ function drawCard(card, pos, handCard) {
 		Context.lineWidth = 1
 		Context.strokeRect(x + 2, y + 2, width - 4, height - 4)
 	}
+	Context.fillStyle = _strokeColor
+	Context.fillRect(x, y, width, height)
 	return {
 		...card,
 		x, y
