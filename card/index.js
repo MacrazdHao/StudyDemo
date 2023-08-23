@@ -1,5 +1,6 @@
 // 游戏主循环
 function startPolling() {
+	fpsListener()
 	updateFrame()
 	gameStatusListener()
 	fightStatusListener()
@@ -29,7 +30,7 @@ async function main() {
 	FightButton.addEventListener('click', fightStartFunc)
 	RetryButton.addEventListener('click', retryFunc)
 	EndRoundButton.addEventListener('click', roundEndFunc)
-	dynamicFramesListener()
+	// dynamicFramesListener()
 	startPolling()
 	// })
 }

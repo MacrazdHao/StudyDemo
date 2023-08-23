@@ -67,49 +67,57 @@ const DesktopCardPosition = {
 const HandCardShowRatio = 1 / 3
 const ShowCardWidth = CardStyle.width * HandCardShowRatio
 const MouseHandCardHoverHeight = 30
-function updateCardPosisitonAnimationPos(cardId, startValue, endValue) {
-	return endValue
-	// let xAnimId = null
-	// let yAnimId = null
-	// if (!CardPositionAnimation[cardId]) {
-	// 	if (!endValue) {
-	// 		return startValue
-	// 	}
-	// 	if (!startValue) {
-	// 		return endValue
-	// 	}
-	// 	if (!startValue && !endValue) {
-	// 		return null
-	// 	}
-	// 	xAnimId = requestAnimation({
-	// 		startValue: startValue.x, endValue: endValue.x,
-	// 		duration: 3000
-	// 	})
-	// 	yAnimId = requestAnimation({
-	// 		startValue: startValue.y, endValue: endValue.y,
-	// 		duration: 3000
-	// 	})
-	// } else {
-	// 	xAnimId = CardPositionAnimation[cardId].xAnimId
-	// 	yAnimId = CardPositionAnimation[cardId].yAnimId
-	// 	if (endValue) {
-	// 		requestAnimation({
-	// 			animationId: xAnimId,
-	// 			// endValue: endValue.x
-	// 		})
-	// 		requestAnimation({
-	// 			animationId: yAnimId,
-	// 			// endValue: endValue.y
-	// 		})
-	// 	}
-	// }
-	// const x = getAnimationCurrentValue(xAnimId)
-	// const y = getAnimationCurrentValue(yAnimId)
-	// CardPositionAnimation[cardId] = {
-	// 	xAnimId,
-	// 	yAnimId
-	// }
-	// return { x, y }
+function getCurrentCardPosition(cardId, defaultPos) {
+	const xKey = `pos_x_${cardId}`
+	const yKey = `pos_y_${cardId}`
+	let xAnimKey = CardPositionAnimation[xKey] || null
+	let yAnimKey = CardPositionAnimation[yKey] || null
+	x = getCurrentAnimationNum(xAnimKey)
+	y = getCurrentAnimationNum(yAnimKey)
+	return {
+		x: x || defaultPos.x,
+		y: y || defaultPos.y,
+	}
+}
+function updateCardPosisitonAnimationPos(cardId, startPos, endPos, duration = 100) {
+	// if (startPos.x === endPos.x && startPos.y === endPos.y) return
+	let x = endPos.x
+	let y = endPos.y
+	const xKey = `pos_x_${cardId}`
+	const yKey = `pos_y_${cardId}`
+	let xAnimKey = CardPositionAnimation[xKey] || null
+	let yAnimKey = CardPositionAnimation[yKey] || null
+	if (!startPos) {
+		if (!xAnimKey && yAnimKey) {
+			y = getCurrentAnimationNum(yAnimKey)
+		}
+		if (xAnimKey && !yAnimKey) {
+			x = getCurrentAnimationNum(xAnimKey)
+		}
+		if (xAnimKey && yAnimKey) {
+			x = getCurrentAnimationNum(xAnimKey)
+			y = getCurrentAnimationNum(yAnimKey)
+		}
+	} else {
+		if (!xAnimKey) {
+			CardPositionAnimation[xKey] = pushAnimation(startPos.x, endPos.x, 500)
+			xAnimKey = CardPositionAnimation[xKey]
+		}
+		if (!yAnimKey) {
+			CardPositionAnimation[yKey] = pushAnimation(startPos.y, endPos.y, 500)
+			yAnimKey = CardPositionAnimation[yKey]
+		}
+		const xAnim = getAnimationInfo(xAnimKey)
+		const yAnim = getAnimationInfo(yAnimKey)
+		// console.log(xAnim, yAnim)
+		if (xAnim.end !== endPos.x) updateAnimationInfo(xAnimKey, { start: startPos.x, end: endPos.x })
+		if (yAnim.end !== endPos.y) updateAnimationInfo(yAnimKey, { start: startPos.y, end: endPos.y })
+		if (xAnim.duration !== duration) updateAnimationInfo(xAnimKey, { start: startPos.x, duration })
+		if (yAnim.duration !== duration) updateAnimationInfo(yAnimKey, { start: startPos.y, duration })
+		x = getCurrentAnimationNum(xAnimKey)
+		y = getCurrentAnimationNum(yAnimKey)
+	}
+	return { x, y }
 }
 // 获取手牌坐标
 function getHandCardPosition(index, isMine = true) {
@@ -122,25 +130,35 @@ function getHandCardPosition(index, isMine = true) {
 	const startY = isMine ? WhiteBoardHeight - CardStyle.height : -160
 	const endY = startY + height
 	const currentCardId = _player.handCards[index]
-	const isMouseHandCard = currentCardId === MouseHandCard
-	const x = startX + index * ShowCardWidth
-	const y = startY - (isMouseHandCard ? MouseHandCardHoverHeight : 0)
-	if (isMine) {
-		if (!isMouseHandCard && MousePos.x >= x && MousePos.x < x + (index === cardNum - 1 ? width : ShowCardWidth) &&
+	// const isMouseHandCard = currentCardId === MouseHandCard
+	// const { x, y } = getCurrentCardPosition(currentCardId, { x: startX + index * ShowCardWidth, y: startY - (isMouseHandCard ? MouseHandCardHoverHeight : 0) })
+	const { x, y } = getCurrentCardPosition(currentCardId, { x: startX + index * ShowCardWidth, y: startY })
+	let position = { x, y }
+	if (!isMine) return position
+	if (MousePos.x < startX || MousePos.x > endX || MousePos.y < startY || MousePos.y > endY) {
+		// 当前鼠标不在手牌范围内
+		MouseHandCard = null
+		// 所有卡牌回到底部
+		// console.log(getAnimationInfo(CardPositionAnimation[`pos_y_${currentCardId}`]))
+		position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY })
+	} else {
+		// 当前鼠标在手牌范围内
+		if (MousePos.x >= x && MousePos.x < x + (index === cardNum - 1 ? width : ShowCardWidth) &&
 			MousePos.y >= y && MousePos.y <= y + height) {
+			// 当前index对应卡牌为鼠标所在卡牌
 			MouseHandCard = currentCardId
-			const position = getHandCardPosition(index)
-			return updateCardPosisitonAnimationPos(currentCardId, { x, y: startY }, { x: position.x, y: position.y })
-		}
-		if (MouseHandCard && (MousePos.x < startX || MousePos.x > endX ||
-			MousePos.y < startY || MousePos.y > endY)) {
-			MouseHandCard = null
-			const position = getHandCardPosition(index)
-			// if (isMouseHandCard) return updateCardPosisitonAnimationPos(currentCardId, { x, y: startY - MouseHandCardHoverHeight }, { x: position.x, y: position.y })
-			return updateCardPosisitonAnimationPos(currentCardId, null, { x, y })
+			// 去往顶部
+			// const _p = { x: position.x, y: position.y }
+			// console.log(getAnimationInfo(CardPositionAnimation[`pos_y_${currentCardId}`]))
+			position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY - MouseHandCardHoverHeight })
+			// console.log(_p, position, getAnimationInfo(CardPositionAnimation[`pos_y_${currentCardId}`]))
+		} else {
+			// 当前index对应卡牌不为鼠标所在卡牌
+			// console.log(getAnimationInfo(CardPositionAnimation[`pos_y_${currentCardId}`]))
+			position = updateCardPosisitonAnimationPos(currentCardId, { x: startX + index * ShowCardWidth, y: startY }, { x, y: startY })
 		}
 	}
-	return updateCardPosisitonAnimationPos(currentCardId, null, { x, y })
+	return position
 }
 // 获取文字内容的行内容
 function getTextLines(text, width, height, fontSize, lineHeight) {
@@ -327,10 +345,10 @@ function getFrame() {
 		drawDesktopCard()
 	}
 	drawMouse()
-	DynamicFrames++
+	// DynamicFrames++
 }
 // 开始帧监听
 function updateFrame() {
 	getFrame()
-	doAnimation()
+	// doAnimation()
 }
