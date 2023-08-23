@@ -92,13 +92,14 @@ const Cards = {
 		}
 	},
 	Test1: {
-		types: [CardTypes.MAGIC],
+		types: [CardTypes.PROPS, CardTypes.MAGIC],
 		values: {
 			[CardTypes.COMMON]: {
 				name: '测试卡-稀有1', desc: '灵力+1', effects: '', rare: CardRareTypes.NORMAL,
 				playerInfo: { [BaseValueAttributeKeys.MP]: 1 }
 			},
-			[CardTypes.MAGIC]: {}
+			[CardTypes.MAGIC]: {},
+			[CardTypes.PROPS]: {},
 		}
 	},
 	Test2: {

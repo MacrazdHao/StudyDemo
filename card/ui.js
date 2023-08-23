@@ -212,7 +212,7 @@ function drawCard(card, pos, handCard) {
 			x: needVitBoxOffset.x + NeedVitStyle.padding[1],
 			y: needVitBoxOffset.y + NeedVitStyle.fontSize / 2 + NeedVitStyle.padding[0]
 		}
-		Context.fillStyle = _strokeColor
+		Context.fillStyle = CardNeedColor[BaseValueAttributeKeys.VITALITY]
 		Context.fillRect(needVitBoxOffset.x, needVitBoxOffset.y, NeedVitStyle.width, NeedVitStyle.height)
 		Context.font = `${NeedVitStyle.fontSize}px Georgia`;
 		Context.fillStyle = NeedVitStyle.fontColor
@@ -233,7 +233,7 @@ function drawCard(card, pos, handCard) {
 				x: needMpBoxOffset.x + NeedVitStyle.padding[1],
 				y: needMpBoxOffset.y + NeedMpStyle.fontSize / 2 + NeedMpStyle.padding[0]
 			}
-			Context.fillStyle = _strokeColor
+			Context.fillStyle = CardNeedColor[BaseValueAttributeKeys.MP]
 			Context.fillRect(needMpBoxOffset.x, needMpBoxOffset.y, NeedMpStyle.width, NeedMpStyle.height)
 			Context.font = `${NeedMpStyle.fontSize}px Georgia`;
 			Context.fillStyle = NeedMpStyle.fontColor

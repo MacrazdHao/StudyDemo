@@ -4,13 +4,18 @@ const RoundPlayerColors = {
 	[RoundPlayerTypes.ENEMY]: 'red',
 	[RoundPlayerTypes.PLAYER]: 'green',
 }
+// 卡片消耗颜色
+const CardNeedColor = {
+	[BaseValueAttributeKeys.VITALITY]: 'rgba(223,182,124,1)',
+	[BaseValueAttributeKeys.MP]: 'rgba(159,124,223,1)',
+}
 // 卡牌颜色
 const CardColors = {
-	[CardTypes.COMMON]: '#fff', // 通用(所有卡牌默认包含)
-	[CardTypes.ATTACK]: 'red', // 攻击
-	[CardTypes.DEFENSE]: 'blue', // 防御
-	[CardTypes.MAGIC]: 'purple', // 魔法
-	[CardTypes.PROPS]: 'green', // 道具
+	[CardTypes.COMMON]: 'rgba(255,255,255,1)', // 通用(所有卡牌默认包含)
+	[CardTypes.ATTACK]: 'rgba(106,41,41,1)', // 攻击
+	[CardTypes.DEFENSE]: 'rgba(41,70,106,1)', // 防御
+	[CardTypes.MAGIC]: 'rgba(78,41,106,1)', // 魔法
+	[CardTypes.PROPS]: 'rgba(43,106,41,1)', // 道具
 }
 // 卡牌稀有度颜色（边框）
 const CardRareColors = {
