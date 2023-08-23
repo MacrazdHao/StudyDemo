@@ -9,6 +9,8 @@ GameWindow.height = WindowHeight
 const WhiteBoardWidth = GameWindow.width
 const WhiteBoardHeight = GameWindow.height
 
+const LoadingInfoDom = document.getElementById('LoadingInfo')
+
 const StartButton = document.getElementById('StartButton')
 const FightButton = document.getElementById('FightButton')
 const RetryButton = document.getElementById('RetryButton')
@@ -49,13 +51,30 @@ window.onresize = () => {
 }
 
 const DefaultCardPath = '/images/none.png'
+const ImagesMap = {}
 const CardImages = {
-  '/images/none.png': null,
-  '/images/guo.jpg': null,
-  '/images/quan.jpg': null,
-  '/images/xianyu.jpg': null,
-  '/images/xianyu_dian.jpg': null,
-  '/images/zhexue.jpg': null,
+  '/images/none.png': null, // 默认图，不会存入ImagesMap中
+}
+function addImage(key, path) {
+  LoadingInfoDom.style.display = 'inline'
+  LoadingInfoDom.innerHTML = `加载资源中 - ${path}`
+  return new Promise(resolve => {
+    ImagesMap[key] = path
+    CardImages[path] = null
+    loadCardImages().then(() => {
+      resolve()
+      LoadingInfoDom.style.display = 'none'
+      LoadingInfoDom.innerHTML = ''
+    })
+  })
+}
+// 根据ImagesMapKey或CardImagesPath获取图片资源
+function getImage(key) {
+  if (!ImagesMap[key]) {
+    if (!CardImages[key]) return CardImages[DefaultCardPath]
+    return CardImages[key]
+  }
+  return ImagesMap[key]
 }
 // 静态资源加载
 function loadCardImages() {
@@ -63,6 +82,7 @@ function loadCardImages() {
     let finishImgNum = 0
     let allImgNum = 0
     for (let path in CardImages) {
+      if (CardImages[path]) continue
       allImgNum++
       const img = new Image()
       img.src = baseurl + path

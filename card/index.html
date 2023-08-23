@@ -36,6 +36,15 @@
 		background-image: #fff;
 	}
 
+	.loadingInfo {
+		position: fixed;
+		top: 0;
+		left: 0;
+		font-size: 12px;
+		color: white;
+		display: none;
+	}
+
 	.operator {
 		width: 100%;
 		height: 48px;
@@ -173,6 +182,7 @@
 </style>
 
 <body>
+	<p id="LoadingInfo" class="loadingInfo"></p>
 	<p id="StartButton" class="fixedButton start">开始</p>
 	<p id="FightButton" class="fixedButton fight">Fight</p>
 	<p id="RetryButton" class="fixedButton fight">再次尝试</p>

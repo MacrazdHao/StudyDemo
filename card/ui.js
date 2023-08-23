@@ -261,7 +261,7 @@ function drawCard(card, pos, handCard) {
 			x: x + IllustrationStyle.margin[1],
 			y: nameBoxOffset.y + NameStyle.height + IllustrationStyle.margin[0]
 		}
-		Context.drawImage(CardImages[image || DefaultCardPath], illustrationOffset.x, illustrationOffset.y, illustrationWidth, IllustrationStyle.height)
+		Context.drawImage(getImage(image), illustrationOffset.x, illustrationOffset.y, illustrationWidth, IllustrationStyle.height)
 		// 描述
 		const descWidth = CardStyle.width - DescStyle.margin[1] - DescStyle.margin[3]
 		const textWidth = descWidth - DescStyle.padding[1] - DescStyle.padding[3]
