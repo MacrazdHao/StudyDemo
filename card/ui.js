@@ -100,16 +100,18 @@ function updateCardPosisitonAnimationPos(cardId, startPos, endPos, duration = 10
 		}
 	} else {
 		if (!xAnimKey) {
-			CardPositionAnimation[xKey] = pushAnimation(startPos.x, endPos.x, 0)
+			CardPositionAnimation[xKey] = pushAnimation(startPos.x, endPos.x, duration)
 			xAnimKey = CardPositionAnimation[xKey]
 		}
 		if (!yAnimKey) {
-			CardPositionAnimation[yKey] = pushAnimation(startPos.y, endPos.y, 500)
+			CardPositionAnimation[yKey] = pushAnimation(startPos.y, endPos.y, duration)
 			yAnimKey = CardPositionAnimation[yKey]
 		}
 		const xAnim = getAnimationInfo(xAnimKey)
 		const yAnim = getAnimationInfo(yAnimKey)
 		// console.log(xAnim, yAnim)
+		// if (xAnim.start !== startPos.x) updateAnimationInfo(xAnimKey, { start: startPos.x, end: endPos.x })
+		// if (yAnim.start !== startPos.y) updateAnimationInfo(yAnimKey, { start: startPos.y, end: endPos.y })
 		if (xAnim.end !== endPos.x) updateAnimationInfo(xAnimKey, { start: startPos.x, end: endPos.x })
 		if (yAnim.end !== endPos.y) updateAnimationInfo(yAnimKey, { start: startPos.y, end: endPos.y })
 		if (xAnim.duration !== duration) updateAnimationInfo(xAnimKey, { start: startPos.x, duration })
@@ -134,13 +136,13 @@ function getHandCardPosition(index, isMine = true) {
 	// const { x, y } = getCurrentCardPosition(currentCardId, { x: startX + index * ShowCardWidth, y: startY - (isMouseHandCard ? MouseHandCardHoverHeight : 0) })
 	const { x, y } = getCurrentCardPosition(currentCardId, { x: startX + index * ShowCardWidth, y: startY })
 	let position = { x, y }
+	const newX = startX + index * ShowCardWidth // x坐标根据当前卡牌数量实时更新
 	if (!isMine) return position
-	console.log(index, currentCardId, x)
 	if (MousePos.x < startX || MousePos.x > endX || MousePos.y < y || MousePos.y > endY) {
 		// 当前鼠标不在手牌范围内(注意，当有卡牌突出来时，应以突出部分的y为准，此处MousePos.y < y即是如此)
 		MouseHandCard = null
 		// 所有卡牌回到底部
-		position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY })
+		position = updateCardPosisitonAnimationPos(currentCardId, position, { x: newX, y: startY })
 	} else {
 		// if ((isMouseHandCard && MousePos.x >= x && MousePos.x <= x + width && MousePos.y >= y && MousePos.y <= startY)){
 		// 	// 当前index对应卡牌为鼠标所在卡牌
@@ -154,10 +156,10 @@ function getHandCardPosition(index, isMine = true) {
 			// 当前index对应卡牌为鼠标所在卡牌
 			MouseHandCard = currentCardId
 			// 去往顶部
-			position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY - MouseHandCardHoverHeight })
+			position = updateCardPosisitonAnimationPos(currentCardId, position, { x: newX, y: startY - MouseHandCardHoverHeight })
 		} else {
 			// 当前index对应卡牌不为鼠标所在卡牌
-			position = updateCardPosisitonAnimationPos(currentCardId, { x, y }, { x, y: startY })
+			position = updateCardPosisitonAnimationPos(currentCardId, position, { x: newX, y: startY })
 		}
 	}
 	return position
