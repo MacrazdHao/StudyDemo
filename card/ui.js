@@ -100,7 +100,7 @@ function updateCardPosisitonAnimationPos(cardId, startPos, endPos, duration = 10
 		}
 	} else {
 		if (!xAnimKey) {
-			CardPositionAnimation[xKey] = pushAnimation(startPos.x, endPos.x, 500)
+			CardPositionAnimation[xKey] = pushAnimation(startPos.x, endPos.x, 0)
 			xAnimKey = CardPositionAnimation[xKey]
 		}
 		if (!yAnimKey) {
@@ -135,23 +135,29 @@ function getHandCardPosition(index, isMine = true) {
 	const { x, y } = getCurrentCardPosition(currentCardId, { x: startX + index * ShowCardWidth, y: startY })
 	let position = { x, y }
 	if (!isMine) return position
-	if (MousePos.x < startX || MousePos.x > endX || MousePos.y < startY || MousePos.y > endY) {
-		// 当前鼠标不在手牌范围内
+	console.log(index, currentCardId, x)
+	if (MousePos.x < startX || MousePos.x > endX || MousePos.y < y || MousePos.y > endY) {
+		// 当前鼠标不在手牌范围内(注意，当有卡牌突出来时，应以突出部分的y为准，此处MousePos.y < y即是如此)
 		MouseHandCard = null
 		// 所有卡牌回到底部
 		position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY })
 	} else {
+		// if ((isMouseHandCard && MousePos.x >= x && MousePos.x <= x + width && MousePos.y >= y && MousePos.y <= startY)){
+		// 	// 当前index对应卡牌为鼠标所在卡牌
+		// 	MouseHandCard = currentCardId
+		// 	// 去往顶部
+		// 	position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY - MouseHandCardHoverHeight })
+		// }
 		// 当前鼠标在手牌范围内
-		if (MousePos.x >= x && MousePos.x < x + (index === cardNum - 1 ? width : ShowCardWidth) &&
-			MousePos.y >= y && MousePos.y <= y + height) {
+		if ((MousePos.x >= x && MousePos.x < x + (index === cardNum - 1 ? width : ShowCardWidth) &&
+			MousePos.y >= y && MousePos.y <= endY)) {
 			// 当前index对应卡牌为鼠标所在卡牌
 			MouseHandCard = currentCardId
 			// 去往顶部
 			position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY - MouseHandCardHoverHeight })
-			// console.log(_p, position, getAnimationInfo(CardPositionAnimation[`pos_y_${currentCardId}`]))
 		} else {
 			// 当前index对应卡牌不为鼠标所在卡牌
-			position = updateCardPosisitonAnimationPos(currentCardId, { x: startX + index * ShowCardWidth, y }, { x, y: startY })
+			position = updateCardPosisitonAnimationPos(currentCardId, { x, y }, { x, y: startY })
 		}
 	}
 	return position
@@ -341,10 +347,8 @@ function getFrame() {
 		drawDesktopCard()
 	}
 	drawMouse()
-	// DynamicFrames++
 }
 // 开始帧监听
 function updateFrame() {
 	getFrame()
-	// doAnimation()
 }

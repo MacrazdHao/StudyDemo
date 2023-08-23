@@ -1,4 +1,5 @@
 const RealFps = 60 // 映射帧，用于过渡动画
+const FpsCycleTime = 1000 // 每过RealFps个映射帧经过的单位时长
 let OriginFps = 160 // 原始帧，requestAnimationFrame的频率
 let ConvertFpsRatio = OriginFps / RealFps // 原始帧和映射帧的比例 - n原始帧=每单位映射帧
 
@@ -19,7 +20,7 @@ function fpsListener() {
 		RealFpsTimestamp = ts
 		doWhenFpsUpdate()
 	}
-	if (ts - FpsTimestamp >= 1000) {
+	if (ts - FpsTimestamp >= FpsCycleTime) {
 		FpsTimestamp = ts
 		ConvertFpsRatio = OriginFps / RealFps
 		OriginFps = 0
@@ -72,7 +73,7 @@ function doWhenFpsUpdate() {
 
 // 获取每映射帧的数值变化单位量
 function getUnitNum(start, end, duration) {
-	return (end - start) / ((duration / 1000) * RealFps)
+	return (end - start) / ((duration / FpsCycleTime) * RealFps)
 }
 
 // 获取记录器中某条数值记录变化后应得的数值
@@ -81,7 +82,7 @@ function getCurrentAnimationNum(key) {
 	const { type, ts, startFps, start, end, unit } = NumberStartFpsRecorder[key]
 	const tsDiff = RealFpsTimestamp - ts
 	let addFps = 0
-	if (tsDiff < 1000) {
+	if (tsDiff < FpsCycleTime) {
 		if (startFps > RealFpsTimer) {
 			// 跨域一个60帧周期
 			addFps = RealFps - startFps + RealFpsTimer
@@ -91,10 +92,10 @@ function getCurrentAnimationNum(key) {
 		}
 	} else {
 		// 整数的60帧周期数
-		const fullFpsCycle = tsDiff % 1000
+		const fullFpsCycle = tsDiff % FpsCycleTime
 		// 剩余不满一60帧周期的时间(ms)
 		const reduceTime = tsDiff - fullFpsCycle
-		addFps = RealFps * fullFpsCycle + Math.floor(reduceTime / (1000 / RealFps))
+		addFps = RealFps * fullFpsCycle + Math.floor(reduceTime / (FpsCycleTime / RealFps))
 	}
 	let resNum = 0
 	switch (type) {
