@@ -18,7 +18,6 @@ function fpsListener() {
 		if (RealFpsTimer === 60) RealFpsTimer = 0
 		RealFpsTimer++
 		RealFpsTimestamp = ts
-		doWhenFpsUpdate()
 	}
 	if (ts - FpsTimestamp >= FpsCycleTime) {
 		FpsTimestamp = ts
@@ -30,34 +29,38 @@ function fpsListener() {
 // 技术类型
 const AnimationTypes = {
 	LINEAR: 1, // 线性
+	BEZIER: 2, // 贝塞尔曲线
 }
 
 // 数值变化起始帧记录器
 const NumberStartFpsRecorder = {}
 
-function pushAnimation(start, end, duration = 200, type = AnimationTypes.LINEAR) {
+function pushAnimation(start, end, duration = 200, type = AnimationTypes.LINEAR, bezierPoints) {
 	const key = getRandomKey()
 	NumberStartFpsRecorder[key] = {
 		type, duration,
+		bezierPoints: type === AnimationTypes.BEZIER ? bezierPoints || [0, 1] : [0, 1], // 贝塞尔曲线关键点
 		ts: RealFpsTimestamp, // 当前映射帧的时间戳
 		startFps: RealFpsTimer, // 起始映射帧
 		start, end, // 起始值和终点值
-		unit: getUnitNum(start, end, duration) // 单位数值变化量
+		totalFps: getTotalFps(duration),
 	}
 	return key
 }
 
-function updateAnimationInfo(key, { type = AnimationTypes.LINEAR, start, end, duration }) {
+function updateAnimationInfo(key, { type = AnimationTypes.LINEAR, bezierPoints, start, end, duration }) {
 	type = type || NumberStartFpsRecorder[key].type
 	start = start || NumberStartFpsRecorder[key].start
 	end = end || NumberStartFpsRecorder[key].end
+	bezierPoints = type === AnimationTypes.BEZIER ? bezierPoints || NumberStartFpsRecorder[key].bezierPoints : [0, 1]
 	duration = duration || NumberStartFpsRecorder[key].duration
 	NumberStartFpsRecorder[key] = {
 		type, duration,
+		bezierPoints, // 贝塞尔曲线关键点
 		start, end, // 起始值和终点值
 		ts: RealFpsTimestamp, // 起始帧对应的时间戳
 		startFps: RealFpsTimer, // 起始帧
-		unit: getUnitNum(start, end, duration) // 单位数值变化量
+		totalFps: getTotalFps(duration),
 	}
 	return key
 }
@@ -66,20 +69,15 @@ function getAnimationInfo(key) {
 	return NumberStartFpsRecorder[key] || null
 }
 
-// 映射帧变化时需要执行的动作
-function doWhenFpsUpdate() {
-
-}
-
 // 获取每映射帧的数值变化单位量
-function getUnitNum(start, end, duration) {
-	return (end - start) / ((duration / FpsCycleTime) * RealFps)
+function getTotalFps(duration) {
+	return Math.ceil((duration / FpsCycleTime) * RealFps)
 }
 
 // 获取记录器中某条数值记录变化后应得的数值
 function getCurrentAnimationNum(key) {
 	if (!key || !NumberStartFpsRecorder[key]) return null
-	const { type, ts, startFps, start, end, unit } = NumberStartFpsRecorder[key]
+	const { type, ts, startFps, start, end, totalFps, bezierPoints } = NumberStartFpsRecorder[key]
 	const tsDiff = RealFpsTimestamp - ts
 	let addFps = 0
 	if (tsDiff < FpsCycleTime) {
@@ -98,10 +96,10 @@ function getCurrentAnimationNum(key) {
 		addFps = RealFps * fullFpsCycle + Math.floor(reduceTime / (FpsCycleTime / RealFps))
 	}
 	let resNum = 0
-	switch (type) {
-		case AnimationTypes.LINEAR:
-			resNum = start > end ? Math.max(start + addFps * unit, end) : Math.min(start + addFps * unit, end)
-			break
-	}
+	resNum = bezierInterpolation(start, end, addFps / totalFps, bezierPoints)
 	return resNum
+}
+
+for (let i = 0; i <= 10; i++) {
+	console.log(bezierInterpolation(0, 1, i / 10, [0, 0.05, 1]))
 }
