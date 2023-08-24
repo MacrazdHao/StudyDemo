@@ -9,7 +9,7 @@ function choose(n, k) {
 // 贝塞尔曲线数值
 function bezierInterpolation(startValue, endValue, t, controlPoints) {
 	if (t >= 1) return endValue
-	controlPoints = controlPoints || [0, 1]
+	controlPoints = [0, ...controlPoints, 1] || [0, 1]
 	const n = controlPoints.length - 1
 	let interpolatedValue = 0
 	for (let i = 0; i <= n; i++) {

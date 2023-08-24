@@ -100,6 +100,6 @@ function getCurrentAnimationNum(key) {
 	return resNum
 }
 
-for (let i = 0; i <= 10; i++) {
-	console.log(bezierInterpolation(0, 1, i / 10, [0, 0.05, 1]))
-}
+// for (let i = 0; i <= 100; i++) {
+// 	console.log(bezierInterpolation(0, 1, i / 100, [0, 0.5, 0.1, 0.2]))
+// }
