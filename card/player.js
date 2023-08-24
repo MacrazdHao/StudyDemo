@@ -752,6 +752,7 @@ function fightEndSettle() {
   RoundPlayer = RoundPlayerTypes.NULL
   Player = {}
   EnemyPlayer = {}
+  DesktopCards = []
   CardEventStatus = CardEventStatusTypes.PLAY
   CardEventPlayerId = null
   CardDropNum = 0
