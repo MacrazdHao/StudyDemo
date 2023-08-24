@@ -67,16 +67,29 @@ const DesktopCardPosition = {
 const HandCardShowRatio = 1 / 3
 const ShowCardWidth = CardStyle.width * HandCardShowRatio
 const MouseHandCardHoverHeight = 30
+function contrastPositions(a, b) {
+	if (a.x === b.x && a.y === b.y) return true
+	return false
+}
+function clearCardPositionAnimation(cardId) {
+	const xKey = `pos_x_${cardId}`
+	const yKey = `pos_y_${cardId}`
+	let xAnimKey = CardPositionAnimation[xKey] || null
+	let yAnimKey = CardPositionAnimation[yKey] || null
+	clearAnimation(xAnimKey)
+	clearAnimation(yAnimKey)
+	delete CardPositionAnimation[xKey]
+	delete CardPositionAnimation[yKey]
+}
 function getCurrentCardPosition(cardId, defaultPos) {
 	const xKey = `pos_x_${cardId}`
 	const yKey = `pos_y_${cardId}`
 	let xAnimKey = CardPositionAnimation[xKey] || null
 	let yAnimKey = CardPositionAnimation[yKey] || null
-	x = getCurrentAnimationNum(xAnimKey)
-	y = getCurrentAnimationNum(yAnimKey)
+	x = getCurrentAnimationNum(xAnimKey) || defaultPos.x
+	y = getCurrentAnimationNum(yAnimKey) || defaultPos.y
 	return {
-		x: x || defaultPos.x,
-		y: y || defaultPos.y,
+		x, y
 	}
 }
 function updateCardPosisitonAnimationPos(cardId, startPos, endPos, duration = 100) {
@@ -318,9 +331,15 @@ function drawHandCards() {
 function drawDesktopCard() {
 	for (let i = 0; i < DesktopCards.length; i++) {
 		const dCard = DesktopCards[i]
-		const { id } = dCard
-		const curCardPos = getCurrentCardPosition(id, DesktopCardPosition)
-		const pos = updateCardPosisitonAnimationPos(id, curCardPos, DesktopCardPosition, 500)
+		let { id, _animId } = dCard
+		const curCardPos = getCurrentCardPosition(_animId || id, DesktopCardPosition)
+		let pos = curCardPos
+		if (!_animId) {
+			_animId = _animId || getRandomKey()
+			DesktopCards[i]._animId = _animId
+			clearCardPositionAnimation(id)
+			pos = updateCardPosisitonAnimationPos(_animId, curCardPos, DesktopCardPosition, 500)
+		}
 		drawCard(dCard, pos)
 	}
 }

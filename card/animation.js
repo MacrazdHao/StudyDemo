@@ -35,6 +35,11 @@ const AnimationTypes = {
 // 数值变化起始帧记录器
 const NumberStartFpsRecorder = {}
 
+function clearAnimation(key) {
+	if (!key) return
+	delete NumberStartFpsRecorder[key]
+}
+
 function pushAnimation(start, end, duration = 200, type = AnimationTypes.LINEAR, bezierPoints) {
 	const key = getRandomKey()
 	NumberStartFpsRecorder[key] = {
