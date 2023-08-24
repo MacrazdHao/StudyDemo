@@ -11,7 +11,7 @@ function drawMouse() {
 	drawBall(MousePos)
 }
 
-let DesktopCard = null
+let DesktopCards = []
 const CardPositionAnimation = {}
 
 const HeaderBoxMargin = 3
@@ -137,7 +137,10 @@ function getHandCardPosition(index, isMine = true) {
 	const { x, y } = getCurrentCardPosition(currentCardId, { x: startX + index * ShowCardWidth, y: startY })
 	let position = { x, y }
 	const newX = startX + index * ShowCardWidth // x坐标根据当前卡牌数量实时更新
-	if (!isMine) return position
+	if (!isMine) {
+		updateCardPosisitonAnimationPos(currentCardId, position, { x: newX, y: startY })
+		return position
+	}
 	if (MousePos.x < startX || MousePos.x > endX || MousePos.y < y || MousePos.y > endY) {
 		// 当前鼠标不在手牌范围内(注意，当有卡牌突出来时，应以突出部分的y为准，此处MousePos.y < y即是如此)
 		MouseHandCard = null
@@ -313,7 +316,13 @@ function drawHandCards() {
 }
 // 画出桌面的牌
 function drawDesktopCard() {
-	if (DesktopCard) drawCard(DesktopCard, DesktopCardPosition)
+	for (let i = 0; i < DesktopCards.length; i++) {
+		const dCard = DesktopCards[i]
+		const { id } = dCard
+		const curCardPos = getCurrentCardPosition(id, DesktopCardPosition)
+		const pos = updateCardPosisitonAnimationPos(id, curCardPos, DesktopCardPosition, 500)
+		drawCard(dCard, pos)
+	}
 }
 // 更新玩家数据
 function updatePlayerInfoUI() {

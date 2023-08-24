@@ -235,7 +235,7 @@ function playCard(e, isMine = true, cardId, isForce = false) {
   _player.fightUsedCards.push(_cardId)
   _player.gameUsedCards.push(_cardId)
   // 更新桌面展示牌
-  DesktopCard = card
+  DesktopCards.push(card)
   if (isMine) {
     // 己方出牌，则清空鼠标悬浮手牌
     MouseHandCard = null
