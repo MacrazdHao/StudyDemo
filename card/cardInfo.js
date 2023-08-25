@@ -33,12 +33,14 @@ const CardBaseProto = {
 		conditions: { defaultValue: 'None' },
 		effects: { defaultValue: 'None' },
 		buffs: { defaultValue: {} }, // 增加的buff，数据结构: { [BuffKey]: EffectTargetTypes }
+		selfShd: { defaultValue: 0 }, // 己方伤害
+		selfAtk: { defaultValue: 0 }, // 己方伤害
+		selfPenAtk: { defaultValue: 0 }, // 己方穿透伤害
 	},
 	[CardTypes.ATTACK]: {
 		[BaseValueAttributeKeys.ATTACK]: { defaultValue: 0 }, // 普通伤害
 		[BaseValueAttributeKeys.PENATTACK]: { defaultValue: 0 }, // 穿透伤害
-		selfAtk: { defaultValue: 0 }, // 己方伤害
-		selfPenAtk: { defaultValue: 0 }, // 己方穿透伤害
+		[BaseValueAttributeKeys.SHIELD]: { defaultValue: 0 }, // 穿透伤害
 	},
 	[CardTypes.DEFENSE]: {
 	},
@@ -172,10 +174,11 @@ const Cards = {
 			[CardTypes.COMMON]: {
 				name: '耗子尾汁', desc: '对自身造成2点穿透伤害，并获得3点护盾，敌方获得[耗子尾汁]Debuff，效果：buff持续期间，敌方伤害-1，效果持续3个回合',
 				effects: '', image: 'haozi', rare: CardRareTypes.PRECIOUS,
-				playerInfo: { [BaseValueAttributeKeys.HP]: -2, [BaseValueAttributeKeys.SHIELD]: 3 },
+				playerInfo: { [BaseValueAttributeKeys.SHIELD]: 3 },
 				buffs: {
 					Haoziweizhi: EffectTargetTypes.ENEMY
-				}
+				},
+				selfPenAtk: 2
 			},
 			[CardTypes.PROPS]: {}
 		}
@@ -237,6 +240,17 @@ const Cards = {
 				[CardItems.NEEDVIT]: 3,
 			},
 			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 3, [BaseValueAttributeKeys.PENATTACK]: 3 }
+		}
+	},
+	Biaomeideshengyin: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '表妹的声音', desc: '【开口破防】清空敌方所有护盾', effects: '', image: 'biaomei', rare: CardRareTypes.LEGEND,
+				playerInfo: {},
+				[CardItems.NEEDVIT]: 2,
+			},
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.SHIELD]: MAXNUM }
 		}
 	},
 }

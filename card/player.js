@@ -445,9 +445,8 @@ function loseSHD(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   const lastShd = _player.shd - loseNum
   if (_player.shd > 0) setFightActionStatus(FightActionTypes.LOSESHD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
-  // 剩余护甲不足扣除伤害，直接扣血量
   if (lastShd < 0) {
-    changeHP(lastShd, isMine, isForce)
+    // changeHP(lastShd, isMine, isForce)
     _player.shd = 0
     return
   }
@@ -602,25 +601,52 @@ function updateBuffRoundStatus() {
 }
 // 造成伤害
 function attackPlayer(attackInfo = {}, isForce = false) {
-  const { owner, [BaseValueAttributeKeys.ATTACK]: atk, [BaseValueAttributeKeys.PENATTACK]: penAtk, selfAtk, selfPenAtk } = attackInfo
-  if (!atk && !penAtk) return
+  const {
+    owner,
+    [BaseValueAttributeKeys.ATTACK]: atk,
+    [BaseValueAttributeKeys.PENATTACK]: penAtk,
+    [BaseValueAttributeKeys.SHIELD]: shd,
+    selfAtk, selfPenAtk, selfShd
+  } = attackInfo
+  if (!atk && !penAtk && !shd && !selfAtk && !selfPenAtk && !selfShd) return
   // isMine指攻击者是否为自己
   const isMine = PlayerId === owner
   const _player = isMine ? Player : EnemyPlayer
-  const _penAtk = -Math.max(_player[BaseValueAttributeKeys.PENATTACK] + penAtk, 0)
-  const _atk = -Math.max(_player[BaseValueAttributeKeys.ATTACK] + atk, 0)
+  const _eplayer = isMine ? EnemyPlayer : Player
+  const _playerShd = _player[BaseValueAttributeKeys.SHIELD]
+  // 盾伤
+  if (shd) {
+    const _shd = -Math.min(_playerShd, shd)
+    changeSHD(_shd, !isMine, true)
+  }
   // 敌伤
-  if (_penAtk || _atk) {
+  if (penAtk || atk) {
+    const _penAtk = penAtk ? -Math.max(_player[BaseValueAttributeKeys.PENATTACK] + penAtk, 0) : 0
+    const _atk = atk ? -Math.max(_player[BaseValueAttributeKeys.ATTACK] + atk, 0) : 0
     // 额外伤害及额外穿刺伤害均可为负，因此两者伤害应同时设定最低限制为0
     changeHP(_penAtk, !isMine, true)
-    changeSHD(_atk, !isMine, true)
+    if (-_atk > _playerShd) {
+      changeSHD(_playerShd, !isMine, true)
+      changeHP(_atk + _playerShd, true)
+    } else changeSHD(_atk, !isMine, true)
     setFightActionStatus(FightActionTypes.ATTACK, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
     setFightActionStatus(FightActionTypes.BEATTACKED, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, !isMine)
   }
+  const myShd = _eplayer[BaseValueAttributeKeys.SHIELD]
+  // 自盾伤
+  if (selfShd) {
+    const _selfShd = -Math.min(myShd, selfShd)
+    changeSHD(_selfShd, isMine, false)
+  }
   // 自伤
   if (selfAtk || selfPenAtk) {
-    changeHP(selfPenAtk, isMine, false)
-    changeSHD(selfAtk, isMine, false)
+    const _selfPenAtk = selfPenAtk ? -selfPenAtk : 0
+    const _selfAtk = selfAtk ? -selfAtk : 0
+    changeHP(_selfPenAtk, isMine, false)
+    if (-_selfAtk > myShd) {
+      changeSHD(myShd, isMine, false)
+      changeHP(_selfAtk + myShd, isMine, false)
+    } else changeSHD(_selfAtk, isMine, false)
     setFightActionStatus(FightActionTypes.BEATTACKED, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.FORCE, isMine)
   }
 }

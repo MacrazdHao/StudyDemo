@@ -22,6 +22,7 @@ async function setImages() {
 	addImage('shutou', '/images/shutou.jpg')
 	addImage('taimei_kuang', '/images/taimei_kuang.png')
 	addImage('taimei', '/images/taimei.png')
+	addImage('biaomei', '/images/biaomei.jpg')
 }
 // 主应用
 async function main() {

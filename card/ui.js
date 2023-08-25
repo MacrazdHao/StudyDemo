@@ -153,7 +153,8 @@ function getHandCardPosition(index, isMine = true) {
 	const startY = isMine ? WhiteBoardHeight - CardStyle.height : -160
 	const endY = startY + height
 	const currentCardId = _player.handCards[index]
-	// const isMouseHandCard = currentCardId === MouseHandCard
+	const isMouseHandCard = currentCardId === MouseHandCard
+	const mouseHandCardPos = MouseHandCard ? getCurrentCardPosition(MouseHandCard) : null
 	// const { x, y } = getCurrentCardPosition(currentCardId, { x: startX + index * ShowCardWidth, y: startY - (isMouseHandCard ? MouseHandCardHoverHeight : 0) })
 	const { x, y } = getCurrentCardPosition(currentCardId, { x: startX + index * ShowCardWidth, y: startY })
 	let position = { x, y }
@@ -168,19 +169,19 @@ function getHandCardPosition(index, isMine = true) {
 		// 所有卡牌回到底部
 		position = updateCardPosisitonAnimation(currentCardId, position, { x: newX, y: startY })
 	} else {
-		// if ((isMouseHandCard && MousePos.x >= x && MousePos.x <= x + width && MousePos.y >= y && MousePos.y <= startY)){
-		// 	// 当前index对应卡牌为鼠标所在卡牌
-		// 	MouseHandCard = currentCardId
-		// 	// 去往顶部
-		// 	position = updateCardPosisitonAnimation(currentCardId, position, { x, y: startY - MouseHandCardHoverHeight })
-		// }
 		// 当前鼠标在手牌范围内
-		if ((MousePos.x >= x && MousePos.x < x + (index === cardNum - 1 ? width : ShowCardWidth) &&
-			MousePos.y >= y && MousePos.y <= endY)) {
-			// 当前index对应卡牌为鼠标所在卡牌
-			MouseHandCard = currentCardId
-			// 去往顶部
-			position = updateCardPosisitonAnimation(currentCardId, position, { x: newX, y: startY - MouseHandCardHoverHeight })
+		if (MousePos.x >= x && MousePos.x < x + (index === cardNum - 1 || isMouseHandCard ? width : ShowCardWidth) &&
+			MousePos.y >= y && MousePos.y <= endY) {
+			if (!MouseHandCard || isMouseHandCard || (mouseHandCardPos &&
+				(MousePos.x < mouseHandCardPos.x || MousePos.x >= mouseHandCardPos.x + width))) {
+				// 当前index对应卡牌为鼠标所在卡牌
+				MouseHandCard = currentCardId
+				// 去往顶部
+				position = updateCardPosisitonAnimation(currentCardId, position, { x: newX, y: startY - MouseHandCardHoverHeight })
+			} else {
+				// 当前index对应卡牌不为鼠标所在卡牌
+				position = updateCardPosisitonAnimation(currentCardId, position, { x: newX, y: startY })
+			}
 		} else {
 			// 当前index对应卡牌不为鼠标所在卡牌
 			position = updateCardPosisitonAnimation(currentCardId, position, { x: newX, y: startY })
@@ -232,9 +233,9 @@ function drawCard(card, pos, handCard) {
 	if (isMine || !handCard) {
 		// 卡牌类型背景色
 		const cardBgColorsMap = {}
-		for (let i = 0;i<types.length;i++) {
-			if (types[i]===CardTypes.COMMON) continue
-			cardBgColorsMap[(i+1)/types.length] = CardColors[types[i]]
+		for (let i = 0; i < types.length; i++) {
+			if (types[i] === CardTypes.COMMON) continue
+			cardBgColorsMap[(i + 1) / types.length] = CardColors[types[i]]
 		}
 		const cardBgColor = getGradientColor(Context, cardBgColorsMap, { x, y }, { x: x, y: y + height })
 		Context.fillStyle = cardBgColor
@@ -332,10 +333,18 @@ function drawHandCards() {
 	const { handCards: enHandCards } = EnemyPlayer
 	const myHandCardsNum = myHandCards.length
 	const enHandCardsNum = enHandCards.length
+	let mouseHandCardIndex = -1
+	let mouseHandCardInfo = null
 	for (let i = 0; i < myHandCardsNum; i++) {
 		const card = getCardInfo(myHandCards[i])
+		if (MouseHandCard === myHandCards[i]) {
+			mouseHandCardIndex = i
+			mouseHandCardInfo = card
+			continue
+		}
 		drawCard(card, null, { index: i })
 	}
+	if (mouseHandCardInfo) drawCard(mouseHandCardInfo, null, { index: mouseHandCardIndex })
 	for (let i = 0; i < enHandCardsNum; i++) {
 		const card = getCardInfo(enHandCards[i], false)
 		drawCard(card, null, { index: i })

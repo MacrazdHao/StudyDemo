@@ -34,6 +34,7 @@ const CareerInitInfo = {
 			Shutouyabo: 1,
 			Jinitaimei: 1,
 			JinitaimeiKuang: 1,
+			Biaomeideshengyin: 1,
 		}
 	}
 }
