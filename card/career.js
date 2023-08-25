@@ -15,7 +15,7 @@ const CareerInitInfo = {
 		[BaseValueAttributeKeys.MAXVITALITY]: 5,
 		[BaseValueAttributeKeys.HP]: 100,
 		[BaseValueAttributeKeys.SHIELD]: 10,
-		[BaseValueAttributeKeys.MP]: 0,
+		[BaseValueAttributeKeys.MP]: 1,
 		[BaseValueAttributeKeys.VITALITY]: 2,
 		[BaseValueAttributeKeys.MAXHANDCARDSNUM]: 3,
 		[BaseValueAttributeKeys.ROUNDGETCARDNUM]: 2,

@@ -26,7 +26,7 @@ const CardBaseProto = {
 		statusTypes: { defaultValue: [] },
 		fightUseTimes: { defaultValue: MAXNUM }, // 当次战斗可使用次数
 		gameUseTimes: { defaultValue: MAXNUM }, // 当局游戏可使用次数
-		needVit: { defaultValue: 1 }, // 体力消耗值
+		[CardItems.NEEDVIT]: { defaultValue: 1 }, // 体力消耗值
 		rare: { defaultValue: CardRareTypes.DEFAULT }, // 体力消耗值
 		image: { defaultValue: DefaultCardPath },
 		playerInfo: { defaultValue: {} }, // 基础数值属性变更(仅作用于自己)
@@ -43,7 +43,7 @@ const CardBaseProto = {
 	[CardTypes.DEFENSE]: {
 	},
 	[CardTypes.MAGIC]: {
-		needMp: { defaultValue: 0 }, // 灵力消耗值
+		[CardItems.NEEDMP]: { defaultValue: 0 }, // 灵力消耗值
 	},
 	[CardTypes.PROPS]: {
 	},
@@ -146,7 +146,7 @@ const Cards = {
 		types: [CardTypes.PROPS],
 		values: {
 			[CardTypes.COMMON]: {
-				name: '哲♂学附体', desc: '获得[哲♂学之魂]Buff，效果：buff持续期间，每出一张卡牌，附加伤害+1，效果持续3回合', 
+				name: '哲♂学附体', desc: '获得[哲♂学之魂]Buff，效果：buff持续期间，每出一张卡牌，附加伤害+1，效果持续3回合',
 				effects: '', image: '/images/zhexue.jpg', rare: CardRareTypes.PRECIOUS,
 				playerInfo: {},
 				buffs: {
@@ -169,9 +169,9 @@ const Cards = {
 		types: [CardTypes.PROPS],
 		values: {
 			[CardTypes.COMMON]: {
-				name: '耗子尾汁', desc: '对自身造成2点穿透伤害，并获得3点护盾，敌方获得[耗子尾汁]Debuff，效果：buff持续期间，敌方伤害-1，效果持续3个回合', 
+				name: '耗子尾汁', desc: '对自身造成2点穿透伤害，并获得3点护盾，敌方获得[耗子尾汁]Debuff，效果：buff持续期间，敌方伤害-1，效果持续3个回合',
 				effects: '', image: 'haozi', rare: CardRareTypes.PRECIOUS,
-				playerInfo: {[BaseValueAttributeKeys.HP]: -2, [BaseValueAttributeKeys.SHIELD]: 3 },
+				playerInfo: { [BaseValueAttributeKeys.HP]: -2, [BaseValueAttributeKeys.SHIELD]: 3 },
 				buffs: {
 					Haoziweizhi: EffectTargetTypes.ENEMY
 				}
@@ -193,7 +193,7 @@ const Cards = {
 		types: [CardTypes.PROPS],
 		values: {
 			[CardTypes.COMMON]: {
-				name: '律师函警告', desc: '敌方获得[律师函警告]Debuff，效果：敌方出牌阶段无法出牌，持续1个回合', 
+				name: '律师函警告', desc: '敌方获得[律师函警告]Debuff，效果：敌方出牌阶段无法出牌，持续1个回合',
 				effects: '', image: 'lvshihan', rare: CardRareTypes.UNUSUAL,
 				playerInfo: {},
 				buffs: {
@@ -204,17 +204,17 @@ const Cards = {
 		}
 	},
 	Shutouyabo: {
-		types: [CardTypes.PROPS],
+		types: [CardTypes.MAGIC],
 		values: {
 			[CardTypes.COMMON]: {
-				name: '鼠头鸭脖', desc: '敌方获得[中毒]Debuff，效果：每个回合受到1点穿透伤害，持续3个回合', 
+				name: '鼠头鸭脖', desc: '敌方获得[中毒]Debuff，效果：每个回合受到1点穿透伤害，持续3个回合',
 				effects: '', image: 'shutou', rare: CardRareTypes.NORMAL,
 				playerInfo: {},
 				buffs: {
 					Shutouyabo: EffectTargetTypes.ENEMY
 				}
 			},
-			[CardTypes.PROPS]: {}
+			[CardTypes.MAGIC]: { [CardItems.NEEDMP]: 2 }
 		}
 	},
 	Jinitaimei: {
@@ -233,6 +233,7 @@ const Cards = {
 			[CardTypes.COMMON]: {
 				name: '狂·鸡你太美', desc: '造成3点伤害，3点穿透伤害', effects: '', image: 'taimei_kuang', rare: CardRareTypes.PRECIOUS,
 				playerInfo: {},
+				[CardItems.NEEDVIT]: 3,
 			},
 			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 3, [BaseValueAttributeKeys.PENATTACK]: 3 }
 		}

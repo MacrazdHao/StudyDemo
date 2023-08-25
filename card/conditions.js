@@ -1,11 +1,10 @@
 const PresetConditions = {
 	None: function (context) { return true },
 	BaseCondition: function (context) {
-		const { needVit, needMp, owner } = context
-		const isMine = owner === PlayerId
+		const isMine = context.owner === PlayerId
 		const _player = isMine ? Player : EnemyPlayer
-		if (needVit && _player[BaseValueAttributeKeys.VITALITY] < needVit) return false
-		if (needMp && _player[BaseValueAttributeKeys.MP] < needMp) return false
+		if (context[CardItems.NEEDVIT] && _player[BaseValueAttributeKeys.VITALITY] < context[CardItems.NEEDVIT]) return false
+		if (context[CardItems.NEEDMP] && _player[BaseValueAttributeKeys.MP] < context[CardItems.NEEDMP]) return false
 		return true
 	}
 }

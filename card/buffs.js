@@ -35,6 +35,7 @@ function createBuffObject(playerId, buffKey, extraAttr = {}) {
 		enableTypes: [BuffEnableTypes.BEFOREROUND],
 		...Buffs[buffKey],
 		id: getRandomKey(),
+		key: buffKey,
 		owner: playerId,
 		effects: function () {
 			if (this.effectTimes < this.maxEffectTimes) {

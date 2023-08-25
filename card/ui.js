@@ -218,7 +218,7 @@ function drawText(text, width, height, fontSize, lineHeight, color = 'black', po
 // 绘画卡牌
 function drawCard(card, pos, handCard) {
 	const isMine = PlayerId === card.owner
-	const { name, desc, image, color, rare, needVit, needMp, types } = card
+	const { name, desc, image, color, rare, types } = card
 	const { width, height } = CardStyle
 	let x = pos ? pos.x : 0
 	let y = pos ? pos.y : 0
@@ -251,7 +251,7 @@ function drawCard(card, pos, handCard) {
 		Context.fillRect(needVitBoxOffset.x, needVitBoxOffset.y, NeedVitStyle.width, NeedVitStyle.height)
 		Context.font = `${NeedVitStyle.fontSize}px Georgia`;
 		Context.fillStyle = CardItemFontColors[CardItems.NEEDVIT]
-		Context.fillText(needVit, needVitFontOffset.x, needVitFontOffset.y)
+		Context.fillText(card[CardItems.NEEDVIT], needVitFontOffset.x, needVitFontOffset.y)
 		const nameBoxOffset = {
 			x: needVitBoxOffset.x + NeedVitStyle.width + NameStyle.margin[1],
 			y: y + NeedVitStyle.margin[0]
@@ -272,7 +272,7 @@ function drawCard(card, pos, handCard) {
 			Context.fillRect(needMpBoxOffset.x, needMpBoxOffset.y, NeedMpStyle.width, NeedMpStyle.height)
 			Context.font = `${NeedMpStyle.fontSize}px Georgia`;
 			Context.fillStyle = CardItemFontColors[CardItems.NEEDMP]
-			Context.fillText(needMp, needMpFontOffset.x, needMpFontOffset.y)
+			Context.fillText(card[CardItems.NEEDMP], needMpFontOffset.x, needMpFontOffset.y)
 			nameBoxOffset.x = needMpBoxOffset.x + NeedMpStyle.width + NameStyle.margin[1]
 			nameWidth = nameWidth - NeedMpStyle.width - NeedMpStyle.margin[1]
 		}

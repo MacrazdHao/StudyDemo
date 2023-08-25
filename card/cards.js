@@ -22,7 +22,7 @@ function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values =
 				const conditionsFunc = PresetConditions[proto[pKey]]
 				proto[pKey] = function () {
 					let res = true
-					res = res && PresetEffects.BaseCondition(this)
+					res = res && PresetConditions.BaseCondition(this)
 					if (conditionsFunc) res = res && conditionsFunc(this)
 					return res
 				}

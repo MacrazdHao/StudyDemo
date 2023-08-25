@@ -218,11 +218,20 @@ function playCard(e, isMine = true, cardId, isForce = false) {
     return
   }
   const card = getCardInfo(_cardId, isMine)
+  // 以下卡牌所需体力、灵力不足扣减的判断放于卡牌默认条件函数BaseCondition中
   // 出牌行为使体力扣减
-  const vitRes = changeVIT(-card.needVit, isMine)
-  if (!vitRes) {
-    alert('体力不足')
-    return
+  const vitRes = changeVIT(-card[CardItems.NEEDVIT], isMine)
+  // if (!vitRes) {
+  //   alert('体力不足')
+  //   return
+  // }
+  if (card[CardItems.NEEDMP]) {
+    // 出牌行为使体力扣减
+    const mpRes = changeMP(-card[CardItems.NEEDMP], isMine)
+    // if (!mpRes) {
+    //   alert('灵力不足')
+    //   return
+    // }
   }
   setFightActionStatus(FightActionTypes.PLAYCARD, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   // 卡牌使用次数减少
@@ -416,7 +425,7 @@ function loseHP(loseNum, isMine = true, isForce = false) {
 // 失去体力
 function loseVIT(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  if (_player[BaseValueAttributeKeys.VITALITY] === 0) return false
+  // if (_player[BaseValueAttributeKeys.VITALITY] === 0) return false
   setFightActionStatus(FightActionTypes.LOSEVIT, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   const lastVIT = _player[BaseValueAttributeKeys.VITALITY] - loseNum
   _player[BaseValueAttributeKeys.VITALITY] = lastVIT > 0 ? lastVIT : 0
@@ -425,7 +434,7 @@ function loseVIT(loseNum, isMine = true, isForce = false) {
 // 失去灵力值
 function loseMP(loseNum, isMine = true, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
-  if (_player[BaseValueAttributeKeys.MP] === 0) return false
+  // if (_player[BaseValueAttributeKeys.MP] === 0) return false
   setFightActionStatus(FightActionTypes.LOSEMP, isForce ? FightActionWayTypes.FORCE : FightActionWayTypes.INITIACTIVE, isMine)
   const lastMP = _player[BaseValueAttributeKeys.MP] - loseNum
   _player[BaseValueAttributeKeys.MP] = lastMP > 0 ? lastMP : 0
