@@ -28,7 +28,7 @@ function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values =
 				}
 				break
 			default:
-				proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || defaultValue
+				proto[pKey] = !values[pKey] && values[pKey] !== 0 ? CardTypesProto[mainCardType][pKey] || defaultValue : values[pKey]
 				break
 		}
 	}

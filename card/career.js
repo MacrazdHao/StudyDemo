@@ -11,11 +11,11 @@ const CareerInitInfo = {
 		careerNam: '人类',
 		[BaseValueAttributeKeys.MAXHP]: 100,
 		[BaseValueAttributeKeys.MAXSHIELD]: 100,
-		[BaseValueAttributeKeys.MAXMP]: 2,
+		[BaseValueAttributeKeys.MAXMP]: 3,
 		[BaseValueAttributeKeys.MAXVITALITY]: 5,
 		[BaseValueAttributeKeys.HP]: 100,
 		[BaseValueAttributeKeys.SHIELD]: 10,
-		[BaseValueAttributeKeys.MP]: 1,
+		[BaseValueAttributeKeys.MP]: 0,
 		[BaseValueAttributeKeys.VITALITY]: 2,
 		[BaseValueAttributeKeys.MAXHANDCARDSNUM]: 3,
 		[BaseValueAttributeKeys.ROUNDGETCARDNUM]: 2,
@@ -35,6 +35,8 @@ const CareerInitInfo = {
 			Jinitaimei: 1,
 			JinitaimeiKuang: 1,
 			Biaomeideshengyin: 1,
+			Shuizainaxiangwa: 1,
+			Yebulo: 1,
 		}
 	}
 }

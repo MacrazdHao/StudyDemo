@@ -501,6 +501,7 @@ function changeMP(num, isMine = false, isForce = false) {
 }
 // 改变体力
 function changeVIT(num, isMine = false, isForce = false) {
+  console.log(num)
   if (num > 0) return addVIT(num, isMine, isForce)
   if (num < 0) return loseVIT(-num, isMine, isForce)
 }

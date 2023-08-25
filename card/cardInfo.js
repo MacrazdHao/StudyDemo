@@ -243,14 +243,35 @@ const Cards = {
 		}
 	},
 	Biaomeideshengyin: {
-		types: [CardTypes.ATTACK],
+		types: [CardTypes.ATTACK, CardTypes.MAGIC],
 		values: {
 			[CardTypes.COMMON]: {
 				name: '表妹的声音', desc: '【开口破防】清空敌方所有护盾', effects: '', image: 'biaomei', rare: CardRareTypes.LEGEND,
 				playerInfo: {},
-				[CardItems.NEEDVIT]: 2,
+				[CardItems.NEEDVIT]: 1,
 			},
-			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.SHIELD]: MAXNUM }
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.SHIELD]: MAXNUM },
+			[CardTypes.MAGIC]: { [CardItems.NEEDMP]: 4 }
+		}
+	},
+	Shuizainaxiangwa: {
+		types: [CardTypes.PROPS],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '谁在那响哇', desc: '【喜仔的鼓舞】本回合额外获得1点体力', effects: '', image: 'xizi', rare: CardRareTypes.NORMAL,
+				playerInfo: { [BaseValueAttributeKeys.VITALITY]: 1 },
+				[CardItems.NEEDVIT]: 0,
+			},
+		}
+	},
+	Yebulo: {
+		types: [CardTypes.PROPS, CardTypes.MAGIC],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '耶不咯', desc: '【喜仔的耶佬装】灵力上限+3，灵力+3，护甲+3', effects: '', image: 'xizi2', rare: CardRareTypes.LEGEND,
+				playerInfo: { [BaseValueAttributeKeys.MAXMP]: 3, [BaseValueAttributeKeys.MP]: 3, [BaseValueAttributeKeys.SHIELD]: 3 }
+			},
+			[CardTypes.MAGIC]: { [CardItems.NEEDMP]: 0 },
 		}
 	},
 }

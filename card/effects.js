@@ -5,23 +5,19 @@ const PresetEffects = {
 		const isMine = context.owner === PlayerId
 		const _player = !reverse && isMine ? Player : EnemyPlayer
 		const _attr = attributes || context
-		for (let aKey in _attr) {
-			switch (aKey) {
-				case BaseValueAttributeKeys.MAXHP:
-				case BaseValueAttributeKeys.MAXSHIELD:
-				case BaseValueAttributeKeys.MAXMP:
-				case BaseValueAttributeKeys.MAXVITALITY:
-				case BaseValueAttributeKeys.MAXHANDCARDSNUM:
-				case BaseValueAttributeKeys.ROUNDGETCARDNUM:
-				case BaseValueAttributeKeys.INITIALVITALITY: _player[aKey] += _attr[aKey]; break;
-				case BaseValueAttributeKeys.HP: changeHP(_attr[aKey], isMine); break;
-				case BaseValueAttributeKeys.SHIELD: changeSHD(_attr[aKey], isMine); break;
-				case BaseValueAttributeKeys.MP: changeMP(_attr[aKey], isMine); break;
-				case BaseValueAttributeKeys.VITALITY: changeVIT(_attr[aKey], isMine); break;
-				case BaseValueAttributeKeys.ATTACK: changeATK(_attr[aKey], isMine); break;
-				case BaseValueAttributeKeys.PENATTACK: changePENATK(_attr[aKey], isMine); break;
-			}
-		}
+		if (_attr[BaseValueAttributeKeys.MAXHP]) _player[BaseValueAttributeKeys.MAXHP] += _attr[BaseValueAttributeKeys.MAXHP]
+		if (_attr[BaseValueAttributeKeys.MAXSHIELD]) _player[BaseValueAttributeKeys.MAXSHIELD] += _attr[BaseValueAttributeKeys.MAXSHIELD]
+		if (_attr[BaseValueAttributeKeys.MAXMP]) _player[BaseValueAttributeKeys.MAXMP] += _attr[BaseValueAttributeKeys.MAXMP]
+		if (_attr[BaseValueAttributeKeys.MAXVITALITY]) _player[BaseValueAttributeKeys.MAXVITALITY] += _attr[BaseValueAttributeKeys.MAXVITALITY]
+		if (_attr[BaseValueAttributeKeys.MAXHANDCARDSNUM]) _player[BaseValueAttributeKeys.MAXHANDCARDSNUM] += _attr[BaseValueAttributeKeys.MAXHANDCARDSNUM]
+		if (_attr[BaseValueAttributeKeys.ROUNDGETCARDNUM]) _player[BaseValueAttributeKeys.ROUNDGETCARDNUM] += _attr[BaseValueAttributeKeys.ROUNDGETCARDNUM]
+		if (_attr[BaseValueAttributeKeys.INITIALVITALITY]) _player[BaseValueAttributeKeys.INITIALVITALITY] += _attr[BaseValueAttributeKeys.INITIALVITALITY]
+		if (_attr[BaseValueAttributeKeys.SHIELD]) changeSHD(_attr[BaseValueAttributeKeys.SHIELD], isMine)
+		if (_attr[BaseValueAttributeKeys.HP]) changeHP(_attr[BaseValueAttributeKeys.HP], isMine)
+		if (_attr[BaseValueAttributeKeys.MP]) changeMP(_attr[BaseValueAttributeKeys.MP], isMine)
+		if (_attr[BaseValueAttributeKeys.VITALITY]) changeVIT(_attr[BaseValueAttributeKeys.VITALITY], isMine)
+		if (_attr[BaseValueAttributeKeys.ATTACK]) changeATK(_attr[BaseValueAttributeKeys.ATTACK], isMine)
+		if (_attr[BaseValueAttributeKeys.PENATTACK]) changePENATK(_attr[BaseValueAttributeKeys.PENATTACK], isMine)
 		if (!reverse) {
 			PresetEffects.BaseAddBuffEffect(context)
 		}
