@@ -13,6 +13,7 @@ function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values =
 				const effectsFunc = PresetEffects[proto[pKey]]
 				proto[pKey] = function () {
 					PresetEffects.BaseAttrEffect(this, this.playerInfo)
+					PresetEffects.BaseAttackEffect(this)
 					if (effectsFunc) effectsFunc(this)
 				}
 				break
@@ -20,8 +21,10 @@ function blendCardTypeProto(mainCardType = CardTypes.COMMON, type = '', values =
 				proto[pKey] = values[pKey] || CardTypesProto[mainCardType][pKey] || defaultValue
 				const conditionsFunc = PresetConditions[proto[pKey]]
 				proto[pKey] = function () {
-					if (conditionsFunc) return conditionsFunc(this)
-					return true
+					let res = true
+					res = res && PresetEffects.BaseCondition(this)
+					if (conditionsFunc) res = res && conditionsFunc(this)
+					return res
 				}
 				break
 			default:

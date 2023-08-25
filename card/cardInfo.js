@@ -59,38 +59,6 @@ const CardBaseProto = {
  * }
  */
 const Cards = {
-	NormalAttack1: {
-		types: [CardTypes.ATTACK],
-		values: {
-			[CardTypes.COMMON]: { name: '小拳拳', desc: '造成1点伤害', effects: 'BaseAttackEffect', image: '/images/quan.jpg' },
-			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 1 }
-		}
-	},
-	NormalAttack2: {
-		types: [CardTypes.ATTACK],
-		values: {
-			[CardTypes.COMMON]: { name: '咸鱼突刺', desc: '造成1点穿透伤害', effects: 'BaseAttackEffect', image: '/images/xianyu.jpg' },
-			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.PENATTACK]: 1 }
-		}
-	},
-	NormalAttack3: {
-		types: [CardTypes.ATTACK],
-		values: {
-			[CardTypes.COMMON]: { name: '咸鱼雷电突刺', desc: '造成2点穿透伤害', effects: 'BaseAttackEffect', image: '/images/xianyu_dian.jpg' },
-			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.PENATTACK]: 2 }
-		}
-	},
-	NormalDefense1: {
-		types: [CardTypes.DEFENSE],
-		values: {
-			[CardTypes.COMMON]: {
-				name: '大锅盖',
-				desc: '护盾+1', effects: '', image: '/images/guo.jpg',
-				playerInfo: { [BaseValueAttributeKeys.SHIELD]: 1 }
-			},
-			[CardTypes.DEFENSE]: {}
-		}
-	},
 	Test1: {
 		types: [CardTypes.PROPS, CardTypes.MAGIC],
 		values: {
@@ -142,17 +110,131 @@ const Cards = {
 			[CardTypes.MAGIC]: {}
 		}
 	},
+	NormalAttack1: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: { name: '小拳拳', desc: '造成1点伤害', effects: '', image: '/images/quan.jpg' },
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 1 }
+		}
+	},
+	NormalAttack2: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: { name: '咸鱼突刺', desc: '造成1点穿透伤害', effects: '', image: '/images/xianyu.jpg' },
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.PENATTACK]: 1 }
+		}
+	},
+	NormalAttack3: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: { name: '咸鱼雷电突刺', desc: '造成2点穿透伤害', effects: '', image: '/images/xianyu_dian.jpg' },
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.PENATTACK]: 2 }
+		}
+	},
+	NormalDefense1: {
+		types: [CardTypes.DEFENSE],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '大锅盖',
+				desc: '护盾+1', effects: '', image: '/images/guo.jpg',
+				playerInfo: { [BaseValueAttributeKeys.SHIELD]: 1 }
+			},
+			[CardTypes.DEFENSE]: {}
+		}
+	},
 	Zhexuefuti: {
 		types: [CardTypes.PROPS],
 		values: {
 			[CardTypes.COMMON]: {
-				name: '哲♂学附体', desc: '获得[哲♂学之魂]Buff，效果：buff持续期间，每出一张卡牌，附加伤害+1，效果持续3回合', effects: '', image: '/images/zhexue.jpg', rare: CardRareTypes.PRECIOUS,
+				name: '哲♂学附体', desc: '获得[哲♂学之魂]Buff，效果：buff持续期间，每出一张卡牌，附加伤害+1，效果持续3回合', 
+				effects: '', image: '/images/zhexue.jpg', rare: CardRareTypes.PRECIOUS,
 				playerInfo: {},
 				buffs: {
 					AddAtk2: EffectTargetTypes.PLAYER
 				}
 			},
 			[CardTypes.PROPS]: {}
+		}
+	},
+	Shandianwulianbian: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '闪电五连鞭', desc: '造成2点伤害，2点穿透伤害', effects: '', image: 'bian', rare: CardRareTypes.UNUSUAL,
+			},
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 2, [BaseValueAttributeKeys.PENATTACK]: 2 }
+		}
+	},
+	Haoziweizhi: {
+		types: [CardTypes.PROPS],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '耗子尾汁', desc: '对自身造成2点穿透伤害，并获得3点护盾，敌方获得[耗子尾汁]Debuff，效果：buff持续期间，敌方伤害-1，效果持续3个回合', 
+				effects: '', image: 'haozi', rare: CardRareTypes.PRECIOUS,
+				playerInfo: {[BaseValueAttributeKeys.HP]: -2, [BaseValueAttributeKeys.SHIELD]: 3 },
+				buffs: {
+					Haoziweizhi: EffectTargetTypes.ENEMY
+				}
+			},
+			[CardTypes.PROPS]: {}
+		}
+	},
+	Damahoudefennu: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '大马猴的愤怒', desc: '造成3点伤害', effects: '', image: 'houzi', rare: CardRareTypes.NORMAL,
+				playerInfo: {},
+			},
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 3 }
+		}
+	},
+	Lvshihan: {
+		types: [CardTypes.PROPS],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '律师函警告', desc: '敌方获得[律师函警告]Debuff，效果：敌方出牌阶段无法出牌，持续1个回合', 
+				effects: '', image: 'lvshihan', rare: CardRareTypes.UNUSUAL,
+				playerInfo: {},
+				buffs: {
+					Lvshihan: EffectTargetTypes.ENEMY
+				}
+			},
+			[CardTypes.PROPS]: {}
+		}
+	},
+	Shutouyabo: {
+		types: [CardTypes.PROPS],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '鼠头鸭脖', desc: '敌方获得[中毒]Debuff，效果：每个回合受到1点穿透伤害，持续3个回合', 
+				effects: '', image: 'shutou', rare: CardRareTypes.NORMAL,
+				playerInfo: {},
+				buffs: {
+					Shutouyabo: EffectTargetTypes.ENEMY
+				}
+			},
+			[CardTypes.PROPS]: {}
+		}
+	},
+	Jinitaimei: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '鸡你太美', desc: '造成3点伤害', effects: '', image: 'taimei', rare: CardRareTypes.NORMAL,
+				playerInfo: {},
+			},
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 3 }
+		}
+	},
+	JinitaimeiKuang: {
+		types: [CardTypes.ATTACK],
+		values: {
+			[CardTypes.COMMON]: {
+				name: '狂·鸡你太美', desc: '造成3点伤害，3点穿透伤害', effects: '', image: 'taimei_kuang', rare: CardRareTypes.PRECIOUS,
+				playerInfo: {},
+			},
+			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 3, [BaseValueAttributeKeys.PENATTACK]: 3 }
 		}
 	},
 }

@@ -54,6 +54,52 @@ const Buffs = {
 			[BaseValueAttributeKeys.ATTACK]: 1
 		},
 		maxEffectTimes: MAXNUM
-	}
+	},
+	Haoziweizhi: {
+		key: 'Haoziweizhi',
+		name: '耗子尾汁',
+		desc: '效果持续期间攻击力-1',
+		funcType: BuffFunctionTypes.DEBUFF,
+		type: BuffTypes.OVERLAY,
+		immediately: true,
+		round: 3,
+		losed: '', // 任何buff都会执行BaseBuffLoseEffect，而无需指定
+		effects: '', // 任何buff都会执行BaseBuffEffect，而无需指定
+		baseAttrEffects: {
+			[BaseValueAttributeKeys.ATTACK]: -1
+		},
+		maxEffectTimes: 1,
+	},
+	Lvshihan: {
+		key: 'Lvshihan',
+		name: '律师函',
+		desc: '跳过当前回合',
+		funcType: BuffFunctionTypes.DEBUFF,
+		type: BuffTypes.OVERLAY,
+		immediately: false,
+		round: 1,
+		losed: '', // 任何buff都会执行BaseBuffLoseEffect，而无需指定
+		effects: '', // 任何buff都会执行BaseBuffEffect，而无需指定
+		baseAttrEffects: {
+			[BaseValueAttributeKeys.VITALITY]: MINNUM
+		},
+		maxEffectTimes: 1,
+	},
+	Shutouyabo: {
+		key: 'Shutouyabo',
+		name: '鼠头鸭脖中毒',
+		desc: '效果持续期间每回合开始前受到1点穿透伤害',
+		funcType: BuffFunctionTypes.DEBUFF,
+		type: BuffTypes.OVERLAY,
+		immediately: false,
+		round: 3,
+		losed: '', // 任何buff都会执行BaseBuffLoseEffect，而无需指定
+		effects: '', // 任何buff都会执行BaseBuffEffect，而无需指定
+		baseAttrEffects: {
+			[BaseValueAttributeKeys.HP]: -1
+		},
+		maxEffectTimes: 3,
+		
+	},
 }
 

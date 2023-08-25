@@ -15,6 +15,13 @@ async function setImages() {
 	addImage('xianyu', '/images/xianyu.jpg')
 	addImage('xianyu_dian', '/images/xianyu_dian.jpg')
 	addImage('zhexue', '/images/zhexue.jpg')
+	addImage('bian', '/images/bian.jpg')
+	addImage('haozi', '/images/haozi.jpeg')
+	addImage('houzi', '/images/houzi.jpeg')
+	addImage('lvshihan', '/images/lvshihan.jpg')
+	addImage('shutou', '/images/shutou.jpg')
+	addImage('taimei_kuang', '/images/taimei_kuang.png')
+	addImage('taimei', '/images/taimei.png')
 }
 // 主应用
 async function main() {

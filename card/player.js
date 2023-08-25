@@ -586,6 +586,7 @@ function updateBuffRoundStatus() {
     _player.usedBuffs[bId].roundEffectTimes = 0
     if (_player.usedBuffs[bId].round <= 0) {
       loseBuff(isMine, bId, false)
+      console.log(_player.usedBuffs[bId])
       return false
     }
   })
@@ -593,6 +594,7 @@ function updateBuffRoundStatus() {
 // 造成伤害
 function attackPlayer(attackInfo = {}, isForce = false) {
   const { owner, [BaseValueAttributeKeys.ATTACK]: atk, [BaseValueAttributeKeys.PENATTACK]: penAtk, selfAtk, selfPenAtk } = attackInfo
+  if (!atk && !penAtk) return
   // isMine指攻击者是否为自己
   const isMine = PlayerId === owner
   const _player = isMine ? Player : EnemyPlayer

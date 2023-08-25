@@ -60,6 +60,14 @@ const DescStyle = {
 	padding: [8, 7, 8, 7],
 }
 
+const CardCoverColorAnimations = {}
+function clearCardCoverColorAnimation(cardId) {
+}
+function getCardCoverColorsMap(cardId, defaultColorsMap) {
+}
+function updateCardCoverColorAnimation(cardId, color, duration = 300, reset = false) {
+}
+
 const DesktopCardPosition = {
 	x: (WhiteBoardWidth - CardStyle.width) / 2,
 	y: (WhiteBoardHeight - CardStyle.height) / 2,
@@ -92,7 +100,7 @@ function getCurrentCardPosition(cardId, defaultPos) {
 		x, y
 	}
 }
-function updateCardPosisitonAnimationPos(cardId, startPos, endPos, duration = 100) {
+function updateCardPosisitonAnimation(cardId, startPos, endPos, duration = 100) {
 	// if (startPos.x === endPos.x && startPos.y === endPos.y) return
 	let x = endPos.x
 	let y = endPos.y
@@ -151,20 +159,20 @@ function getHandCardPosition(index, isMine = true) {
 	let position = { x, y }
 	const newX = startX + index * ShowCardWidth // x坐标根据当前卡牌数量实时更新
 	if (!isMine) {
-		updateCardPosisitonAnimationPos(currentCardId, position, { x: newX, y: startY })
+		updateCardPosisitonAnimation(currentCardId, position, { x: newX, y: startY })
 		return position
 	}
 	if (MousePos.x < startX || MousePos.x > endX || MousePos.y < y || MousePos.y > endY) {
 		// 当前鼠标不在手牌范围内(注意，当有卡牌突出来时，应以突出部分的y为准，此处MousePos.y < y即是如此)
 		MouseHandCard = null
 		// 所有卡牌回到底部
-		position = updateCardPosisitonAnimationPos(currentCardId, position, { x: newX, y: startY })
+		position = updateCardPosisitonAnimation(currentCardId, position, { x: newX, y: startY })
 	} else {
 		// if ((isMouseHandCard && MousePos.x >= x && MousePos.x <= x + width && MousePos.y >= y && MousePos.y <= startY)){
 		// 	// 当前index对应卡牌为鼠标所在卡牌
 		// 	MouseHandCard = currentCardId
 		// 	// 去往顶部
-		// 	position = updateCardPosisitonAnimationPos(currentCardId, position, { x, y: startY - MouseHandCardHoverHeight })
+		// 	position = updateCardPosisitonAnimation(currentCardId, position, { x, y: startY - MouseHandCardHoverHeight })
 		// }
 		// 当前鼠标在手牌范围内
 		if ((MousePos.x >= x && MousePos.x < x + (index === cardNum - 1 ? width : ShowCardWidth) &&
@@ -172,10 +180,10 @@ function getHandCardPosition(index, isMine = true) {
 			// 当前index对应卡牌为鼠标所在卡牌
 			MouseHandCard = currentCardId
 			// 去往顶部
-			position = updateCardPosisitonAnimationPos(currentCardId, position, { x: newX, y: startY - MouseHandCardHoverHeight })
+			position = updateCardPosisitonAnimation(currentCardId, position, { x: newX, y: startY - MouseHandCardHoverHeight })
 		} else {
 			// 当前index对应卡牌不为鼠标所在卡牌
-			position = updateCardPosisitonAnimationPos(currentCardId, position, { x: newX, y: startY })
+			position = updateCardPosisitonAnimation(currentCardId, position, { x: newX, y: startY })
 		}
 	}
 	return position
@@ -338,7 +346,7 @@ function drawDesktopCard() {
 			_animId = _animId || getRandomKey()
 			DesktopCards[i]._animId = _animId
 			clearCardPositionAnimation(id)
-			pos = updateCardPosisitonAnimationPos(_animId, curCardPos, DesktopCardPosition, 500)
+			pos = updateCardPosisitonAnimation(_animId, curCardPos, DesktopCardPosition, 500)
 		}
 		drawCard(dCard, pos)
 	}

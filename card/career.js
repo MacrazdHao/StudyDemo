@@ -22,11 +22,18 @@ const CareerInitInfo = {
 		[BaseValueAttributeKeys.INITIALVITALITY]: 2,
 		initCards: {
 			...InitCards,
-			Test1: 1,
-			Test2: 1,
-			Test3: 1,
-			Test4: 1,
-			Test5: 1,
+			// Test1: 1,
+			// Test2: 1,
+			// Test3: 1,
+			// Test4: 1,
+			// Test5: 1,
+			Shandianwulianbian: 1,
+			Haoziweizhi: 1,
+			Damahoudefennu: 1,
+			Lvshihan: 1,
+			Shutouyabo: 1,
+			Jinitaimei: 1,
+			JinitaimeiKuang: 1,
 		}
 	}
 }

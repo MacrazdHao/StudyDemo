@@ -42,7 +42,6 @@ const PresetEffects = {
 					break;
 			}
 		}
-		console.log(Player)
 	},
 	BaseBuffEffect: function (context, otherEffect = null) {
 		PresetEffects.BaseAttrEffect(context, context.baseAttrEffects)
@@ -52,7 +51,23 @@ const PresetEffects = {
 	BaseBuffLoseEffect: function (context, otherLoseEffect = null) {
 		// 注意这里不能使用this，而是context
 		// effectRecord存储的值为baseAttrEffects的取反值(增益为正则记录为负数，否则相反)，因此可直接用BaseAttrEffect
-		PresetEffects.BaseAttrEffect(context, context.effectRecord)
+		// PresetEffects.BaseAttrEffect(context, context.effectRecord)
+		const isMine = context.owner === PlayerId
+		const _player = isMine ? Player : EnemyPlayer
+		const _attr = context.effectRecord
+		for (let aKey in _attr) {
+			switch (aKey) {
+				case BaseValueAttributeKeys.MAXHP:
+				case BaseValueAttributeKeys.MAXSHIELD:
+				case BaseValueAttributeKeys.MAXMP:
+				case BaseValueAttributeKeys.MAXVITALITY:
+				case BaseValueAttributeKeys.MAXHANDCARDSNUM:
+				case BaseValueAttributeKeys.ROUNDGETCARDNUM:
+				case BaseValueAttributeKeys.INITIALVITALITY: _player[aKey] += _attr[aKey]; break;
+				case BaseValueAttributeKeys.ATTACK: changeATK(_attr[aKey], isMine); break;
+				case BaseValueAttributeKeys.PENATTACK: changePENATK(_attr[aKey], isMine); break;
+			}
+		}
 		if (otherLoseEffect) otherLoseEffect(context)
 	},
 	BaseAttackEffect: function (context) {
