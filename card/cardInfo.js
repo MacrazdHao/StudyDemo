@@ -157,13 +157,14 @@ const Cards = {
 		}
 	},
 	Shandianwulianbian: {
-		types: [CardTypes.ATTACK],
+		types: [CardTypes.ATTACK, CardTypes.MAGIC],
 		values: {
 			[CardTypes.COMMON]: {
 				name: '闪电五连鞭', desc: '造成2点伤害，2点穿透伤害', effects: '', image: 'bian', rare: CardRareTypes.UNUSUAL,
 			},
 			[CardTypes.ATTACK]: { [BaseValueAttributeKeys.ATTACK]: 2, [BaseValueAttributeKeys.PENATTACK]: 2 }
-		}
+		},
+		[CardTypes.MAGIC]: { [CardItems.NEEDMP]: 1 }
 	},
 	Haoziweizhi: {
 		types: [CardTypes.PROPS],
