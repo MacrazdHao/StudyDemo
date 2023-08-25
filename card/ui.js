@@ -231,7 +231,13 @@ function drawCard(card, pos, handCard) {
 	let _strokeColor = CardRareColors[CardRareTypes.DEFAULT]
 	if (isMine || !handCard) {
 		// 卡牌类型背景色
-		Context.fillStyle = color
+		const cardBgColorsMap = {}
+		for (let i = 0;i<types.length;i++) {
+			if (types[i]===CardTypes.COMMON) continue
+			cardBgColorsMap[(i+1)/types.length] = CardColors[types[i]]
+		}
+		const cardBgColor = getGradientColor(Context, cardBgColorsMap, { x, y }, { x: x, y: y + height })
+		Context.fillStyle = cardBgColor
 		Context.fillRect(x, y, width, height)
 		// 卡牌稀有度边框色
 		_strokeColor = getGradientColor(Context, CardRareColors[rare], { x, y }, { x: x + width, y: y + height })

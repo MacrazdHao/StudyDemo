@@ -49,12 +49,12 @@ function getRandomColor(minR = 0, maxR = 255, minG = 0, maxG = 255, minB = 0, ma
 // }
 // 获取渐变色
 function getGradientColor(ctx, colorsMap = {}, startPos, endPos) {
-	let strokeColor = ctx.createLinearGradient(startPos.x, startPos.y, endPos.x, endPos.y)
+	let gradientColor = ctx.createLinearGradient(startPos.x, startPos.y, endPos.x, endPos.y)
 	const colorProcess = Object.keys(colorsMap).sort((a, b) => a - b)
 	colorProcess.forEach((process) => {
-		strokeColor.addColorStop(process, colorsMap[process])
+		gradientColor.addColorStop(process, colorsMap[process])
 	})
-	return strokeColor
+	return gradientColor
 }
 // 随机重排数组
 function randomArray(arr = []) {
