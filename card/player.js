@@ -213,7 +213,7 @@ function playCard(e, isMine = true, cardId, isForce = false) {
   const _player = isMine ? Player : EnemyPlayer
   const _cardId = isMine ? MouseHandCard : cardId
   const enableHandCards = getEnableHandCards(isMine)
-  if (!enableHandCards.includes(_cardId)) {
+  if (!enableHandCards.includes(_cardId) && isMine) {
     alert('当前不符合出牌条件')
     return
   }
